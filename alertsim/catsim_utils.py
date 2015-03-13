@@ -37,6 +37,7 @@ def iter_and_send(sender, t, obs_metadata):
             dataMetadata.append(DataMetadata(val, ucd, unit))
         c = CelestialObject(t.iter_column_names(), dataMetadata)
         xml = gen.generateFromObjects(c, obs_metadata, eventID=count)
+        #print xml
         sender.send(xml)
         count = count + 1
     print "Number of events from this visit : %s" % count

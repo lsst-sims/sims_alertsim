@@ -36,15 +36,35 @@ class TcpIp(Broadcast):
         #print eot.decode('hex')
         """
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(1)
         s.connect((TCP_IP, TCP_PORT))
         #s.bind((TCP_IP, TCP_PORT))
         #s.send('2')
-        #s.send(msg1)
+        msg1= '%08x'% (len(message))
+        msg1=msg1.decode('hex')
+                 
+        s.send(msg1)
         #print MESSAGE
-        s.send(MESSAGE)
+        
+        ww=s.send(MESSAGE)
+        print ww,  len(MESSAGE)
+        eot='%08x'% 4
+        eot=eot.decode('hex')
         #s.send(eot)
          
         data = s.recv(BUFFER_SIZE)
+        print int(data)
+        while int(data) != ww:
+            s.close()
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(10)
+            s.connect((TCP_IP, TCP_PORT))
+            s.send(msg1)
+            ww1=s.send(MESSAGE)
+            data = s.recv(BUFFER_SIZE)
+            ww=ww1
+
+
         s.close()
         
         print "received data:", data
