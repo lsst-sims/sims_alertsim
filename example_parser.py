@@ -1,6 +1,7 @@
 """ Parse input args and broadcast VOEvents """
 
 import sys
+import os
 import argparse
 import socket
 from alertsim import *
@@ -12,11 +13,23 @@ def main(opsim_table, catsim_table, opsim_constraint,
         opsim and catsim and generate VOevents 
     """
     sender = get_sender(protocol, ipaddr, port)
-    observations = opsim_query(objid=opsim_table, 
+    if os.environ['SETUP_OBS_LSSTSIM'][12] == '8':
+        observations = opsim_query(objid=opsim_table, 
             constraint=opsim_constraint)
+    else:
+        dbadr = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST" 
+
+        observations = opsim_query_stack10(dbadr, 
+            constraint=opsim_constraint)
+ 
     for obs in observations:
-        t, obs_metadata = catsim_query(catsim_table, catsim_constraint, 
+        if os.environ['SETUP_OBS_LSSTSIM'][12] == '8':
+            t, obs_metadata = catsim_query(catsim_table, catsim_constraint, 
                 catalog, radius, obs)
+        else:
+            t, obs_metadata = catsim_query_stack10(catsim_table, catsim_constraint, 
+                                                   catalog, radius, obs)
+ 
         iter_and_send(sender, t, obs_metadata)
 
 PARSER = argparse.ArgumentParser(description="")

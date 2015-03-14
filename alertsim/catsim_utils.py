@@ -24,6 +24,23 @@ def catsim_query(objid, constraint, catalog, radius, opsim_metadata):
 #    t.write_catalog(filename, chunk_size=10)
     return t, obs_metadata
 
+def catsim_query_stack10 (objid, constraint, catalog, radius, opsim_metadata):
+    from lsst.sims.catalogs.generation.db import CatalogDBObject
+    """ Query catsim and make a catalog """
+
+    obs_metadata = ObservationMetaData(boundType='circle',unrefractedRA=opsim_metadata[1]*180/pi, 
+                unrefractedDec=opsim_metadata[2]*180/pi, 
+                boundLength=radius,
+            mjd=opsim_metadata[5])
+    dbobj = CatalogDBObject.from_objid(objid)
+    
+    t = dbobj.getCatalog(catalog, 
+            obs_metadata=obs_metadata, 
+            constraint=constraint)
+#    filename = 'test_reference.dat'
+#    t.write_catalog(filename, chunk_size=10)
+    return t, obs_metadata
+
 def iter_and_send(sender, t, obs_metadata):
     
     """ Iterate over catalog and generate XML """

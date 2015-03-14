@@ -1,7 +1,8 @@
 """ Query opsim """
 
 from lsst.sims.catUtils.baseCatalogModels import *
- 
+
+
 def opsim_query(objid, constraint):
 
     dbobj = DBObject.from_objid(objid)
@@ -13,3 +14,21 @@ def opsim_query(objid, constraint):
 
     print result
     return result
+
+def opsim_query_stack10 (dbadr, constraint):
+    import lsst.sims.maf.db as db
+    from lsst.sims.catalogs.generation.db import  *
+
+
+
+    dbobj=DBObject(dbadr)
+    tableid = 'output_opsim3_61'
+
+    table=db.Table(tableid,'obshistid', dbadr)
+
+    ccc=table.query_columns_Array(colnames=['fieldra','fielddec','rawseeing',
+                'filter', 'expmjd'],constraint=constraint )
+
+
+    print ccc
+    return ccc
