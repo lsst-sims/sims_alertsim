@@ -4,100 +4,83 @@ import sys
 
 class Broadcast(object):
 
-    def __init__(self, ip, port):
-        self.ip = ip
-        self.port = port
+    '''
+    abstract base class, with common broadcast functionalities (expecting more to come)
+    '''
+
+    BUFFER_SIZE = 10000
+
+    def __init__(self):
+        pass
 
     def send(self, message):
         pass
 
+    def close(self):
+        self.sock.close()
+        print >>sys.stderr, 'closing socket'
+        sys.exit(1)
+    
+    @staticmethod
+    def _add_voevent_header(message):
+        header = '%08x' % (len(message))
+        return header.decode('hex') + message
+
 class TcpIp(Broadcast):
 
+    '''
+    class for TcpIp broadcast
+    '''
+
+    def __init__(self, ip, port):
+        try:
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.sock.connect((ip, port))
+            print "Connected to %s at port %d" % (ip, port)
+        except socket.error as e:
+            print(e)
+            self.close()
+
     def send(self, message):
-
-        TCP_IP = self.ip
-        TCP_PORT = self.port
-        BUFFER_SIZE = 10000
-        MESSAGE = message
-        """
-        #print len(message)
-        #print hex(len(message)+32)
-        #msg1=hex(len(message))
-        #print len(msg1)
-        msg1=''
-        #if xzz==0:
-        msg1= '%08x'% (len(message))
-        msg1=msg1.decode('hex')
-        cv= '%08x'% 22
-        cv=cv.decode('hex')
-        eot='%08x'% 4
-        eot=eot.decode('hex')
-        #print msg1
-        #print eot.decode('hex')
-        """
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1)
-        s.connect((TCP_IP, TCP_PORT))
-        #s.bind((TCP_IP, TCP_PORT))
-        #s.send('2')
-        msg1= '%08x'% (len(message))
-        msg1=msg1.decode('hex')
-                 
-        s.send(msg1)
-        #print MESSAGE
-        
-        ww=s.send(MESSAGE)
-        print ww,  len(MESSAGE)
-        eot='%08x'% 4
-        eot=eot.decode('hex')
-        #s.send(eot)
-         
-        data = s.recv(BUFFER_SIZE)
-        print int(data)
-        while int(data) != ww:
-            s.close()
-            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            s.settimeout(10)
-            s.connect((TCP_IP, TCP_PORT))
-            s.send(msg1)
-            ww1=s.send(MESSAGE)
-            data = s.recv(BUFFER_SIZE)
-            ww=ww1
-
-
-        s.close()
-        
+        self.sock.send(self._add_voevent_header(message))
+        data = self.sock.recv(self.BUFFER_SIZE)
         print "received data:", data
 
 class Multicast(Broadcast):
+    
+    '''
+    class for multicast // to be revised
+    '''
 
-    def send(self, message):
-
-        multicast_group = (self.ip, 5032)
+    def __init__(self, ip, port):
+        self.multicast_group = (ip, 5032)
 
         # Create the datagram socket
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
         # Set a timeout so the socket does not block indefinitely when trying
         # to receive data.
-        sock.settimeout(1)
+        self.sock.settimeout(1)
 
         # Set the time-to-live for messages to 1 so they do not go past the
         # local network segment.
         ttl = struct.pack('b', -128)
-        sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
+        self.sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, ttl)
+
+
+    def send(self, message):
 
         try:
 
             # Send data to the multicast group
             print >>sys.stderr, 'sending "%s"' % message
-            sent = sock.sendto(message, multicast_group)
+            sent = self.sock.sendto(message, multicast_group)
 
             # Look for responses from all recipients
             while True:
                 print >>sys.stderr, 'waiting to receive'
                 try:
-                    data, server = sock.recvfrom(16)
+                    data, server = self.sock.recvfrom(16)
                 except socket.timeout:
                     print >>sys.stderr, 'timed out, no more responses'
                     break
@@ -106,5 +89,5 @@ class Multicast(Broadcast):
 
         finally:
             print >>sys.stderr, 'closing socket'
-            sock.close()
+            self.close()
 

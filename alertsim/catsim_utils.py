@@ -1,14 +1,24 @@
-""" Query catsim and use VOEventLib to generate XML """
+""" Query catsim """
 
 from math import pi
-from lsst.sims.catalogs.generation.db import DBObject, ObservationMetaData
-from alertsim import *
-from catalogs import *
-from broadcast import *
 
-def catsim_query(objid, constraint, catalog, radius, opsim_metadata):
+DBADDR = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST"
+
+def catsim_query(stack_version, **kwargs):
+
+    """ Determine stack version """
+
+    if stack_version < 10:
+        return catsim_query_stack8(**kwargs)
+    else:
+        return catsim_query_stack10(**kwargs)
+
+
+def catsim_query_stack8(objid, constraint, catalog, radius, opsim_metadata):
 
     """ Query catsim and make a catalog """
+
+    from lsst.sims.catalogs.generation.db import DBObject, ObservationMetaData
 
     obs_metadata = ObservationMetaData(circ_bounds=dict
             (ra=opsim_metadata[1]*180/pi, 
@@ -24,10 +34,13 @@ def catsim_query(objid, constraint, catalog, radius, opsim_metadata):
 #    t.write_catalog(filename, chunk_size=10)
     return t, obs_metadata
 
+
 def catsim_query_stack10 (objid, constraint, catalog, radius, opsim_metadata):
-    from lsst.sims.catalogs.generation.db import CatalogDBObject
+    
     """ Query catsim and make a catalog """
 
+    from lsst.sims.catalogs.generation.db import CatalogDBObject, ObservationMetaData
+    
     obs_metadata = ObservationMetaData(boundType='circle',unrefractedRA=opsim_metadata[1]*180/pi, 
                 unrefractedDec=opsim_metadata[2]*180/pi, 
                 boundLength=radius,
@@ -40,26 +53,3 @@ def catsim_query_stack10 (objid, constraint, catalog, radius, opsim_metadata):
 #    filename = 'test_reference.dat'
 #    t.write_catalog(filename, chunk_size=10)
     return t, obs_metadata
-
-def iter_and_send(sender, t, obs_metadata):
-    
-    """ Iterate over catalog and generate XML """
-
-    count = 0
-    gen = VOEventGenerator()
-
-    for line in t.iter_catalog():
-        dataMetadata = []
-        for (val, ucd, unit) in zip(line, t.get_ucds(), t.get_units()):
-            dataMetadata.append(DataMetadata(val, ucd, unit))
-        c = CelestialObject(t.iter_column_names(), dataMetadata)
-        xml = gen.generateFromObjects(c, obs_metadata, eventID=count)
-        #print xml
-        sender.send(xml)
-        count = count + 1
-    print "Number of events from this visit : %s" % count
-
-def get_sender(protocol, ipaddr, port):
-    """ Determine sending protocol """
-    return vars(broadcast)[protocol](ipaddr, port)
-
