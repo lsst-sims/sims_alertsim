@@ -1,40 +1,13 @@
 """ Parse input args and broadcast VOEvents """
 
 import sys
-import os
 import argparse
 import socket
-from alertsim import *
-
-def main(opsim_table, catsim_table, opsim_constraint, 
-         catsim_constraint, catalog, radius, protocol, ipaddr, port):
-
-    """ Take objids, constraints and metadata, query
-        opsim and catsim and generate VOevents 
-    """
-    sender = get_sender(protocol, ipaddr, port)
-    if os.environ['SETUP_OBS_LSSTSIM'][12] == '8':
-        observations = opsim_query(objid=opsim_table, 
-            constraint=opsim_constraint)
-    else:
-        dbadr = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST" 
-
-        observations = opsim_query_stack10(dbadr, 
-            constraint=opsim_constraint)
- 
-    for obs in observations:
-        if os.environ['SETUP_OBS_LSSTSIM'][12] == '8':
-            t, obs_metadata = catsim_query(catsim_table, catsim_constraint, 
-                catalog, radius, obs)
-        else:
-            t, obs_metadata = catsim_query_stack10(catsim_table, catsim_constraint, 
-                                                   catalog, radius, obs)
- 
-        iter_and_send(sender, t, obs_metadata)
+import alertsim.alertsim_main as alertsim
 
 PARSER = argparse.ArgumentParser(description="")
 
-PARSER.add_argument("-o", "--opsim_table", default="opsim3_61", 
+PARSER.add_argument("-o", "--opsim_table", default="output_opsim3_61", 
         help="opsim objid")
 PARSER.add_argument("-c", "--catsim_table", default="allstars", 
         help="catsim objid")
@@ -63,7 +36,7 @@ def validate_ip(ipaddr, protocol):
     except socket.error:
         print "illegal ip '%s'" % ipaddr
         return False
-    else: 
+    else:
     #check if multicast is assigned to right ip and vice versa    
         ipbase = ipaddr[:3].split(".")[0]
         if (224 <= int(ipbase) <= 239):
@@ -76,9 +49,8 @@ def validate_ip(ipaddr, protocol):
                 return False
         return True
 
-
 if __name__ == "__main__":
     if (validate_ip(ARGS.ipaddress, ARGS.protocol)):
-        sys.exit(main(ARGS.opsim_table, ARGS.catsim_table, ARGS.opsim_constraint, 
+        sys.exit(alertsim.main(ARGS.opsim_table, ARGS.catsim_table, ARGS.opsim_constraint, 
                     ARGS.catsim_constraint, ARGS.catsim_catalog, ARGS.radius, 
                     ARGS.protocol, ARGS.ipaddress, ARGS.port))
