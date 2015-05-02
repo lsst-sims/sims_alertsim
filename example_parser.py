@@ -1,6 +1,6 @@
 """ Parse input args and broadcast VOEvents """
 
-import sys
+import sys, os
 import argparse
 import socket
 import alertsim.alertsim_main as alertsim
