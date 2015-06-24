@@ -94,6 +94,9 @@ class VOEventGenerator:
         xml = stringVOEvent(self.voevent, self.schemaURL)
         return xml
 
+    """
+    may be useful at some point, needs to be checked
+
     def generateFromLists(self, cols, vals, ucds):
 
         ############ What ############################
@@ -124,6 +127,8 @@ class VOEventGenerator:
         xml = stringVOEvent(self.voevent, schemaURL)
         return xml
     
+    """
+
     def _convertToIso(self, mjd):
         t = AstropyTime(mjd, format='mjd', scale='utc')
         return t.iso

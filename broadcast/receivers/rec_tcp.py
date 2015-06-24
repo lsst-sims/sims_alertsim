@@ -21,9 +21,9 @@ def main(port):
     while 1:
         data = conn.recv(BUFFER_SIZE)
         if not data: break
-        header = data[0:8]
+        header = data[0:4]
         print "header:", header
-        print "received data:", data[8:]
+        print "received data:", data[4:]
         conn.send(header)  # echo
     conn.close()
 

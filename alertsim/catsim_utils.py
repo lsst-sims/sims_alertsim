@@ -1,6 +1,7 @@
 """ Query catsim """
 
 from math import pi
+from lsst.sims.catUtils.baseCatalogModels import *
 
 DBADDR = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST"
 
@@ -46,7 +47,7 @@ def catsim_query_stack10 (objid, constraint, catalog, radius, opsim_metadata):
                 boundLength=radius,
             mjd=opsim_metadata[5])
     dbobj = CatalogDBObject.from_objid(objid)
-    
+#    dbobj.show_db_columns()    
     t = dbobj.getCatalog(catalog, 
             obs_metadata=obs_metadata, 
             constraint=constraint)

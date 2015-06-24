@@ -8,8 +8,6 @@ import catsim_utils, opsim_utils
 from broadcast import *
 from catalogs import *
 
-DBADDR = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST"
-
 def main(opsim_table, catsim_table, opsim_constraint, 
          catsim_constraint, catalog, radius, protocol, ipaddr, port):
 
