@@ -3,8 +3,6 @@
 from math import pi
 from lsst.sims.catUtils.baseCatalogModels import *
 
-DBADDR = "mssql+pymssql://LSST-2:L$$TUser@fatboy.npl.washington.edu:1433/LSST"
-
 def catsim_query(stack_version, **kwargs):
 
     """ Determine stack version """
