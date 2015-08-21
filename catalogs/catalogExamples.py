@@ -1,6 +1,5 @@
 """Instance Catalog"""
 import numpy
-import eups
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
 from lsst.sims.coordUtils.Astrometry import AstrometryStars, CameraCoords
 from lsst.sims.photUtils.Photometry import PhotometryStars
