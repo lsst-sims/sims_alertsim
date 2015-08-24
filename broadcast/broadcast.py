@@ -32,7 +32,8 @@ class TcpIp(Broadcast):
     class for TcpIp broadcast
     '''
 
-    def __init__(self, ip, port):
+    def __init__(self, ip, port, header):
+        self.header = header
         try:
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.connect((ip, port))
@@ -42,7 +43,7 @@ class TcpIp(Broadcast):
             self.close()
 
     def send(self, message):
-        self.sock.send(self._add_voevent_header(message))
+        self.sock.send(self._add_voevent_header(message)) if self.header else self.sock.send(message) 
         data = self.sock.recv(self.BUFFER_SIZE)
         print "received data:", data
 
