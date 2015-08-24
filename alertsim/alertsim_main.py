@@ -9,7 +9,7 @@ from broadcast import *
 from catalogs import *
 
 def main(opsim_table, catsim_table, opsim_constraint, 
-         catsim_constraint, catalog, radius, protocol, ipaddr, port):
+         catsim_constraint, catalog, radius, protocol, ipaddr, port, header):
 
     """ Take objids, constraints and metadata, query
         opsim and catsim and generate VOevents 
@@ -17,7 +17,7 @@ def main(opsim_table, catsim_table, opsim_constraint,
 
     print "Stack version: %s" % get_stack_version() 
 
-    sender = get_sender(protocol, ipaddr, port)
+    sender = get_sender(protocol, ipaddr, port, header)
     
     observations = opsim_utils.opsim_query(get_stack_version(fine_grain=False), objid=opsim_table, 
                 constraint=opsim_constraint)
@@ -28,9 +28,9 @@ def main(opsim_table, catsim_table, opsim_constraint,
     
     sender.close()
 
-def get_sender(protocol, ipaddr, port):
+def get_sender(protocol, ipaddr, port, header):
     """ Instantiate proper child class for the protocol """
-    return vars(broadcast)[protocol](ipaddr, port)
+    return vars(broadcast)[protocol](ipaddr, port, header)
 
 def iter_and_send(sender, t, obs_metadata):
     """ Iterate over catalog and generate XML """
@@ -50,6 +50,7 @@ def iter_and_send(sender, t, obs_metadata):
 
 def get_stack_version(fine_grain=True):
     # shell eups command to get version like 8.0.0.2
+    # how to get version without eups?
     stack_version = subprocess.check_output("eups list lsst --version --tag current", shell=True)
     if fine_grain:
         return stack_version

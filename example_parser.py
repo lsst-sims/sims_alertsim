@@ -5,7 +5,7 @@ import argparse
 import socket
 import alertsim.alertsim_main as alertsim
 
-PARSER = argparse.ArgumentParser(description="")
+PARSER = argparse.ArgumentParser(description="", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 PARSER.add_argument("-o", "--opsim_table", default="output_opsim3_61", 
         help="opsim objid")
@@ -27,6 +27,8 @@ PARSER.add_argument("-pr", "--protocol", help="TcpIp, Multicast, Unicast",
 PARSER.add_argument("-ip", "--ipaddress", 
         help="ip address of the recepient or multicast channel", 
         default='147.91.240.26')
+PARSER.add_argument("--no_header",
+        help="don't generate hex header for VOEvents", action="store_false", default=True)
 ARGS = PARSER.parse_args()
 
 def validate_ip(ipaddr, protocol):
@@ -53,4 +55,4 @@ if __name__ == "__main__":
     if (validate_ip(ARGS.ipaddress, ARGS.protocol)):
         sys.exit(alertsim.main(ARGS.opsim_table, ARGS.catsim_table, ARGS.opsim_constraint, 
                     ARGS.catsim_constraint, ARGS.catsim_catalog, ARGS.radius, 
-                    ARGS.protocol, ARGS.ipaddress, ARGS.port))
+                    ARGS.protocol, ARGS.ipaddress, ARGS.port, ARGS.no_header))

@@ -9,8 +9,8 @@ class VOEventExportClass(VOEvent.VOEvent):
 
     def export(self, outfile, level, namespace_='', name_='VOEvent', namespacedef_=''):
         VOEvent.showIndent(outfile, level)
-        added_stuff = 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"\n'
-        added_stuff += 'xmlns:voe="http://www.ivoa.net/xml/VOEvent/v2.0"\n'
+        added_stuff = 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \n'
+        added_stuff += 'xmlns:voe="http://www.ivoa.net/xml/VOEvent/v2.0" \n'
         added_stuff += 'xsi:schemaLocation="http://www.ivoa.net/xml/VOEvent/v2.0 %s"\n' % self.schemaURL
 
         outfile.write('<%s%s%s %s' % (namespace_, name_,

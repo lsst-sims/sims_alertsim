@@ -45,7 +45,7 @@ def catsim_query_stack10 (objid, constraint, catalog, radius, opsim_metadata):
                 boundLength=radius,
             mjd=opsim_metadata[5])
     dbobj = CatalogDBObject.from_objid(objid)
-#    dbobj.show_db_columns()    
+    #dbobj.show_db_columns()    
     t = dbobj.getCatalog(catalog, 
             obs_metadata=obs_metadata, 
             constraint=constraint)

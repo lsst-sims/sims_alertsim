@@ -1,6 +1,5 @@
 """Instance Catalog"""
 import numpy
-import eups
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
 from lsst.sims.coordUtils.Astrometry import AstrometryStars, CameraCoords
 from lsst.sims.photUtils.Photometry import PhotometryStars
@@ -23,7 +22,7 @@ class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
     """
     column_outputs = ['id','raJ2000','decJ2000',
                       'lsst_u','lsst_g','lsst_r','lsst_i','lsst_z','lsst_y',
-                      'lsst_u_var','lsst_g_var','lsst_i_var','lsst_z_var',
+                      'lsst_u_var','lsst_g_var','lsst_r_var','lsst_i_var','lsst_z_var',
                       'lsst_y_var']
     def get_ucds(self):
         return ['meta.id', 'pos.eq.ra', 'pos.eq.dec', 
