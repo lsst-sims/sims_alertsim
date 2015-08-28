@@ -30,8 +30,7 @@ def opsim_query_stack10 (objid, constraint):
     #dbobj = CatalogDBObject.from_objid(objid)
     table=db.Table(tableName=objid, idColKey='obshistid', database='LSST', driver='mssql+pymssql', host='localhost', port='51433' )
 
-    result = table.query_columns_Array(colnames=['fieldra','fielddec','rawseeing',
-                'filter', 'expmjd'],constraint=constraint )
+    result = table.query_columns_Array(colnames=['fieldra','fielddec','rawseeing', 'filter', 'expmjd', 'expdate', 'exptime', 'fieldradeg', 'fielddecdeg', 'airmass', 'obshistid'],constraint=constraint )
 
     print result
     return result

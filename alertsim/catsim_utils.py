@@ -26,12 +26,12 @@ def catsim_query_stack8(objid, constraint, catalog, radius, opsim_metadata):
             mjd=opsim_metadata[5])
     dbobj = DBObject.from_objid(objid)
     
-    t = dbobj.getCatalog(catalog, 
+    observed_objects = dbobj.getCatalog(catalog, 
             obs_metadata=obs_metadata, 
             constraint=constraint)
 #    filename = 'test_reference.dat'
-#    t.write_catalog(filename, chunk_size=10)
-    return t, obs_metadata
+#    observed_objects.write_catalog(filename, chunk_size=10)
+    return observed_objects, obs_metadata
 
 
 def catsim_query_stack10 (objid, constraint, catalog, radius, opsim_metadata):
@@ -40,15 +40,13 @@ def catsim_query_stack10 (objid, constraint, catalog, radius, opsim_metadata):
 
     from lsst.sims.catalogs.generation.db import CatalogDBObject, ObservationMetaData
     
-    obs_metadata = ObservationMetaData(boundType='circle',unrefractedRA=opsim_metadata[1]*180/pi, 
-                unrefractedDec=opsim_metadata[2]*180/pi, 
-                boundLength=radius,
-            mjd=opsim_metadata[5])
+    obs_metadata = ObservationMetaData(boundType='circle',unrefractedRA=opsim_metadata[1]*180/pi, unrefractedDec=opsim_metadata[2]*180/pi, boundLength=radius, mjd=opsim_metadata[5], bandpassName=opsim_metadata[4])
+    obs_metadata.obshistid = opsim_metadata[0]
     dbobj = CatalogDBObject.from_objid(objid)
     #dbobj.show_db_columns()    
-    t = dbobj.getCatalog(catalog, 
+    observed_objects = dbobj.getCatalog(catalog, 
             obs_metadata=obs_metadata, 
             constraint=constraint)
 #    filename = 'test_reference.dat'
-#    t.write_catalog(filename, chunk_size=10)
-    return t, obs_metadata
+#    observed_objects.write_catalog(filename, chunk_size=10)
+    return observed_objects, obs_metadata

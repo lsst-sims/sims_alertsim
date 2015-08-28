@@ -73,7 +73,21 @@ class VOEventGenerator:
                 if val.ucd != 'phot.mag':
                     p = Param(name=key, ucd=val.ucd, value=val.value, unit = val.unit)
                     w.add_Param(p)
-#        
+#       
+        #TODO: Obs_metadata contains names and values, so params added manually. Define data model to include ucd and unit.
+        
+        for key, val in obsMetaData.__dict__.items():
+	  if key == "_bandpass":
+	    p = Param(name="bandpass", value=val, ucd="instr.bandpass") 
+	    w.add_Param(p)
+	  if key == "_seeing":
+	    p = Param(name="seeing", value=val, dataType="float", ucd="instr.obsty.seeing", unit="arcsec")
+	    w.add_Param(p)
+	    
+	p = Param(name="cutout image", value=None, ucd="obs.image")
+	w.add_Param(p)
+
+
         self.voevent.set_What(w)
 
         ############ Wherewhen ############################
