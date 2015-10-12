@@ -2,6 +2,7 @@
 
 import sys
 import subprocess
+import time
 from dataModel import DataMetadata, CelestialObject
 from generateVOEvent import VOEventGenerator
 import catsim_utils, opsim_utils
@@ -35,6 +36,7 @@ def get_sender(protocol, ipaddr, port, header):
 def iter_and_send(sender, t, obs_metadata):
     """ Iterate over catalog and generate XML """
     count = 0
+    sending_times = []
 
     for line in t.iter_catalog():
         dataMetadata = []
@@ -45,8 +47,11 @@ def iter_and_send(sender, t, obs_metadata):
         xml = gen.generateFromObjects(c, obs_metadata)
         sender.send(xml)
         count = count + 1
+        sending_times.append(time.time())
 
-    print "Number of events from this visit : %s" % count
+    sending_diff = sending_times[-1] - sending_times[0]
+    print "Number of events from this visit : %d. Time from first to last event " \
+       "%f or %f per event" % (count, sending_diff, sending_diff/count)
 
 def get_stack_version(fine_grain=True):
     # shell eups command to get version like 8.0.0.2
