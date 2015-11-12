@@ -42,8 +42,8 @@ def catsim_query_stack10 (objid, constraint, catalog, radius, opsim_metadata):
     
     obs_metadata = ObservationMetaData(boundType='circle',unrefractedRA=opsim_metadata[1]*180/pi, 
                 unrefractedDec=opsim_metadata[2]*180/pi, 
-                boundLength=radius,
-            mjd=opsim_metadata[5])
+                boundLength=radius, mjd=opsim_metadata[5], 
+                bandpassName=opsim_metadata[4])
     dbobj = CatalogDBObject.from_objid(objid)
     #dbobj.show_db_columns()    
     t = dbobj.getCatalog(catalog, 
