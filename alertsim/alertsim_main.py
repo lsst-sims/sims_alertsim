@@ -25,6 +25,7 @@ def main(opsim_table, catsim_table, opsim_constraint,
     for obs in observations:
         t, obs_metadata = catsim_utils.catsim_query(get_stack_version(fine_grain=False), objid=catsim_table, constraint=catsim_constraint, 
                     catalog=catalog, radius=radius, opsim_metadata=obs)
+        #print vars(obs_metadata)
         iter_and_send(sender, t, obs_metadata)
     
     sender.close()
