@@ -1,11 +1,9 @@
 """Instance Catalog"""
 import numpy
 from lsst.sims.catalogs.measures.instance import InstanceCatalog
-from lsst.sims.coordUtils.Astrometry import AstrometryStars, CameraCoords
-from lsst.sims.photUtils.Photometry import PhotometryStars
+from lsst.sims.catUtils.mixins import AstrometryStars, CameraCoords, PhotometryStars, Variability, VariabilityStars
+from lsst.sims.catUtils.baseCatalogModels import *
 from lsst.obs.lsstSim.utils import loadCamera
-from lsst.sims.photUtils.Variability import Variability, VariabilityStars
-# from sqlalchemy import BIGINT, BINARY, BLOB, BOOLEAN, CHAR, DATE, DATETIME, INTEGER, FLOAT, NCHAR, NUMERIC, NVARCHAR, SMALLINT, TEXT, TIME, TIMESTAMP, VARBINARY
 
 class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
 
@@ -18,17 +16,18 @@ class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
     """
     column_outputs = ['id','raJ2000','decJ2000',
                       'lsst_u','lsst_g','lsst_r','lsst_i','lsst_z','lsst_y',
-                      'delta_lsst_u','delta_lsst_g','delta_lsst_r','delta_lsst_i','delta_lsst_z',
-                      'delta_lsst_y']
+                      'delta_lsst_u','delta_lsst_g','delta_lsst_r',
+                      'delta_lsst_i','delta_lsst_z', 'delta_lsst_y']
     """
-    column_outputs = ['id','raJ2000','decJ2000',
-                      'lsst_u','lsst_g','lsst_r','lsst_i','lsst_z','lsst_y',
-                      'lsst_u_var','lsst_g_var','lsst_r_var','lsst_i_var','lsst_z_var',
-                      'lsst_y_var']
+    column_outputs = ['id', 'raJ2000', 'decJ2000',
+                      'lsst_u', 'lsst_g', 'lsst_r', 'lsst_i', 'lsst_z', 
+                      'lsst_y', 'lsst_u_var', 'lsst_g_var', 'lsst_r_var', 
+                      'lsst_i_var', 'lsst_z_var', 'lsst_y_var']
     def get_ucds(self):
         return ['meta.id', 'pos.eq.ra', 'pos.eq.dec', 
-                'phot.mag', 'phot.mag','phot.mag','phot.mag','phot.mag','phot.mag',
-                'phot.mag', 'phot.mag','phot.mag','phot.mag','phot.mag','phot.mag' ]
+                'phot.mag', 'phot.mag', 'phot.mag', 'phot.mag',
+                'phot.mag', 'phot.mag', 'phot.mag', 'phot.mag',
+                'phot.mag', 'phot.mag', 'phot.mag', 'phot.mag' ]
 
     def get_units(self):
         return ['', 'rad', 'rad', 
@@ -47,43 +46,46 @@ class VanillaStars(InstanceCatalog):
 
 class DIASources(InstanceCatalog):
     catalog_type = 'DIA_sources'
-    column_outputs = ['diaSourceId','ccdVisitId','diaObjectId','ssObjectId',
-          'parentDiaSourceId','filterName','procHistoryId','ssObjectReassocTime',
-          'midPointTai','ra','raSigma','decl','declSigma','ra_decl_Cov','x',
-          'xSigma','y','ySigma','x_y_Cov','snr','psFlux','psFluxSigma','psLnL',
-          'psChi2','psN','trailFlux','trailFluxSigma','trailLength',
-          'trailLengthSigma','trailAngle','trailAngleSigma',
-          'trailFlux_trailLength_Cov','trailFlux_trailAngle_Cov',
-          'trailLength_trailAngle_Cov','trailLnL','trailChi2','trailN',
-          'fpFlux','fpFluxSigma','diffFlux','diffFluxSigma','fpSky','fpSkySigma',
-          'E1','E1Sigma','E2','E2Sigma','E1_E2_Cov','mSum','mSumSigma',
-          'extendedness','apMeanSb01','apMeanSb01Sigma','apMeanSb02',
-          'apMeanSb02Sigma','apMeanSb03','apMeanSb03Sigma','apMeanSb04',
-          'apMeanSb04Sigma','apMeanSb05','apMeanSb05Sigma','apMeanSb06',
-          'apMeanSb06Sigma','apMeanSb07','apMeanSb07Sigma','apMeanSb08',
-          'apMeanSb08Sigma','apMeanSb09','apMeanSb09Sigma','apMeanSb10',
-          'apMeanSb10Sigma','flags','htmId20']
+    column_outputs = ['diaSourceId', 'ccdVisitId', 'diaObjectId', 'ssObjectId',
+          'parentDiaSourceId', 'filterName', 'procHistoryId',
+          'ssObjectReassocTime', 'midPointTai', 'ra', 'raSigma', 'decl',
+          'declSigma', 'ra_decl_Cov', 'x', 'xSigma', 'y', 'ySigma', 
+          'x_y_Cov', 'snr', 'psFlux', 'psFluxSigma', 'psLnL', 'psChi2', 
+          'psN', 'trailFlux', 'trailFluxSigma', 'trailLength', 
+          'trailLengthSigma', 'trailAngle', 'trailAngleSigma', 
+          'trailFlux_trailLength_Cov', 'trailFlux_trailAngle_Cov', 
+          'trailLength_trailAngle_Cov', 'trailLnL', 'trailChi2', 'trailN', 
+          'fpFlux', 'fpFluxSigma', 'diffFlux', 'diffFluxSigma', 'fpSky', 
+          'fpSkySigma', 'E1', 'E1Sigma', 'E2', 'E2Sigma', 'E1_E2_Cov', 'mSum', 
+          'mSumSigma', 'extendedness', 'apMeanSb01', 'apMeanSb01Sigma', 
+          'apMeanSb02', 'apMeanSb02Sigma', 'apMeanSb03', 'apMeanSb03Sigma', 
+          'apMeanSb04', 'apMeanSb04Sigma', 'apMeanSb05', 'apMeanSb05Sigma', 
+          'apMeanSb06', 'apMeanSb06Sigma', 'apMeanSb07', 'apMeanSb07Sigma', 
+          'apMeanSb08', 'apMeanSb08Sigma', 'apMeanSb09', 'apMeanSb09Sigma', 
+          'apMeanSb10', 'apMeanSb10Sigma', 'flags', 'htmId20']
     default_columns = [('diaSourceId', 0, int), ('ccdVisitId', 0, int), 
           ('diaObjectId', 0, int), ('ssObjectId', 0, int), 
           ('parentDiaSourceId', 0, int), ('filterName', 0, (str,1)), 
           ('procHistoryId', 0, int), ('ssObjectReassocTime', 0, str), 
           ('midPointTai', 0, float), ('ra', 0, float), ('raSigma', 0, float), 
-          ('decl', 0, float), ('declSigma', 0, float), ('ra_decl_Cov', 0, float), 
-          ('x', 0, float), ('xSigma', 0, float), ('y', 0, float), 
-          ('ySigma', 0, float), ('x_y_Cov', 0, float), ('snr', 0, float), 
-          ('psFlux', 0, float), ('psFluxSigma', 0, float), ('psLnL', 0, float), 
-          ('psChi2', 0, float), ('psN', 0, int), ('trailFlux', 0, float), 
-          ('trailFluxSigma', 0, float), ('trailLength', 0, float), 
-          ('trailLengthSigma', 0, float), ('trailAngle', 0, float), 
-          ('trailAngleSigma', 0, float), ('trailFlux_trailLength_Cov', 0, float), 
+          ('decl', 0, float), ('declSigma', 0, float), 
+          ('ra_decl_Cov', 0, float), ('x', 0, float), ('xSigma', 0, float), 
+          ('y', 0, float), ('ySigma', 0, float), ('x_y_Cov', 0, float), 
+          ('snr', 0, float), ('psFlux', 0, float), ('psFluxSigma', 0, float), 
+          ('psLnL', 0, float), ('psChi2', 0, float), ('psN', 0, int), 
+          ('trailFlux', 0, float), ('trailFluxSigma', 0, float), 
+          ('trailLength', 0, float), ('trailLengthSigma', 0, float), 
+          ('trailAngle', 0, float), ('trailAngleSigma', 0, float), 
+          ('trailFlux_trailLength_Cov', 0, float), 
           ('trailFlux_trailAngle_Cov', 0, float), 
           ('trailLength_trailAngle_Cov', 0, float), ('trailLnL', 0, float), 
           ('trailChi2', 0, float), ('trailN', 0, int), ('fpFlux', 0, float), 
           ('fpFluxSigma', 0, float), ('diffFlux', 0, float), 
-          ('diffFluxSigma', 0, float), ('fpSky', 0, float), ('fpSkySigma', 0, float), 
-          ('E1', 0, float), ('E1Sigma', 0, float), ('E2', 0, float), 
-          ('E2Sigma', 0, float), ('E1_E2_Cov', 0, float), ('mSum', 0, float), 
-          ('mSumSigma', 0, float), ('extendedness', 0, float), 
+          ('diffFluxSigma', 0, float), ('fpSky', 0, float), 
+          ('fpSkySigma', 0, float), ('E1', 0, float), ('E1Sigma', 0, float), 
+          ('E2', 0, float), ('E2Sigma', 0, float), ('E1_E2_Cov', 0, float), 
+          ('mSum', 0, float), ('mSumSigma', 0, float), 
+          ('extendedness', 0, float), 
           ('apMeanSb01', 0, float), ('apMeanSb01Sigma', 0, float), 
           ('apMeanSb02', 0, float), ('apMeanSb02Sigma', 0, float), 
           ('apMeanSb03', 0, float), ('apMeanSb03Sigma', 0, float), 
@@ -100,16 +102,19 @@ class DIASources(InstanceCatalog):
         return self.column_by_name('simobjid')
   
     def get_ucds(self):
-        return ['meta.id;obs.image','meta.id;obs.image','meta.id;src','meta.id;src',
-            'meta.id;src','meta.id;instr.filter','','','time.epoch','pos.eq.ra',
-            'stat.error;pos.eq.ra','pos.eq.dec','stat.error;pos.eq.dec','',
-            'pos.cartesian.x','stat.error;pos.cartesian.x','pos.cartesian.y',
-            'stat.error;pos.cartesian.y','','','phot.count','','','','','','',
-            '','','','','','','','','','','phot.count','stat.error;phot.count',
-            '','stat.error;phot.count','','','phys.size.axisRatio',
-            'stat.error;phys.size.axisRatio','phys.size.axisRatio',
-            'stat.error;phys.size.axisRatio','','','','','','','','','','','',
-            '','','','','','','','','','','','','','meta.code']
+        return ['meta.id;obs.image', 'meta.id;obs.image', 'meta.id;src', 
+                'meta.id;src', 'meta.id;src', 'meta.id;instr.filter', '', '', 
+                'time.epoch', 'pos.eq.ra', 'stat.error;pos.eq.ra', 
+                'pos.eq.dec', 'stat.error;pos.eq.dec', '', 'pos.cartesian.x', 
+                'stat.error;pos.cartesian.x', 'pos.cartesian.y', 
+                'stat.error;pos.cartesian.y', '', '', 'phot.count', '', '', 
+                '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+                'phot.count','stat.error;phot.count', '', 
+                'stat.error;phot.count', '', '', 'phys.size.axisRatio', 
+                'stat.error;phys.size.axisRatio', 'phys.size.axisRatio', 
+                'stat.error;phys.size.axisRatio', '', '', '', '', '', '', '', 
+                '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 
+                '', '', 'meta.code']
   
     def get_units(self):
         return ['','','','','','','','','d','deg','deg','deg','deg','deg^2','pixel',
@@ -130,8 +135,8 @@ class DIASources(InstanceCatalog):
             'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','BIGINT','BIGINT']
   
     def get_descriptions(self):
-        return ['Unique id.',
-            'Id of the ccdVisit where this diaSource was measured. Note that we are allowing a diaSource to belong to multiple amplifiers, but it may not span multiple ccds.',
+        return ['Unique id.', 
+                'Id of the ccdVisit where this diaSource was measured. Note that we are allowing a diaSource to belong to multiple amplifiers, but it may not span multiple ccds.',
             'Id of the diaObject this source was associated with, if any. If not, it is set to NULL (each diaSource will be associated with either a diaObject or ssObject).',
             'Id of the ssObject this source was associated with, if any. If not, it is set to NULL (each diaSource will be associated with either a diaObject or ssObject).',
             'Id of the parent diaSource this diaObject has been deblended from, if any.',
