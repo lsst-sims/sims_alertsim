@@ -1,13 +1,14 @@
 """ Parse input args and broadcast VOEvents """
 
-import sys, os
+import sys
 import argparse
 import socket
 import alertsim.alertsim_main as alertsim
 
-PARSER = argparse.ArgumentParser(description="", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+PARSER = argparse.ArgumentParser(description="", 
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-PARSER.add_argument("-o", "--opsim_table", default="output_opsim3_61", 
+PARSER.add_argument("-o", "--opsim_table", default="output_opsim3_61",
         help="opsim objid")
 PARSER.add_argument("-c", "--catsim_table", default="allstars", 
         help="catsim objid")
@@ -21,17 +22,20 @@ PARSER.add_argument("-ca", "--catsim_catalog",
         default="variable_stars", help="name of catsim catalog")
 PARSER.add_argument("-r", "--radius", type=float, default="0.05", 
         help="cone search radius")
-PARSER.add_argument("-p", "--port", type=int, help="tcp port", default='8098')
+PARSER.add_argument("-p", "--port", type=int, 
+        help="tcp port", default='8098')
 PARSER.add_argument("-pr", "--protocol", help="TcpIp, Multicast, Unicast", 
         choices=('TcpIp', 'Multicast', 'Unicast'), default='TcpIp')
 PARSER.add_argument("-ip", "--ipaddress", 
         help="ip address of the recepient or multicast channel", 
         default='147.91.240.26')
 PARSER.add_argument("--no_header",
-        help="don't generate hex header for VOEvents", action="store_false", default=True)
+        help="don't generate hex header for VOEvents", 
+        action="store_false", default=True)
 ARGS = PARSER.parse_args()
 
 def validate_ip(ipaddr, protocol):
+    """ check validity of ip's and ip/protocol pairings """
     try:
     #check if ip is valid
         socket.inet_aton(ipaddr)
@@ -43,16 +47,19 @@ def validate_ip(ipaddr, protocol):
         ipbase = ipaddr[:3].split(".")[0]
         if (224 <= int(ipbase) <= 239):
             if protocol != "Multicast":
-                print "illegal protocol/ip pair for '%s' and '%s'" % (protocol, ipaddr)
+                print "illegal protocol/ip pair for " \
+                "'%s' and '%s'" % (protocol, ipaddr)
                 return False
         else:
             if protocol == "Multicast":
-                print "illegal protocol/ip pair for '%s' and '%s'" % (protocol, ipaddr)
+                print "illegal protocol/ip pair for " \
+                "'%s' and '%s'" % (protocol, ipaddr)
                 return False
         return True
 
 if __name__ == "__main__":
     if (validate_ip(ARGS.ipaddress, ARGS.protocol)):
-        sys.exit(alertsim.main(ARGS.opsim_table, ARGS.catsim_table, ARGS.opsim_constraint, 
-                    ARGS.catsim_constraint, ARGS.catsim_catalog, ARGS.radius, 
-                    ARGS.protocol, ARGS.ipaddress, ARGS.port, ARGS.no_header))
+        sys.exit(alertsim.main(ARGS.opsim_table, ARGS.catsim_table, 
+                ARGS.opsim_constraint, ARGS.catsim_constraint, 
+                ARGS.catsim_catalog, ARGS.radius, ARGS.protocol, 
+                ARGS.ipaddress, ARGS.port, ARGS.no_header))
