@@ -5,6 +5,18 @@ from lsst.sims.catUtils.mixins import AstrometryStars, CameraCoords, PhotometryS
 from lsst.sims.catUtils.baseCatalogModels import *
 from lsst.obs.lsstSim.utils import loadCamera
 
+def rf():
+    """ random float """
+    return numpy.random.ranf()
+
+def ri():
+    """ random integer """
+    return numpy.random.randint(1000)
+
+def rbi():
+    """ random big integer """
+    return numpy.random.randint(0,9223372036854775807)
+
 class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
 
     """
@@ -13,7 +25,7 @@ class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
     """
     
     catalog_type = 'variable_stars'
-    """
+    
     column_outputs = ['id','raJ2000','decJ2000',
                       'lsst_u','lsst_g','lsst_r','lsst_i','lsst_z','lsst_y',
                       'delta_lsst_u','delta_lsst_g','delta_lsst_r',
@@ -23,6 +35,7 @@ class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
                       'lsst_u', 'lsst_g', 'lsst_r', 'lsst_i', 'lsst_z', 
                       'lsst_y', 'lsst_u_var', 'lsst_g_var', 'lsst_r_var', 
                       'lsst_i_var', 'lsst_z_var', 'lsst_y_var']
+    """
     def get_ucds(self):
         return ['meta.id', 'pos.eq.ra', 'pos.eq.dec', 
                 'phot.mag', 'phot.mag', 'phot.mag', 'phot.mag',
@@ -63,43 +76,46 @@ class DIASources(InstanceCatalog):
           'apMeanSb06', 'apMeanSb06Sigma', 'apMeanSb07', 'apMeanSb07Sigma', 
           'apMeanSb08', 'apMeanSb08Sigma', 'apMeanSb09', 'apMeanSb09Sigma', 
           'apMeanSb10', 'apMeanSb10Sigma', 'flags', 'htmId20']
-    default_columns = [('diaSourceId', 0, int), ('ccdVisitId', 0, int), 
-          ('diaObjectId', 0, int), ('ssObjectId', 0, int), 
-          ('parentDiaSourceId', 0, int), ('filterName', 0, (str,1)), 
-          ('procHistoryId', 0, int), ('ssObjectReassocTime', 0, str), 
-          ('midPointTai', 0, float), ('ra', 0, float), ('raSigma', 0, float), 
-          ('decl', 0, float), ('declSigma', 0, float), 
-          ('ra_decl_Cov', 0, float), ('x', 0, float), ('xSigma', 0, float), 
-          ('y', 0, float), ('ySigma', 0, float), ('x_y_Cov', 0, float), 
-          ('snr', 0, float), ('psFlux', 0, float), ('psFluxSigma', 0, float), 
-          ('psLnL', 0, float), ('psChi2', 0, float), ('psN', 0, int), 
-          ('trailFlux', 0, float), ('trailFluxSigma', 0, float), 
-          ('trailLength', 0, float), ('trailLengthSigma', 0, float), 
-          ('trailAngle', 0, float), ('trailAngleSigma', 0, float), 
-          ('trailFlux_trailLength_Cov', 0, float), 
-          ('trailFlux_trailAngle_Cov', 0, float), 
-          ('trailLength_trailAngle_Cov', 0, float), ('trailLnL', 0, float), 
-          ('trailChi2', 0, float), ('trailN', 0, int), ('fpFlux', 0, float), 
-          ('fpFluxSigma', 0, float), ('diffFlux', 0, float), 
-          ('diffFluxSigma', 0, float), ('fpSky', 0, float), 
-          ('fpSkySigma', 0, float), ('E1', 0, float), ('E1Sigma', 0, float), 
-          ('E2', 0, float), ('E2Sigma', 0, float), ('E1_E2_Cov', 0, float), 
-          ('mSum', 0, float), ('mSumSigma', 0, float), 
-          ('extendedness', 0, float), 
-          ('apMeanSb01', 0, float), ('apMeanSb01Sigma', 0, float), 
-          ('apMeanSb02', 0, float), ('apMeanSb02Sigma', 0, float), 
-          ('apMeanSb03', 0, float), ('apMeanSb03Sigma', 0, float), 
-          ('apMeanSb04', 0, float), ('apMeanSb04Sigma', 0, float), 
-          ('apMeanSb05', 0, float), ('apMeanSb05Sigma', 0, float), 
-          ('apMeanSb06', 0, float), ('apMeanSb06Sigma', 0, float), 
-          ('apMeanSb07', 0, float), ('apMeanSb07Sigma', 0, float), 
-          ('apMeanSb08', 0, float), ('apMeanSb08Sigma', 0, float), 
-          ('apMeanSb09', 0, float), ('apMeanSb09Sigma', 0, float), 
-          ('apMeanSb10', 0, float), ('apMeanSb10Sigma', 0, float), 
-          ('flags', 0, int), ('htmId20', 0, int)]
+    default_columns = [('diaSourceId', rbi(), int), ('ccdVisitId', rbi(), int), 
+          ('diaObjectId', rbi(), int), ('ssObjectId', rbi(), int), 
+          ('parentDiaSourceId', rbi(), int), ('filterName', 0, (str,1)), 
+          ('procHistoryId', rbi(), int), ('ssObjectReassocTime', ri(), str), 
+	  ('midPointTai', rf(), float), ('ra', rf(), float), ('raSigma', rf(), float), 
+          ('decl', rf(), float), ('declSigma', rf(), float), 
+          ('ra_decl_Cov', rf(), float), ('x', rf(), float), ('xSigma', rf(), float), 
+          ('y', rf(), float), ('ySigma', rf(), float), ('x_y_Cov', rf(), float), 
+          ('snr', rf(), float), ('psFlux', rf(), float), ('psFluxSigma', rf(), float), 
+          ('psLnL', rf(), float), ('psChi2', rf(), float), ('psN', ri(), int), 
+          ('trailFlux', rf(), float), ('trailFluxSigma', rf(), float), 
+          ('trailLength', rf(), float), ('trailLengthSigma', rf(), float), 
+          ('trailAngle', rf(), float), ('trailAngleSigma', rf(), float), 
+          ('trailFlux_trailLength_Cov', rf(), float), 
+          ('trailFlux_trailAngle_Cov', rf(), float), 
+          ('trailLength_trailAngle_Cov', rf(), float), ('trailLnL', rf(), float), 
+          ('trailChi2', rf(), float), ('trailN', ri(), int), ('fpFlux', rf(), float), 
+          ('fpFluxSigma', rf(), float), ('diffFlux', rf(), float), 
+          ('diffFluxSigma', rf(), float), ('fpSky', rf(), float), 
+          ('fpSkySigma', rf(), float), ('E1', rf(), float), ('E1Sigma', rf(), float), 
+          ('E2', rf(), float), ('E2Sigma', rf(), float), ('E1_E2_Cov', rf(), float), 
+          ('mSum', rf(), float), ('mSumSigma', rf(), float), 
+          ('extendedness', rf(), float), 
+          ('apMeanSb01', rf(), float), ('apMeanSb01Sigma', rf(), float), 
+          ('apMeanSb02', rf(), float), ('apMeanSb02Sigma', rf(), float), 
+          ('apMeanSb03', rf(), float), ('apMeanSb03Sigma', rf(), float), 
+          ('apMeanSb04', rf(), float), ('apMeanSb04Sigma', rf(), float), 
+          ('apMeanSb05', rf(), float), ('apMeanSb05Sigma', rf(), float), 
+          ('apMeanSb06', rf(), float), ('apMeanSb06Sigma', rf(), float), 
+          ('apMeanSb07', rf(), float), ('apMeanSb07Sigma', rf(), float), 
+          ('apMeanSb08', rf(), float), ('apMeanSb08Sigma', rf(), float), 
+          ('apMeanSb09', rf(), float), ('apMeanSb09Sigma', rf(), float), 
+          ('apMeanSb10', rf(), float), ('apMeanSb10Sigma', rf(), float), 
+          ('flags', rbi(), int), ('htmId20', rbi(), int)]
 
     def get_diaSourceId(self):
         return self.column_by_name('simobjid')
+    
+    def get_htmId20(self):
+	return self.column_by_name('htmID')
   
     def get_ucds(self):
         return ['meta.id;obs.image', 'meta.id;obs.image', 'meta.id;src', 
@@ -190,17 +206,169 @@ class DIASources(InstanceCatalog):
     
 
 class DIAObjects(InstanceCatalog):
-  catalog_type = 'DIA_objects'
-  column_outputs = ['diaObjectId','procHistoryId','validityStart','validityEnd','ra','raSigma','decl','declSigma','ra_decl_Cov','muRa','muRaSigma','muDecl','muDecSigma','muRa_muDeclCov','parallax','parallaxSigma','muRa_parallax_Cov','muDecl_parallax_Cov','lnL','chi2','N','uPSFlux','uPSFluxErr','uPSFluxSigma','uFPFlux','uFPFluxErr','uFPFluxSigma','gPSFlux','gPSFluxErr','gPSFluxSigma','gFPFlux','gFPFluxErr','gFPFluxSigma','rPSFlux','rPSFluxErr','rPSFluxSigma','rFPFlux','rFPFluxErr','rFPFluxSigma','iPSFlux','iPSFluxErr','iPSFluxSigma','iFPFlux','iFPFluxErr','iFPFluxSigma','zPSFlux','zPSFluxErr','zPSFluxSigma','zFPFlux','zFPFluxErr','zFPFluxSigma','yPSFlux','yPSFluxErr','yPSFluxSigma','yFPFlux','yFPFluxErr','yFPFluxSigma','uLcPeriodic','gLcPeriodic','rLcPeriodic','iLcPeriodic','zLcPeriodic','yLcPeriodic','uLcNonPeriodic','gLcNonPeriodic','rLcNonPeriodic','iLcNonPeriodic','zLcNonPeriodic','yLcNonPeriodic','nearbyObj1','nearbyObj1Dist','nearbyObj1LnP','nearbyObj2','nearbyObj2Dist','nearbyObj2LnP','nearbyObj3','nearbyObj3Dist','nearbyObj3LnP','flags','htmId20']
+    catalog_type = 'DIA_objects'
+    column_outputs = ['diaObjectId','procHistoryId','validityStart','validityEnd',
+		      'ra','raSigma','decl','declSigma','ra_decl_Cov','muRa','muRaSigma',
+		      'muDecl','muDecSigma','muRa_muDeclCov','parallax','parallaxSigma',
+		      'muRa_parallax_Cov','muDecl_parallax_Cov','lnL','chi2','N',
+		      'uPSFlux','uPSFluxErr','uPSFluxSigma','uFPFlux','uFPFluxErr',
+		      'uFPFluxSigma','gPSFlux','gPSFluxErr','gPSFluxSigma','gFPFlux',
+		      'gFPFluxErr','gFPFluxSigma','rPSFlux','rPSFluxErr','rPSFluxSigma',
+		      'rFPFlux','rFPFluxErr','rFPFluxSigma','iPSFlux','iPSFluxErr',
+		      'iPSFluxSigma','iFPFlux','iFPFluxErr','iFPFluxSigma','zPSFlux',
+		      'zPSFluxErr','zPSFluxSigma','zFPFlux','zFPFluxErr','zFPFluxSigma',
+		      'yPSFlux','yPSFluxErr','yPSFluxSigma','yFPFlux','yFPFluxErr',
+		      'yFPFluxSigma','uLcPeriodic','gLcPeriodic','rLcPeriodic',
+		      'iLcPeriodic','zLcPeriodic','yLcPeriodic','uLcNonPeriodic',
+		      'gLcNonPeriodic','rLcNonPeriodic','iLcNonPeriodic','zLcNonPeriodic',
+		      'yLcNonPeriodic','nearbyObj1','nearbyObj1Dist','nearbyObj1LnP',
+		      'nearbyObj2','nearbyObj2Dist','nearbyObj2LnP','nearbyObj3',
+		      'nearbyObj3Dist','nearbyObj3LnP','flags','htmId20']
+    default_columns = [('diaObjectId', rbi(), int), ('procHistoryId', rbi(), int), 
+                       ('validityStart', 0, str), ('validityEnd', 0, str), 
+                       ('ra', 0, float), ('raSigma', rf(), float), ('decl', 0, float), 
+                       ('declSigma', rf(), float), ('ra_decl_Cov', rf(), float), 
+                       ('muRa', rf(), float), ('muRaSigma', rf(), float), 
+                       ('muDecl', rf(), float), ('muDecSigma', rf(), float), 
+                       ('muRa_muDeclCov', rf(), float), ('parallax', rf(), float), 
+                       ('parallaxSigma', rf(), float), ('muRa_parallax_Cov', rf(), float), 
+                       ('muDecl_parallax_Cov', rf(), float), ('lnL', rf(), float), 
+                       ('chi2', rf(), float), ('N', ri(), int), ('uPSFlux', rf(), float), 
+                       ('uPSFluxErr', rf(), float), ('uPSFluxSigma', rf(), float), 
+                       ('uFPFlux', rf(), float), ('uFPFluxErr', rf(), float), 
+                       ('uFPFluxSigma', rf(), float), ('gPSFlux', rf(), float), 
+                       ('gPSFluxErr', rf(), float), ('gPSFluxSigma', rf(), float), 
+                       ('gFPFlux', rf(), float), ('gFPFluxErr', rf(), float), 
+                       ('gFPFluxSigma', rf(), float), ('rPSFlux', rf(), float), 
+                       ('rPSFluxErr', rf(), float), ('rPSFluxSigma', rf(), float), 
+                       ('rFPFlux', rf(), float), ('rFPFluxErr', rf(), float), 
+                       ('rFPFluxSigma', rf(), float), ('iPSFlux', rf(), float), 
+                       ('iPSFluxErr', rf(), float), ('iPSFluxSigma', rf(), float), 
+                       ('iFPFlux', rf(), float), ('iFPFluxErr', rf(), float), 
+                       ('iFPFluxSigma', rf(), float), ('zPSFlux', rf(), float), 
+                       ('zPSFluxErr', rf(), float), ('zPSFluxSigma', rf(), float), 
+                       ('zFPFlux', rf(), float), ('zFPFluxErr', rf(), float), 
+                       ('zFPFluxSigma', rf(), float), ('yPSFlux', rf(), float), 
+                       ('yPSFluxErr', rf(), float), ('yPSFluxSigma', rf(), float), 
+                       ('yFPFlux', rf(), float), ('yFPFluxErr', rf(), float), 
+                       ('yFPFluxSigma', rf(), float), ('uLcPeriodic', rf(), float), 
+                       ('gLcPeriodic', rf(), float), ('rLcPeriodic', rf(), float), 
+                       ('iLcPeriodic', rf(), float), ('zLcPeriodic', rf(), float), 
+                       ('yLcPeriodic', rf(), float), ('uLcNonPeriodic', rf(), float), 
+                       ('gLcNonPeriodic', rf(), float), ('rLcNonPeriodic', rf(), float), 
+                       ('iLcNonPeriodic', rf(), float), ('zLcNonPeriodic', rf(), float), 
+                       ('yLcNonPeriodic', rf(), float), ('nearbyObj1', rbi(), int), 
+                       ('nearbyObj1Dist', rf(), float), ('nearbyObj1LnP', rf(), float), 
+                       ('nearbyObj2', rbi(), int), ('nearbyObj2Dist', rf(), float), 
+                       ('nearbyObj2LnP', rf(), float), ('nearbyObj3', rbi(), int), 
+                       ('nearbyObj3Dist', rf(), float), ('nearbyObj3LnP', rf(), float), 
+                       ('flags', rbi(), int), ('htmId20', rbi(), int)]
   
-  def get_ucds(self):
-    return ['meta.id;src','','','','pos.eq.ra','stat.error;pos.eq.ra','pos.eq.dec','stat.error;pos.eq.dec','','pos.pm','stat.error;pos.pm','pos.pm','stat.error;pos.pm','stat.covariance;pos.eq','pos.parallax','stat.error;pos.parallax','','','','','','phot.count','','','phot.count','','','phot.count','','','phot.count','','','phot.count','','','phot.count','','','phot.count','','','phot.count','','','phot.count','','','phot.count','','','phot.count','phot.count','phot.count','phot.count','phot.count','phot.count','','','','','','','','','','','','','meta.id;src','','','meta.id;src','','','meta.id;src','','','meta.code']
+    def get_diaObjectId(self):
+        return self.column_by_name('simobjid')
+    
+    def get_muRa(self):
+        return self.column_by_name('mura')
+    
+    def get_muDecl(self):
+        return self.column_by_name('mudecl')
+    
+    def get_ucds(self):
+        return ['meta.id;src','','','','pos.eq.ra','stat.error;pos.eq.ra','pos.eq.dec',
+                'stat.error;pos.eq.dec','','pos.pm','stat.error;pos.pm','pos.pm',
+                'stat.error;pos.pm','stat.covariance;pos.eq','pos.parallax',
+                'stat.error;pos.parallax','','','','','','phot.count','','','phot.count',
+                '','','phot.count','','','phot.count','','','phot.count','','',
+                'phot.count','','','phot.count','','','phot.count','','','phot.count',
+                '','','phot.count','','','phot.count','phot.count','phot.count',
+                'phot.count','phot.count','phot.count','','','','','','','','','',
+                '','','','meta.id;src','','','meta.id;src','','','meta.id;src','','',
+                'meta.code']
   
-  def get_units(self):
-    return ['','','','','deg','deg','deg','deg','deg^2','mas/yr','mas/yr','mas/yr','mas/yr','(mas/yr)^2','mas','mas','','','','','','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','','','','','','','','','','','','','','arcsec','','','arcsec','','','arcsec','','']
+    def get_units(self):
+        return ['','','','','deg','deg','deg','deg','deg^2','mas/yr','mas/yr',
+                'mas/yr','mas/yr','(mas/yr)^2','mas','mas','','','','','',
+                'nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy',
+                'nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy',
+                'nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy',
+                'nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy',
+                '','','','','','','','','','','','','','arcsec','','','arcsec',
+                '','','arcsec','','']
   
-  def get_datatypes(self):
-    return ['BIGINT','BIGINT','DATETIME','DATETIME','DOUBLE','FLOAT','DOUBLE','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','INT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','BLOB','BLOB','BLOB','BLOB','BLOB','BLOB','BLOB','BLOB','BLOB','BLOB','BLOB','BLOB','BIGINT','FLOAT','FLOAT','BIGINT','FLOAT','FLOAT','BIGINT','FLOAT','FLOAT','BIGINT','BIGINT']
+    def get_datatypes(self):
+        return ['BIGINT','BIGINT','DATETIME','DATETIME','DOUBLE','FLOAT','DOUBLE',
+                'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT',
+                'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','INT','FLOAT','FLOAT',
+                'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT',
+                'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT',
+                'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT',
+                'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT',
+                'FLOAT','FLOAT','BLOB','BLOB','BLOB','BLOB','BLOB','BLOB','BLOB',
+                'BLOB','BLOB','BLOB','BLOB','BLOB','BIGINT','FLOAT','FLOAT',
+                'BIGINT','FLOAT','FLOAT','BIGINT','FLOAT','FLOAT','BIGINT','BIGINT']
   
-  def get_descriptions(self):
-    return ['Unique id.','Pointer to ProcessingHistory table.','Time when validity of this diaObject starts.','Time when validity of this diaObject ends.','RA-coordinate of the center of this diaObject.','Uncertainty of ra.','Decl-coordinate of the center of this diaObject.','Uncertainty of decl.','Covariance between ra and decl.','Proper motion (ra).','Uncertainty of muRa.','Proper motion (decl).','Uncertainty of muDecl.','Covariance of muRa and muDecl.','Parallax.','Uncertainty of parallax.','Covariance of muRa and parallax.','Covariance of muDecl and parallax.','Natural log of the likelihood of the linear proper motion parallax fit.','Chi^2 static of the model fit.','The number of data points (pixels) used to fit the model.','Weighted mean point-source model magnitude for u filter.','Standard error of uPSFlux.','Uncertainty of uPSFlux.','Weighted mean forced photometry flux for u fliter.','Standard error of uFPFlux.','Uncertainty of uFPFlux.','Weighted mean point-source model magnitude for g filter.','Standard error of gPSFlux.','Uncertainty of gPSFlux.','Weighted mean forced photometry flux for g fliter.','Standard error of gFPFlux.','Uncertainty of gFPFlux.','Weighted mean point-source model magnitude for u filter.','Standard error of rPSFlux.','Uncertainty of rPSFlux.','Weighted mean forced photometry flux for r fliter.','Standard error of rFPFlux.','Uncertainty of rFPFlux.','Weighted mean point-source model magnitude for i filter.','Standard error of iPSFlux.','Uncertainty of iPSFlux.','Weighted mean forced photometry flux for i fliter.','Standard error of iFPFlux.','Uncertainty of uFPFlux.','Weighted mean point-source model magnitude for z filter.','Standard error of zPSFlux.','Uncertainty of zPSFlux.','Weighted mean forced photometry flux for z fliter.','Standard error of zFPFlux.','Uncertainty of zFPFlux.','Weighted mean point-source model magnitude for y filter.','Standard error of yPSFlux.','Uncertainty of yPSFlux.','Weighted mean forced photometry flux for y fliter.','Standard error of yFPFlux.','Uncertainty of yFPFlux.','Periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for u filter. [32 FLOAT].','Periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for g filter. [32 FLOAT].','Periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for r filter. [32 FLOAT].','Periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for i filter. [32 FLOAT].','Periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for z filter. [32 FLOAT].','Periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for y filter. [32 FLOAT].','Non-periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for u filter. [20 FLOAT].','Non-periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for g filter. [20 FLOAT].','Non-periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for r filter. [20 FLOAT].','Non-periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for i filter. [20 FLOAT].','Non-periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for z filter. [20 FLOAT].','Non-periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for y filter. [20 FLOAT].','Id of the closest nearby object.','Distance to nearbyObj1.','Natural log of the probability that the observed diaObject is the same as the nearbyObj1.','Id of the second-closest nearby object.','Distance to nearbyObj2.','Natural log of the probability that the observed diaObject is the same as the nearbyObj2.','Id of the third-closest nearby object.','Distance to nearbyObj3.','Natural log of the probability that the observed diaObject is the same as the nearbyObj3.','Flags, bitwise OR tbd.','HTM index.']
+    def get_descriptions(self):
+        return ['Unique id.',
+                'Pointer to ProcessingHistory table.',
+                'Time when validity of this diaObject starts.',
+                'Time when validity of this diaObject ends.',
+                'RA-coordinate of the center of this diaObject.',
+                'Uncertainty of ra.',
+                'Decl-coordinate of the center of this diaObject.',
+                'Uncertainty of decl.',
+                'Covariance between ra and decl.',
+                'Proper motion (ra).',
+                'Uncertainty of muRa.',
+                'Proper motion (decl).',
+                'Uncertainty of muDecl.',
+                'Covariance of muRa and muDecl.',
+                'Parallax.',
+                'Uncertainty of parallax.',
+                'Covariance of muRa and parallax.',
+                'Covariance of muDecl and parallax.',
+                'Natural log of the likelihood of the linear proper motion parallax fit.',
+                'Chi^2 static of the model fit.',
+                'The number of data points (pixels) used to fit the model.',
+                'Weighted mean point-source model magnitude for u filter.',
+                'Standard error of uPSFlux.','Uncertainty of uPSFlux.',
+                'Weighted mean forced photometry flux for u fliter.',
+                'Standard error of uFPFlux.','Uncertainty of uFPFlux.',
+                'Weighted mean point-source model magnitude for g filter.',
+                'Standard error of gPSFlux.','Uncertainty of gPSFlux.',
+                'Weighted mean forced photometry flux for g fliter.',
+                'Standard error of gFPFlux.','Uncertainty of gFPFlux.',
+                'Weighted mean point-source model magnitude for u filter.',
+                'Standard error of rPSFlux.','Uncertainty of rPSFlux.',
+                'Weighted mean forced photometry flux for r fliter.',
+                'Standard error of rFPFlux.','Uncertainty of rFPFlux.',
+                'Weighted mean point-source model magnitude for i filter.',
+                'Standard error of iPSFlux.','Uncertainty of iPSFlux.',
+                'Weighted mean forced photometry flux for i fliter.',
+                'Standard error of iFPFlux.','Uncertainty of uFPFlux.',
+                'Weighted mean point-source model magnitude for z filter.',
+                'Standard error of zPSFlux.','Uncertainty of zPSFlux.',
+                'Weighted mean forced photometry flux for z fliter.',
+                'Standard error of zFPFlux.','Uncertainty of zFPFlux.',
+                'Weighted mean point-source model magnitude for y filter.',
+                'Standard error of yPSFlux.','Uncertainty of yPSFlux.',
+                'Weighted mean forced photometry flux for y fliter.',
+                'Standard error of yFPFlux.','Uncertainty of yFPFlux.',
+                'Periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for u filter. [32 FLOAT].',
+                'Periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for g filter. [32 FLOAT].',
+                'Periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for r filter. [32 FLOAT].',
+                'Periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for i filter. [32 FLOAT].',
+                'Periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for z filter. [32 FLOAT].',
+                'Periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for y filter. [32 FLOAT].',
+                'Non-periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for u filter. [20 FLOAT].',
+                'Non-periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for g filter. [20 FLOAT].',
+                'Non-periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for r filter. [20 FLOAT].',
+                'Non-periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for i filter. [20 FLOAT].',
+                'Non-periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for z filter. [20 FLOAT].',
+                'Non-periodic features extracted from light-curves using generalized Lomb-Scargle periodogram for y filter. [20 FLOAT].',
+                'Id of the closest nearby object.','Distance to nearbyObj1.',
+                'Natural log of the probability that the observed diaObject is the same as the nearbyObj1.',
+                'Id of the second-closest nearby object.','Distance to nearbyObj2.',
+                'Natural log of the probability that the observed diaObject is the same as the nearbyObj2.',
+                'Id of the third-closest nearby object.','Distance to nearbyObj3.',
+                'Natural log of the probability that the observed diaObject is the same as the nearbyObj3.',
+                'Flags, bitwise OR tbd.','HTM index.']
