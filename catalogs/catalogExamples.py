@@ -29,7 +29,8 @@ class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
     column_outputs = ['id','raJ2000','decJ2000',
                       'lsst_u','lsst_g','lsst_r','lsst_i','lsst_z','lsst_y',
                       'delta_lsst_u','delta_lsst_g','delta_lsst_r',
-                      'delta_lsst_i','delta_lsst_z', 'delta_lsst_y']
+                      'delta_lsst_i','delta_lsst_z', 'delta_lsst_y', 
+                      'varParamStr']
     """
     column_outputs = ['id', 'raJ2000', 'decJ2000',
                       'lsst_u', 'lsst_g', 'lsst_r', 'lsst_i', 'lsst_z', 
@@ -40,12 +41,12 @@ class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
         return ['meta.id', 'pos.eq.ra', 'pos.eq.dec', 
                 'phot.mag', 'phot.mag', 'phot.mag', 'phot.mag',
                 'phot.mag', 'phot.mag', 'phot.mag', 'phot.mag',
-                'phot.mag', 'phot.mag', 'phot.mag', 'phot.mag' ]
+                'phot.mag', 'phot.mag', 'phot.mag', 'phot.mag', 'src.var' ]
 
     def get_units(self):
         return ['', 'rad', 'rad', 
                 '', '', '', '', '', '',
-                '', '', '', '', '', '' ]
+                '', '', '', '', '', '', '' ]
 
 class VanillaStars(InstanceCatalog):
     catalog_type = 'vanilla_stars'
@@ -75,7 +76,7 @@ class DIASources(InstanceCatalog):
           'apMeanSb04', 'apMeanSb04Sigma', 'apMeanSb05', 'apMeanSb05Sigma', 
           'apMeanSb06', 'apMeanSb06Sigma', 'apMeanSb07', 'apMeanSb07Sigma', 
           'apMeanSb08', 'apMeanSb08Sigma', 'apMeanSb09', 'apMeanSb09Sigma', 
-          'apMeanSb10', 'apMeanSb10Sigma', 'flags', 'htmId20']
+          'apMeanSb10', 'apMeanSb10Sigma', 'flags', 'htmId20', 'varParamStr']
     default_columns = [('diaSourceId', rbi(), int), ('ccdVisitId', rbi(), int), 
           ('diaObjectId', rbi(), int), ('ssObjectId', rbi(), int), 
           ('parentDiaSourceId', rbi(), int), ('filterName', 0, (str,1)), 
@@ -109,13 +110,14 @@ class DIASources(InstanceCatalog):
           ('apMeanSb08', rf(), float), ('apMeanSb08Sigma', rf(), float), 
           ('apMeanSb09', rf(), float), ('apMeanSb09Sigma', rf(), float), 
           ('apMeanSb10', rf(), float), ('apMeanSb10Sigma', rf(), float), 
-          ('flags', rbi(), int), ('htmId20', rbi(), int)]
+          ('flags', rbi(), int), ('htmId20', rbi(), int), 
+          ('varParamString', 0, (str,1))]
 
     def get_diaSourceId(self):
         return self.column_by_name('simobjid')
     
     def get_htmId20(self):
-	return self.column_by_name('htmID')
+	    return self.column_by_name('htmID')
   
     def get_ucds(self):
         return ['meta.id;obs.image', 'meta.id;obs.image', 'meta.id;src', 
@@ -130,14 +132,14 @@ class DIASources(InstanceCatalog):
                 'stat.error;phys.size.axisRatio', 'phys.size.axisRatio', 
                 'stat.error;phys.size.axisRatio', '', '', '', '', '', '', '', 
                 '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 
-                '', '', 'meta.code']
+                '', '', 'meta.code', 'src.var']
   
     def get_units(self):
         return ['','','','','','','','','d','deg','deg','deg','deg','deg^2','pixel',
             'pixel','pixel','pixel','pixel^2','','nmgy','nmgy','','','','nmgy',
             'nmgy','arcsec','nmgy','degrees','nmgy','','','','','','','nmgy',
             'nmgy','nmgy','nmgy','nmgy/asec^2','nmgy/asec^2','','','','','','',
-            '','','','','','','','','','','','','','','','','','','','','','','']
+            '','','','','','','','','','','','','','','','','','','','','','','','']
   
     def get_datatypes(self):
         return ['BIGINT','BIGINT','BIGINT','BIGINT','BIGINT','CHAR(1)','BIGINT',
@@ -148,7 +150,7 @@ class DIASources(InstanceCatalog):
             'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT',
             'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT',
             'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT',
-            'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','BIGINT','BIGINT']
+            'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','BIGINT','BIGINT','STRING']
   
     def get_descriptions(self):
         return ['Unique id.', 
