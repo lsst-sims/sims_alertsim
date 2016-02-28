@@ -79,7 +79,7 @@ class VOEventGenerator:
         ############ Wherewhen ############################
         wwd = {'observatory':     self.observatory,
                'coord_system':    'UTC-FK5-GEO',
-               'time':            self._convertToIso(obsMetaData.mjd),
+               'time':            self._convertToIso(obsMetaData.mjd.TAI),
                'timeError':       0.11,
                'longitude':       self.ra,
                'latitude':        self.dec,
