@@ -14,3 +14,9 @@ doc/*.inc
 doc/doxygen.conf
 tests/.tests
 version.py
+hooks/
+info/
+HEAD
+config
+description
+.version
