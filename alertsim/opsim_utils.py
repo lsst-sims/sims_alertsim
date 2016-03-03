@@ -29,7 +29,7 @@ def opsim_query_stack10 (objid, constraint):
     #from lsst.sims.catalogs.generation.db import CatalogDBObject 
 
     #dbobj = CatalogDBObject.from_objid(objid)
-    table = db.Table(tableName=objid, idColKey='obshistid', database='LSST', 
+    table = db.Table(tableName=objid, idColKey='obshistid', database='LSSTCATSIM', 
             driver='mssql+pymssql', host='localhost', port='51433' )
 
     result = table.query_columns_Array(colnames=['fieldra', 'fielddec', 
