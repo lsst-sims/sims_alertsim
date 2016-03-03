@@ -1,0 +1,13 @@
+FILE = version
+PRODUCT = sims_alertsim
+VERSION = /scratch/darko/sims_nov15/Linux64/sims_alertsim/
+#***************************************
+
+Group:
+   FLAVOR = Linux64
+   QUALIFIERS = ""
+   DECLARED = 2016/02/10 13:32:00 CET
+   PROD_DIR = /scratch/darko/sims_nov15/Linux64/sims_alertsim
+   UPS_DIR = ups
+   TABLE_FILE = sims_alertsim.table
+End:
