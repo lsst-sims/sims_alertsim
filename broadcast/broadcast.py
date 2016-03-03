@@ -1,6 +1,7 @@
 import socket
 import struct
 import sys
+import errno
 
 class Broadcast(object):
 
@@ -34,15 +35,31 @@ class TcpIp(Broadcast):
 
     def __init__(self, ip, port, header):
         self.header = header
+        self.ip = ip
+        self.port = port
         try:
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.connect((ip, port))
-            print "Connected to %s at port %d" % (ip, port)
+            self._connect_socket()
         except socket.error as e:
             print(e)
             self.close()
 
     def send(self, message):
+        try:
+            self._send_and_receive(message)
+        except socket.error as e:
+            if e.errno == errno.EPIPE:
+                self._connect_socket()
+                self._send_and_receive(message)
+            else: 
+                print(e)
+                self.close()
+    
+    def _connect_socket(self):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.connect((self.ip, self.port))
+        print "Connected to %s at port %d" % (self.ip, self.port)
+
+    def _send_and_receive(self, message):
         self.sock.send(self._add_voevent_header(message)) if self.header else self.sock.send(message) 
         data = self.sock.recv(self.BUFFER_SIZE)
         print "received data:", data
