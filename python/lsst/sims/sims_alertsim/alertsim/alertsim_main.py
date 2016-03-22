@@ -5,8 +5,8 @@ import time
 from dataModel import DataMetadata, CelestialObject
 from generateVOEvent import VOEventGenerator
 import catsim_utils, opsim_utils
-from broadcast import *
-from catalogs import *
+from lsst.sims.sims_alertsim.broadcast import *
+from lsst.sims.sims_alertsim.catalogs import *
 
 def main(opsim_table, catsim_table, opsim_constraint, 
          catsim_constraint, catalog, radius, protocol, ipaddr, port, header):

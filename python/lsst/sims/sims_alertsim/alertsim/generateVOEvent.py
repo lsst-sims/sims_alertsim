@@ -1,6 +1,6 @@
 import sys, os
 
-from VOEventLib import *
+from lsst.sims.sims_alertsim.VOEventLib import *
 
 from astropy.time import Time as AstropyTime
 
@@ -79,7 +79,7 @@ class VOEventGenerator:
         ############ Wherewhen ############################
         wwd = {'observatory':     self.observatory,
                'coord_system':    'UTC-FK5-GEO',
-               'time':            self._convertToIso(obsMetaData.mjd),
+               'time':            self._convertToIso(obsMetaData.mjd.TAI),
                'timeError':       0.11,
                'longitude':       self.ra,
                'latitude':        self.dec,
@@ -113,7 +113,7 @@ class VOEventGenerator:
         ############ Wherewhen ############################
         wwd = {'observatory':     self.observatory,
                'coord_system':    'UTC-FK5-GEO',
-               'time':            self._convertToIso(obsMetaData.mjd),
+               'time':            self._convertToIso(obsMetaData.mjd.TAI),
                'timeError':       0.11,
                'longitude':       0,
                'latitude':        0,
