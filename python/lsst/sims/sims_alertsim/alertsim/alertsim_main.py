@@ -73,5 +73,5 @@ def _get_stack_version(fine_grain=True):
         return int(stack_version.split('.')[0])
 
 def _get_sims_version():
-    return subprocess.check_output("eups list lsst --version " \
+    return subprocess.check_output("eups list lsst_sims --version " \
             "--tag current", shell=True)
