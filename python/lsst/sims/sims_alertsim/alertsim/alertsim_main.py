@@ -20,10 +20,10 @@ def main(opsim_table, catsim_table, opsim_constraint,
 
     sender = get_sender(protocol, ipaddr, port, header)
     
-    observations = opsim_utils.opsim_query(stack_version = 10), 
+    observations = opsim_utils.opsim_query(stack_version=10, 
             objid=opsim_table, constraint=opsim_constraint)
     for obs in observations:
-        obs_data, obs_metadata = catsim_utils.catsim_query(stack_version = 10), 
+        obs_data, obs_metadata = catsim_utils.catsim_query(stack_version=10, 
                 objid=catsim_table, constraint=catsim_constraint, 
                 catalog=catalog, radius=radius, opsim_metadata=obs)
         #print vars(obs_metadata)
@@ -57,9 +57,8 @@ def iter_and_send(sender, obs_data, obs_metadata):
     print "Number of events from this visit : %d. Time from first to last " \
        "event %f or %f per event" % (count, sending_diff, sending_diff/count)
 
-"""
 def _get_stack_version(fine_grain=True):
-    # ask eups for stack version, return in 2 flavors 
+    """ ask eups for stack version, return in 2 flavors """ 
     # shell eups command to get version like 8.0.0.2
     # how to get version without eups?
 
@@ -71,7 +70,7 @@ def _get_stack_version(fine_grain=True):
         return stack_version
     else:
         return int(stack_version.split('.')[0])
-"""
+
 def _get_sims_version():
     return subprocess.check_output("eups list lsst_sims --version " \
             "--tag current", shell=True)
