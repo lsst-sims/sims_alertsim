@@ -40,13 +40,44 @@ def iter_and_send(sender, obs_data, obs_metadata):
     count = 0
     sending_times = []
 
-    for line in obs_data.iter_catalog():
+    for (diasource_line, diaobject_line) in zip(obs_data[0].iter_catalog(), obs_data[1].iter_catalog()):
         data_metadata = []
-        for (val, ucd, unit) in zip(line, 
-                obs_data.get_ucds(), obs_data.get_units()):
+        for (val, ucd, unit) in zip(diasource_line, 
+                obs_data[0].get_ucds(), obs_data[0].get_units()):
             data_metadata.append(DataMetadata(val, ucd, unit))
-        celestial_object = CelestialObject(obs_data.iter_column_names(), 
+        diasource = CelestialObject(obs_data[0].iter_column_names(), 
                 data_metadata)
+        for (val, ucd, unit) in zip(diaobject_line, 
+                obs_data[1].get_ucds(), obs_data[1].get_units()):
+            data_metadata.append(DataMetadata(val, ucd, unit))
+        diaobject = CelestialObject(obs_data[1].iter_column_names(), 
+                data_metadata)
+        gen = VOEventGenerator(eventid = count)
+        xml = gen.generateFromObjects(diasource, diaobject, obs_metadata)
+        sender.send(xml)
+        count = count + 1
+        sending_times.append(time.time())
+
+    sending_diff = sending_times[-1] - sending_times[0]
+    print "Number of events from this visit : %d. Time from first to last " \
+       "event %f or %f per event" % (count, sending_diff, sending_diff/count)
+
+def _get_stack_version(fine_grain=True):
+    """ ask eups for stack version, return in 2 flavors """ 
+    # shell eups command to get version like 8.0.0.2
+    # how to get version without eups?
+
+    # now obsolete for time being
+    stack_version = subprocess.check_output("eups list lsst --version " \
+            "--tag current", shell=True)
+    if fine_grain:
+        return stack_version
+    else:
+        return int(stack_version.split('.')[0])
+
+def _get_sims_version():
+    return subprocess.check_output("eups list lsst_sims --version " \
+            "--tag current", shell=True)
         gen = VOEventGenerator(eventid = count)
         xml = gen.generateFromObjects(celestial_object, obs_metadata)
         sender.send(xml)

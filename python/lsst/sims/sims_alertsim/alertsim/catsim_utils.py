@@ -48,9 +48,12 @@ def catsim_query_stack10 (objid, constraint, catalog, radius, opsim_metadata):
             bandpassName=opsim_metadata[4])
     dbobj = CatalogDBObject.from_objid(objid)
     #dbobj.show_db_columns()    
-    obs_data = dbobj.getCatalog(catalog, 
+    obs_data = [dbobj.getCatalog(catalog, 
             obs_metadata=obs_metadata, 
-            constraint=constraint)
+            constraint=constraint), 
+            dbobj.getCatalog("DIAObjects",
+            obs_metadata=obs_metadata, 
+            constraint=constraint), 
 #    filename = 'test_reference.dat'
 #    t.write_catalog(filename, chunk_size=10)
     return obs_data, obs_metadata
