@@ -4,10 +4,7 @@ import sys
 import errno
 
 class Broadcast(object):
-
-    '''
-    abstract base class, with common broadcast functionalities (expecting more to come)
-    '''
+    ''' abstract base class, with common broadcast functionalities (expecting more to come) '''
 
     BUFFER_SIZE = 10000
 
@@ -28,10 +25,7 @@ class Broadcast(object):
         return header.decode('hex') + message
 
 class TcpIp(Broadcast):
-
-    '''
-    class for TcpIp broadcast
-    '''
+    ''' class for TcpIp broadcast '''
 
     def __init__(self, ip, port, header):
         self.header = header
@@ -65,10 +59,7 @@ class TcpIp(Broadcast):
         print "received data:", data
 
 class Multicast(Broadcast):
-    
-    '''
-    class for multicast // to be revised
-    '''
+    ''' class for multicast // to be revised '''
 
     def __init__(self, ip, port):
         self.multicast_group = (ip, 5032)

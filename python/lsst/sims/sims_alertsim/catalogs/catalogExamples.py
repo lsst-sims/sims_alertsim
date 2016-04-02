@@ -81,7 +81,7 @@ class DIASources(InstanceCatalog):
           ('diaObjectId', rbi(), int), ('ssObjectId', rbi(), int), 
           ('parentDiaSourceId', rbi(), int), ('filterName', 0, (str,1)), 
           ('procHistoryId', rbi(), int), ('ssObjectReassocTime', ri(), str), 
-	  ('midPointTai', rf(), float), ('ra', rf(), float), ('raSigma', rf(), float), 
+          ('midPointTai', rf(), float), ('ra', rf(), float), ('raSigma', rf(), float), 
           ('decl', rf(), float), ('declSigma', rf(), float), 
           ('ra_decl_Cov', rf(), float), ('x', rf(), float), ('xSigma', rf(), float), 
           ('y', rf(), float), ('ySigma', rf(), float), ('x_y_Cov', rf(), float), 
@@ -117,7 +117,7 @@ class DIASources(InstanceCatalog):
         return self.column_by_name('simobjid')
     
     def get_htmId20(self):
-	    return self.column_by_name('htmID')
+        return self.column_by_name('htmID')
   
     def get_ucds(self):
         return ['meta.id;obs.image', 'meta.id;obs.image', 'meta.id;src', 
@@ -210,22 +210,22 @@ class DIASources(InstanceCatalog):
 class DIAObjects(InstanceCatalog):
     catalog_type = 'DIA_objects'
     column_outputs = ['diaObjectId','procHistoryId','validityStart','validityEnd',
-		      'ra','raSigma','decl','declSigma','ra_decl_Cov','muRa','muRaSigma',
-		      'muDecl','muDecSigma','muRa_muDeclCov','parallax','parallaxSigma',
-		      'muRa_parallax_Cov','muDecl_parallax_Cov','lnL','chi2','N',
-		      'uPSFlux','uPSFluxErr','uPSFluxSigma','uFPFlux','uFPFluxErr',
-		      'uFPFluxSigma','gPSFlux','gPSFluxErr','gPSFluxSigma','gFPFlux',
-		      'gFPFluxErr','gFPFluxSigma','rPSFlux','rPSFluxErr','rPSFluxSigma',
-		      'rFPFlux','rFPFluxErr','rFPFluxSigma','iPSFlux','iPSFluxErr',
-		      'iPSFluxSigma','iFPFlux','iFPFluxErr','iFPFluxSigma','zPSFlux',
-		      'zPSFluxErr','zPSFluxSigma','zFPFlux','zFPFluxErr','zFPFluxSigma',
-		      'yPSFlux','yPSFluxErr','yPSFluxSigma','yFPFlux','yFPFluxErr',
-		      'yFPFluxSigma','uLcPeriodic','gLcPeriodic','rLcPeriodic',
-		      'iLcPeriodic','zLcPeriodic','yLcPeriodic','uLcNonPeriodic',
-		      'gLcNonPeriodic','rLcNonPeriodic','iLcNonPeriodic','zLcNonPeriodic',
-		      'yLcNonPeriodic','nearbyObj1','nearbyObj1Dist','nearbyObj1LnP',
-		      'nearbyObj2','nearbyObj2Dist','nearbyObj2LnP','nearbyObj3',
-		      'nearbyObj3Dist','nearbyObj3LnP','flags','htmId20']
+                      'ra','raSigma','decl','declSigma','ra_decl_Cov','muRa','muRaSigma',
+                      'muDecl','muDecSigma','muRa_muDeclCov','parallax','parallaxSigma',
+                      'muRa_parallax_Cov','muDecl_parallax_Cov','lnL','chi2','N',
+                      'uPSFlux','uPSFluxErr','uPSFluxSigma','uFPFlux','uFPFluxErr',
+                      'uFPFluxSigma','gPSFlux','gPSFluxErr','gPSFluxSigma','gFPFlux',
+                      'gFPFluxErr','gFPFluxSigma','rPSFlux','rPSFluxErr','rPSFluxSigma',
+                      'rFPFlux','rFPFluxErr','rFPFluxSigma','iPSFlux','iPSFluxErr',
+                      'iPSFluxSigma','iFPFlux','iFPFluxErr','iFPFluxSigma','zPSFlux',
+                      'zPSFluxErr','zPSFluxSigma','zFPFlux','zFPFluxErr','zFPFluxSigma',
+                      'yPSFlux','yPSFluxErr','yPSFluxSigma','yFPFlux','yFPFluxErr',
+                      'yFPFluxSigma','uLcPeriodic','gLcPeriodic','rLcPeriodic',
+                      'iLcPeriodic','zLcPeriodic','yLcPeriodic','uLcNonPeriodic',
+                      'gLcNonPeriodic','rLcNonPeriodic','iLcNonPeriodic','zLcNonPeriodic',
+                      'yLcNonPeriodic','nearbyObj1','nearbyObj1Dist','nearbyObj1LnP',
+                      'nearbyObj2','nearbyObj2Dist','nearbyObj2LnP','nearbyObj3',
+                      'nearbyObj3Dist','nearbyObj3LnP','flags','htmId20']
     default_columns = [('diaObjectId', rbi(), int), ('procHistoryId', rbi(), int), 
                        ('validityStart', 0, str), ('validityEnd', 0, str), 
                        ('ra', 0, float), ('raSigma', rf(), float), ('decl', 0, float), 

@@ -2,14 +2,14 @@
 
 #from lsst.sims.catUtils.baseCatalogModels import *
 
-def opsim_query(stack_version, **kwargs):
+def opsimQuery(stack_version, **kwargs):
     """ for different stack versions """
     if stack_version < 10:
-        return opsim_query_stack8(**kwargs)
+        return opsimQueryStack8(**kwargs)
     else:
-        return opsim_query_stack10(**kwargs)
+        return opsimQueryStack10(**kwargs)
 
-def opsim_query_stack8(objid, constraint):
+def opsimQueryStack8(objid, constraint):
     """ for stack 8 """
     from lsst.sims.catalogs.generation.db import DBObject
 
@@ -23,8 +23,23 @@ def opsim_query_stack8(objid, constraint):
     print result
     return result
 
-def opsim_query_stack10 (objid, constraint):
-    """ for stack 10+ """
+def opsimQueryStack10 (objid, constraint):
+    """ for stack 10+ 
+    
+    Parameters
+    ----------
+    objid : str
+        opsim objid, e.g. "output_opsim3_61"
+    constraint : str
+        constraint for opsim query, e.g. (night=10 and rawseeing<0.6) and filter like 'i'
+    
+    Returns
+    -------
+    result : numpy.ndarray
+        set of observations satisfying given query
+        Each observation contains (obshistid, fieldra, fielddec, rawseeing, filter, expmjd).
+    """
+    
     import lsst.sims.maf.db as db
     #from lsst.sims.catalogs.generation.db import CatalogDBObject 
 

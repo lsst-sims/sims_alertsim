@@ -1,4 +1,7 @@
 """ Main module """
+# 
+# Boilerplate
+# 
 
 import subprocess
 import time
@@ -11,19 +14,44 @@ from lsst.sims.sims_alertsim.catalogs import *
 def main(opsim_table, catsim_table, opsim_constraint, 
          catsim_constraint, catalog, radius, protocol, ipaddr, port, header):
 
-    """ Takes input args from cmd line parser or other,  
-        query opsim, catsim, generate 
-        and broadcast VOEvents 
+    """ Take input args from cmd line parser or other,  
+        query opsim and get observations,
+        for each observation, query catsim and get celestial objects,
+        for each celestial object, generate and broadcast VOEvents.
+        
+    Parameters
+    ----------
+    opsim_table : str
+        opsim objid, e.g. "output_opsim3_61"
+    catsim_table : str
+        catsim objid, e.g. "allstars"
+    opsim_constraint : str
+        constraint for opsim query, e.g. "(night=10 and rawseeing<0.6) and filter like \'i\' "
+    catsim_constraint : str
+        constraint for catsim query, e.g. "rmag between 20 and 23.5"
+    catalog : str
+        name of catsim catalog, choices=["variable_stars", "vanilla_stars", "DIA_sources", "DIA_objects"]
+    radius : float
+        cone search radius, e.g. 0.05
+    protocol : str
+        protocol (TcpIp, Multicast, Unicast)
+    ipaddr : str
+        ip address of the recepient or multicast channel
+    port : int
+        tcp port
+    header : bool
+        ????
+        
     """
 
     print "Sims version: %s" % _get_sims_version() 
 
     sender = get_sender(protocol, ipaddr, port, header)
     
-    observations = opsim_utils.opsim_query(stack_version=10, 
+    observations = opsim_utils.opsimQuery(stack_version=10, 
             objid=opsim_table, constraint=opsim_constraint)
     for obs in observations:
-        obs_data, obs_metadata = catsim_utils.catsim_query(stack_version=10, 
+        obs_data, obs_metadata = catsim_utils.catsimQuery(stack_version=10, 
                 objid=catsim_table, constraint=catsim_constraint, 
                 catalog=catalog, radius=radius, opsim_metadata=obs)
         #print vars(obs_metadata)
@@ -36,7 +64,19 @@ def get_sender(protocol, ipaddr, port, header):
     return vars(broadcast)[protocol](ipaddr, port, header)
 
 def iter_and_send(sender, obs_data, obs_metadata):
-    """ Iterate over catalog and generate XML """
+    """ Iterate over catalog and generate XML
+    
+    Parameters
+    ----------
+    sender : 
+        Sender of alerts, e.g. TcpIp object
+    obs_data : 
+        Data of observed object. Contains ra, dec and other data, depending of catalog type,
+        defined in catalogExamples. e.g. VariableStars object
+    obs_metadata : ObservationMetaData object
+        Data describing observation (filter, mjd, ...)
+    """
+    
     count = 0
     sending_times = []
 
