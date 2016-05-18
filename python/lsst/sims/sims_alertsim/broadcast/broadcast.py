@@ -2,6 +2,7 @@ import socket
 import struct
 import sys
 import errno
+import zlib
 
 class Broadcast(object):
 
@@ -22,8 +23,8 @@ class Broadcast(object):
         print >>sys.stderr, 'closing socket'
         sys.exit(1)
     
-    @staticmethod
-    def _add_voevent_header(message):
+    #@staticmethod
+    def _add_voevent_header(self, message):
         header = '%08x' % (len(message))
         return header.decode('hex') + message
 
@@ -44,6 +45,7 @@ class TcpIp(Broadcast):
             self.close()
 
     def send(self, message):
+        #message = zlib.compress(message, 9)
         try:
             self._send_and_receive(message)
         except socket.error as e:
