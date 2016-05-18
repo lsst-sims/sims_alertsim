@@ -1,33 +1,67 @@
 """ Main module """
 
 import subprocess
+import sys
 import time
-from dataModel import DataMetadata, CelestialObject
-from generateVOEvent import VOEventGenerator
+import functools
 import catsim_utils, opsim_utils
+#import threading
+#import itertools
+from copy import deepcopy
+from lsst.sims.sims_alertsim.alertsim.dataModel import DataMetadata, CelestialObject
+from lsst.sims.sims_alertsim.alertsim.generateVOEvent import VOEventGenerator
 from lsst.sims.sims_alertsim.broadcast import *
 from lsst.sims.sims_alertsim.catalogs import *
 
+BANDNAMES = ['u', 'g', 'r', 'i', 'z', 'y']
+STACK_VERSION = 10
+
 def main(opsim_table, catsim_table, opsim_constraint, 
-         catsim_constraint, catalog, radius, protocol, ipaddr, port, header):
+         catsim_constraint, radius, protocol, ipaddr, port, header, history):
 
     """ Takes input args from cmd line parser or other,  
         query opsim, catsim, generate 
         and broadcast VOEvents 
     """
 
-    print "Sims version: %s" % _get_sims_version() 
+    print "Sims version: %s" % get_sims_version() 
 
     sender = get_sender(protocol, ipaddr, port, header)
     
-    observations = opsim_utils.opsim_query(stack_version=10, 
-            objid=opsim_table, constraint=opsim_constraint)
-    for obs in observations:
-        obs_data, obs_metadata = catsim_utils.catsim_query(stack_version=10, 
+    print "fetching opsim results..."
+    
+    # keeping this for now, will try to build a thread-based spinner 
+    # for db queries as they can last quite a bit
+    """
+    obs_all = []
+    t1 = threading.Thread(target = thread_wrapper, 
+            args = (opsim_utils.opsim_query, 
+                (stack_version=STACK_VERSION, objid=opsim_table, 
+                    radius=radius, constraint=opsim_constraint), obs_all))
+    
+    while t1.is_alive():
+        sys.stdout.write(spinner.next())  # write the next character
+        sys.stdout.flush()                # flush stdout buffer (actual character display)
+        sys.stdout.write('\b')            # erase the last written char
+        t1.join(0.2)
+    """
+
+    """ matrix of all observations per field up to current mjd """
+    obs_all = opsim_utils.opsim_query(stack_version=10, 
+            objid=opsim_table, radius=radius, constraint=opsim_constraint)
+
+    print "opsim result fetched and transformed to ObservationMetaData objects"
+
+    for obs_per_field in obs_all:
+
+        """ current observation - largest mjd from a sorted list  """
+        obs_metadata = obs_per_field[0]
+        
+        obs_data = catsim_utils.catsim_query(stack_version=10, 
                 objid=catsim_table, constraint=catsim_constraint, 
-                catalog=catalog, radius=radius, opsim_metadata=obs)
-        #print vars(obs_metadata)
-        iter_and_send(sender, obs_data, obs_metadata)
+                obs_metadata=obs_metadata)
+
+        iter_and_send(sender, obs_data, obs_metadata, obs_per_field, history)
     
     sender.close()
 
@@ -35,35 +69,92 @@ def get_sender(protocol, ipaddr, port, header):
     """ Instantiate proper child class for the protocol """
     return vars(broadcast)[protocol](ipaddr, port, header)
 
-def iter_and_send(sender, obs_data, obs_metadata):
+def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
+
     """ Iterate over catalog and generate XML """
-    count = 0
+
+    event_count = 0
     sending_times = []
 
     for line in obs_data.iter_catalog():
+
+        # current + historical exposures
+        cel_objects = []
+
         data_metadata = []
-        for (val, ucd, unit) in zip(line, 
-                obs_data.get_ucds(), obs_data.get_units()):
+            
+        # append metadata to each attribute
+        for (val, ucd, unit) in zip(line, obs_data.get_ucds(), 
+                obs_data.get_units()):
             data_metadata.append(DataMetadata(val, ucd, unit))
-        celestial_object = CelestialObject(obs_data.iter_column_names(), 
+
+        # current exposure with all mags and deltas. 
+        # will need it for calculating historical variability in 
+        # different bands.
+
+        cel_obj_all_mags = CelestialObject(obs_data.iter_column_names(), 
                 data_metadata)
-        gen = VOEventGenerator(eventid = count)
-        xml = gen.generateFromObjects(celestial_object, obs_metadata)
+        cel_obj = deepcopy(cel_obj_all_mags)
+        
+        # reduce to a single band
+        _remove_band_attrs(cel_obj, obs_metadata.bandpass)
+        cel_objects.append(cel_obj)
+
+        # historical exposures can be turned off
+        if history:
+            
+            base_mags = {}
+            for band in BANDNAMES:
+                # substract deltas from mags to get base for historical mags
+                mag_attr = getattr(cel_obj_all_mags, 'lsst_'+band)
+                delta_mag_attr = getattr(cel_obj_all_mags, 'delta_lsst_'+band)
+                # other way would be to calculate historical mags 
+                # via PhotometryStars. 
+                base_mags[band] = mag_attr.value + delta_mag_attr.value
+
+            for historical_metadata in observations_field:
+                vs = VariabilityDummy(historical_metadata)
+
+                # can we get filter-parametrized variabilities 
+                # from VariabilityMixin please? 
+                hist_delta_mags = vs.applyVariability(cel_obj_all_mags.varParamStr.value)
+                hist_cel_obj = deepcopy(cel_obj_all_mags)
+
+                # not optimal but most flexible for now
+                for band in BANDNAMES:
+                    hist_mag = base_mags[band] + hist_delta_mags[band] 
+                    hist_delta_mag = hist_delta_mags[band]
+                    _rsetattr(hist_cel_obj, 'lsst_'+band+'.value', hist_mag)
+                    _rsetattr(hist_cel_obj, 'delta_lsst_'+band+'.value', 
+                            hist_delta_mag)
+                
+                _remove_band_attrs(hist_cel_obj, historical_metadata.bandpass)
+                cel_objects.append(hist_cel_obj)
+
+
+        # generate and send
+        gen = VOEventGenerator(eventid = event_count)
+        xml = gen.generateFromObjects(cel_objects, obs_metadata)
+        #print xml
         sender.send(xml)
-        count = count + 1
+        event_count += 1
         sending_times.append(time.time())
 
-    sending_diff = sending_times[-1] - sending_times[0]
-    print "Number of events from this visit : %d. Time from first to last " \
-       "event %f or %f per event" % (count, sending_diff, sending_diff/count)
+    # add exception for index out of range
+    try:
+        sending_diff = sending_times[-1] - sending_times[0]
+        print "Number of events from this visit : %d. Time from first to last " \
+            "event %f or %f per event" % (event_count, sending_diff, 
+                    sending_diff/event_count)
+    except IndexError:
+        print "No events in this visit"
 
-def _get_stack_version(fine_grain=True):
+def get_stack_version(fine_grain=True):
     """ ask eups for stack version, return in 2 flavors """ 
     # shell eups command to get version like 8.0.0.2
     # how to get version without eups?
 
-    # now obsolete for time being
-
+    # obsolete for time being
     stack_version = subprocess.check_output("eups list lsst --version " \
             "--tag current", shell=True)
     if fine_grain:
@@ -71,6 +162,36 @@ def _get_stack_version(fine_grain=True):
     else:
         return int(stack_version.split('.')[0])
 
-def _get_sims_version():
+def get_sims_version():
+    """ current sims version """
     return subprocess.check_output("eups list lsst_sims --version " \
             "--tag current", shell=True)
+
+def _remove_band_attrs(obj, bandname):
+    """ reduce object dictionary """
+    # this may not be the safest way and needs to be revised
+    for key in obj.__dict__.keys():
+        if ('lsst' in key) and not (key.endswith(bandname)):
+            obj.__dict__.pop(key)
+
+"""
+def _rename_band_attr(obj, bandname):
+        for key in obj.__dict__:
+            if 'lsst' in key:
+                new_key = key[:-1] + bandname
+                obj.__dict__[new_key] = obj.__dict__.pop(old_name)
+"""
+
+def _rsetattr(obj, attr, val):
+    """ fix setattr lack of dot notation support """
+    pre, _, post = attr.rpartition('.')
+    return setattr(functools.reduce(getattr, 
+        [obj]+pre.split('.')) if pre else obj, post, val)
+
+"""
+def thread_wrapper(func, args, res):
+    res.append(func(*args))
+
+def spinner():
+    return itertools.cycle(['-', '/', '|', '\\'])
+"""

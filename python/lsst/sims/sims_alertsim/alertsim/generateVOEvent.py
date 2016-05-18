@@ -41,9 +41,10 @@ class VOEventGenerator:
         self.voevent.set_Citations(c)
 
 
-    def generateFromObjects(self, objData, obsMetaData):
+    #def generateFromObjects(self, diaSourceData, diaObjectData, obsMetaData):
+    def generateFromObjects(self, diaSourcesData, obsMetaData):
 
-        for key, data_tuple in objData.__dict__.items():
+        for key, data_tuple in diaSourcesData[0].__dict__.items():
             if data_tuple.ucd == 'pos.eq.ra':
                 self.ra = data_tuple.value
             elif data_tuple.ucd == 'pos.eq.dec':
@@ -52,28 +53,22 @@ class VOEventGenerator:
         ############ What ############################
         w = What()
 #        
-        g = Group(type_="Magnitudes", name="Magnitudes")
-        for key, val in objData.__dict__.items():
-            if not key.startswith("__"):
-                if val.ucd == 'phot.mag':
+        for diaSourceData in diaSourcesData:
+            g = Group(type_="DIASource", name="DIASource")
+            for key, val in diaSourceData.__dict__.items():
+                if not key.startswith("__"):
                     p = Param(name=key, ucd=val.ucd, value=val.value, unit = val.unit)
-#                    p.set_Description(["magnitude"])
-#                    p=Param()
-#                    p.set_name(key)
-#                    p.set_value(float(val.value))
-#                    p.set_ucd(val.ucd)
-#                    p.set_unit(val.unit)
-#                    p.set_dataType("float")
                     g.add_Param(p)
-#                    w.add_Param(p)
-        w.add_Group(g)
+            w.add_Group(g)
         
-        for key, val in objData.__dict__.items():
+        """
+        g = Group(type_="DIAObject", name="DIAObject")
+        for key, val in diaObjectData.__dict__.items():
             if not key.startswith("__"):
-                if val.ucd != 'phot.mag':
-                    p = Param(name=key, ucd=val.ucd, value=val.value, unit = val.unit)
-                    w.add_Param(p)
-#        
+                p = Param(name=key, ucd=val.ucd, value=val.value, unit = val.unit)
+                g.add_Param(p)
+        w.add_Group(g)
+#       """ 
         self.voevent.set_What(w)
 
         ############ Wherewhen ############################
