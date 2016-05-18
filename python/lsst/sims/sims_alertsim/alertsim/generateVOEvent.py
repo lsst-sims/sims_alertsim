@@ -41,9 +41,10 @@ class VOEventGenerator:
         self.voevent.set_Citations(c)
 
 
-    def generateFromObjects(self, diaSourceData, diaObjectData, obsMetaData):
+    #def generateFromObjects(self, diaSourceData, diaObjectData, obsMetaData):
+    def generateFromObjects(self, diaSourcesData, obsMetaData):
 
-        for key, data_tuple in diaSourceData.__dict__.items():
+        for key, data_tuple in diaSourcesData[0].__dict__.items():
             if data_tuple.ucd == 'pos.eq.ra':
                 self.ra = data_tuple.value
             elif data_tuple.ucd == 'pos.eq.dec':
@@ -52,20 +53,22 @@ class VOEventGenerator:
         ############ What ############################
         w = What()
 #        
-        g = Group(type_="DIASource", name="DIASource")
-        for key, val in diaSourceData.__dict__.items():
-            if not key.startswith("__"):
-                p = Param(name=key, ucd=val.ucd, value=val.value, unit = val.unit)
-                g.add_Param(p)
-        w.add_Group(g)
+        for diaSourceData in diaSourcesData:
+            g = Group(type_="DIASource", name="DIASource")
+            for key, val in diaSourceData.__dict__.items():
+                if not key.startswith("__"):
+                    p = Param(name=key, ucd=val.ucd, value=val.value, unit = val.unit)
+                    g.add_Param(p)
+            w.add_Group(g)
         
+        """
         g = Group(type_="DIAObject", name="DIAObject")
         for key, val in diaObjectData.__dict__.items():
             if not key.startswith("__"):
                 p = Param(name=key, ucd=val.ucd, value=val.value, unit = val.unit)
                 g.add_Param(p)
         w.add_Group(g)
-#        
+#       """ 
         self.voevent.set_What(w)
 
         ############ Wherewhen ############################
