@@ -77,6 +77,47 @@ class TestQueryingDatabases(unittest.TestCase):
         xml = gen.generateFromObjects(celestial_object, obs_metadata)
         self.assertEqual(len(xml), 3190)
         
+    def test_exceptions(self):
+        """ Test that exceptions are raised when they should be """
+        
+        objid = "output_opsim3_61"
+        constraint = "obshistid=85163540"
+
+        # verify that an exception is raised if a nonexisting table is passed to OpSim query
+        with self.assertRaises(Exception) as context:
+            opsim_query_stack10("FooBarTable", constraint)
+        self.assertEqual(context.exception.__class__.__name__, 'NoSuchTableError')
+        self.assertEqual('FooBarTable', context.exception.message)
+        
+        # verify that an exception is raised if insufficient number of arguments is passed to OpSim query
+        with self.assertRaises(Exception) as context:
+            opsim_query_stack10(objid)
+        self.assertEqual(context.exception.__class__.__name__, 'TypeError')
+        self.assertTrue('opsim_query_stack10() takes exactly 2 arguments' in context.exception.message)
+        
+        objid = "allstars"
+        constraint = "rmag between 20 and 23.5"
+        catalog = "variable_stars"
+        radius = 0.05
+        opsim_metadata = [85163540, 1.06645, -0.076277, 0.557787, 'i', 49363.058538]
+
+        # verify that an exception is raised if a nonexisting object is passed to CatSim query
+        with self.assertRaises(Exception) as context:
+            catsim_query_stack10("FooBarObject", constraint, catalog, radius, opsim_metadata)
+        self.assertEqual(context.exception.__class__.__name__, 'RuntimeError')
+        self.assertEqual('Attempting to construct an object that does not exist', context.exception.message)
+
+        # verify that an exception is raised if a nonexisting catalog is passed to CatSim query
+        with self.assertRaises(Exception) as context:
+            catsim_query_stack10(objid, constraint, "FooBarCatalog", radius, opsim_metadata)
+        self.assertEqual(context.exception.__class__.__name__, 'ValueError')
+        self.assertEqual('Unrecognized catalog_type: FooBarCatalog', context.exception.message)
+        
+        # verify that an exception is raised if insufficient number of arguments is passed to CatSim query
+        with self.assertRaises(Exception) as context:
+            catsim_query_stack10(objid, constraint, catalog, radius)
+        self.assertEqual(context.exception.__class__.__name__, 'TypeError')
+        self.assertTrue('catsim_query_stack10() takes exactly 5 arguments' in context.exception.message)
         
 
 
