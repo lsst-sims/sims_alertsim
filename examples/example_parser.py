@@ -16,7 +16,8 @@ PARSER.add_argument("-oc", "--opsim_constraint",
         default="(night=10 and rawseeing<0.6) and filter like \'i\' ", 
         help="constraint for opsim query")
 PARSER.add_argument("-cc", "--catsim_constraint", 
-        default="rmag between 20 and 23.5", help="constraint for catsim query")
+        default="rmag between 10 and 30 and varParamStr not like 'None'", 
+        help="constraint for catsim query")
 #PARSER.add_argument("-ca", "--catsim_catalog", 
 #        choices=["variable_stars", "vanilla_stars", "DIA_sources", "DIA_objects"], 
 #        default="variable_stars", help="name of catsim catalog")
@@ -33,7 +34,10 @@ PARSER.add_argument("--no_header",
         help="don't generate hex header for VOEvents", 
         action="store_false", default=True)
 PARSER.add_argument("--no_history",
-        help="emit only current DiaSource", 
+        help="emit only current events without historical instances", 
+        action="store_false", default=True)
+PARSER.add_argument("--no_dia",
+        help="emit basic attributes only, not full DIASources", 
         action="store_false", default=True)
 ARGS = PARSER.parse_args()
 
@@ -65,4 +69,4 @@ if __name__ == "__main__":
         sys.exit(alertsim.main(ARGS.opsim_table, ARGS.catsim_table, 
                 ARGS.opsim_constraint, ARGS.catsim_constraint, 
                 ARGS.radius, ARGS.protocol, ARGS.ipaddress, 
-                ARGS.port, ARGS.no_header, ARGS.no_history))
+                ARGS.port, ARGS.no_header, ARGS.no_history, ARGS.no_dia))

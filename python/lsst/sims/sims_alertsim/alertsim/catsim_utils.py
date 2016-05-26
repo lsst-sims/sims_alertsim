@@ -10,7 +10,7 @@ def catsim_query(stack_version, **kwargs):
         return catsim_query_stack10(**kwargs)
 
 
-def catsim_query_stack8(objid, constraint, obs_metadata):
+def catsim_query_stack8(objid, constraint, obs_metadata, dia):
 
     """ Query catsim and make a catalog """
 
@@ -18,7 +18,11 @@ def catsim_query_stack8(objid, constraint, obs_metadata):
 
     dbobj = DBObject.from_objid(objid)
     
-    obs_data = dbobj.getCatalog('variable_stars', 
+    if dia:
+        catalog = 'variable_stars_dia'
+    else: catalog = 'variable_stars'
+
+    obs_data = dbobj.getCatalog(catalog, 
             obs_metadata=obs_metadata, 
             constraint=constraint)
 
@@ -27,7 +31,7 @@ def catsim_query_stack8(objid, constraint, obs_metadata):
     return obs_data
 
 
-def catsim_query_stack10 (objid, constraint, obs_metadata):
+def catsim_query_stack10 (objid, constraint, obs_metadata, dia):
     
     """ Query catsim and make a catalog """
 
@@ -35,12 +39,17 @@ def catsim_query_stack10 (objid, constraint, obs_metadata):
     from lsst.sims.sims_alertsim.catalogs import *
     
     dbobj = CatalogDBObject.from_objid(objid)
-    #dbobj.show_db_columns()    
 
-    obs_data = dbobj.getCatalog('variable_stars', 
+    if dia:
+        catalog = 'variable_stars_dia'
+    else: catalog = 'variable_stars'
+
+    obs_data = dbobj.getCatalog(catalog, 
             obs_metadata=obs_metadata, constraint=constraint)
             #column_outputs=VariableStars.get_column_outputs(obs_metadata.bandpass)) 
 
+#    dbobj.show_db_columns()    
+#    dbobj.show_mapped_columns()
 #    filename = 'test_reference.dat'
 #    t.write_catalog(filename, chunk_size=10)
     return obs_data
