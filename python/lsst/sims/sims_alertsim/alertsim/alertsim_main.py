@@ -17,7 +17,8 @@ BANDNAMES = ['u', 'g', 'r', 'i', 'z', 'y']
 STACK_VERSION = 10
 
 def main(opsim_table, catsim_table, opsim_constraint, 
-         catsim_constraint, radius, protocol, ipaddr, port, header, history):
+         catsim_constraint, radius, protocol, ipaddr, 
+         port, header, history, dia):
 
     """ Takes input args from cmd line parser or other,  
         query opsim, catsim, generate 
@@ -59,7 +60,7 @@ def main(opsim_table, catsim_table, opsim_constraint,
         
         obs_data = catsim_utils.catsim_query(stack_version=10, 
                 objid=catsim_table, constraint=catsim_constraint, 
-                obs_metadata=obs_metadata)
+                obs_metadata=obs_metadata, dia=dia)
 
         iter_and_send(sender, obs_data, obs_metadata, obs_per_field, history)
     
@@ -84,8 +85,8 @@ def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
         data_metadata = []
             
         # append metadata to each attribute
-        for (val, ucd, unit) in zip(line, obs_data.get_ucds(), 
-                obs_data.get_units()):
+        for (val, ucd, unit) in zip(line, obs_data.ucds, 
+                obs_data.units):
             data_metadata.append(DataMetadata(val, ucd, unit))
 
         # current exposure with all mags and deltas. 
@@ -94,6 +95,12 @@ def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
 
         cel_obj_all_mags = CelestialObject(obs_data.iter_column_names(), 
                 data_metadata)
+        
+        if (cel_obj_all_mags.varParamStr.value == 'None'):
+            print "You should declare varParamStr not like " \
+                  "'None' in catsim constraint"
+            exit(1)
+
         cel_obj = deepcopy(cel_obj_all_mags)
         
         # reduce to a single band
@@ -140,6 +147,7 @@ def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
         event_count += 1
         sending_times.append(time.time())
 
+    print "sdada"
     # add exception for index out of range
     try:
         sending_diff = sending_times[-1] - sending_times[0]
