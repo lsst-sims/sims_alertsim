@@ -31,9 +31,35 @@ class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
             'delta_lsst_z', 'delta_lsst_y', 
             #'sigma_lsst_u','sigma_lsst_g','sigma_lsst_r',
             #'sigma_lsst_i','sigma_lsst_z', 'sigma_lsst_y', 
-            'varParamStr']
+            'gal_l', 'gal_b', 'varParamStr']
 
-    column_outputs += ['diaSourceId', 'ccdVisitId', 'diaObjectId', 'ssObjectId',
+    ucds = ['meta.id', 'pos.eq.ra', 'pos.eq.dec', 
+                'phot.mag', 'phot.mag', 
+                'phot.mag', 'phot.mag', 
+                'phot.mag', 'phot.mag', 
+                'phot.mag', 'phot.mag', 
+                'phot.mag', 'phot.mag', 
+                'phot.mag', 'phot.mag', 
+                #'stat.error', 'stat.error', 
+                #'stat.error', 'stat.error', 
+                #'stat.error', 'stat.error', 
+                '', '', 'src.var',]
+
+    units = ['', 'rad', 'rad', '', '', '', 
+             '', '', '', '', '', '', 
+            #'', '', '', '', '', '', 
+             '', '', '', '', '', '']
+    
+    @staticmethod
+    def get_column_outputs(bandname):
+        return ['id', 'raJ2000', 'decJ2000','lsst_'+bandname,
+                'delta_lsst_'+bandname, 'sigma_lsst_'+bandname, 'varParamStr']
+
+class VariableStarsDia(VariableStars):
+    
+    catalog_type = 'variable_stars_dia'
+    
+    column_outputs = VariableStars.column_outputs + ['diaSourceId', 'ccdVisitId', 'diaObjectId', 'ssObjectId',
           'parentDiaSourceId', 'filterName', 'procHistoryId',
           'ssObjectReassocTime', 'midPointTai', 'raSigma',
           'declSigma', 'ra_decl_Cov', 'x', 'xSigma', 'y', 'ySigma', 
@@ -51,6 +77,26 @@ class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
           'apMeanSb08', 'apMeanSb08Sigma', 'apMeanSb09', 'apMeanSb09Sigma', 
           'apMeanSb10', 'apMeanSb10Sigma', 'flags', 'htmId20',]
 
+    ucds = VariableStars.ucds + ['meta.id;obs.image', 'meta.id;obs.image', 'meta.id;src', 
+                'meta.id;src', 'meta.id;src', 'meta.id;instr.filter', '', '', 
+                'time.epoch', 'stat.error;pos.eq.ra', 
+                'stat.error;pos.eq.dec', '', 'pos.cartesian.x', 
+                'stat.error;pos.cartesian.x', 'pos.cartesian.y', 
+                'stat.error;pos.cartesian.y', '', '', 'phot.count', '', '', 
+                '', '', '', '', '', '', '', '', '', '', '', '', '', '',
+                'phot.count','stat.error;phot.count', '', 
+                'stat.error;phot.count', '', '', 'phys.size.axisRatio', 
+                'stat.error;phys.size.axisRatio', 'phys.size.axisRatio', 
+                'stat.error;phys.size.axisRatio', '', '', '', '', '', '', '', 
+                '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 
+                '', '', 'meta.code',]
+
+    units = VariableStars.units + ['','','','','','','','','d','deg','deg','deg^2','pixel',
+             'pixel','pixel','pixel','pixel^2','','nmgy','nmgy','','','','nmgy',
+             'nmgy','arcsec','nmgy','degrees','nmgy','','','','','','','nmgy',
+             'nmgy','nmgy','nmgy','nmgy/asec^2','nmgy/asec^2','','','','','','',
+             '','','','','','','','','','','','','','','','','','','','','','','']
+    
     default_columns = [('diaSourceId', rbi(), int), ('ccdVisitId', rbi(), int), 
           ('diaObjectId', rbi(), int), ('ssObjectId', rbi(), int), 
           ('parentDiaSourceId', rbi(), int), ('filterName', 0, (str,1)), 
@@ -87,55 +133,16 @@ class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
 
     def get_diaSourceId(self):
         return self.column_by_name('simobjid')
-    
+
+    # resolve db column case-sensitivness
     def get_htmId20(self):
-	    #return self.column_by_name('htmid')
-	    return self.column_by_name('htmID')
+        return self._decapitalize_column_name('htmID')
 
-    @staticmethod
-    def get_column_outputs(bandname):
-        return ['id', 'raJ2000', 'decJ2000','lsst_'+bandname,
-                'delta_lsst_'+bandname, 'sigma_lsst_'+bandname, 'varParamStr']
-
-    @staticmethod
-    def get_ucds():
-        return ['meta.id', 'pos.eq.ra', 'pos.eq.dec', 
-                'phot.mag', 'phot.mag', 
-                'phot.mag', 'phot.mag', 
-                'phot.mag', 'phot.mag', 
-                'phot.mag', 'phot.mag', 
-                'phot.mag', 'phot.mag', 
-                'phot.mag', 'phot.mag', 
-                #'stat.error', 'stat.error', 
-                #'stat.error', 'stat.error', 
-                #'stat.error', 'stat.error', 
-                'src.var',
-                'meta.id;obs.image', 'meta.id;obs.image', 'meta.id;src', 
-                'meta.id;src', 'meta.id;src', 'meta.id;instr.filter', '', '', 
-                'time.epoch', 'stat.error;pos.eq.ra', 
-                'stat.error;pos.eq.dec', '', 'pos.cartesian.x', 
-                'stat.error;pos.cartesian.x', 'pos.cartesian.y', 
-                'stat.error;pos.cartesian.y', '', '', 'phot.count', '', '', 
-                '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-                'phot.count','stat.error;phot.count', '', 
-                'stat.error;phot.count', '', '', 'phys.size.axisRatio', 
-                'stat.error;phys.size.axisRatio', 'phys.size.axisRatio', 
-                'stat.error;phys.size.axisRatio', '', '', '', '', '', '', '', 
-                '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 
-                '', '', 'meta.code',]
-
-
-    @staticmethod
-    def get_units():
-        return ['', 'rad', 'rad', '', '', '', 
-                '', '', '', '', '', '', 
-                #'', '', '', '', '', '', 
-                '', '', '', '', 
-                '','','','','','','','','d','deg','deg','deg^2','pixel',
-                'pixel','pixel','pixel','pixel^2','','nmgy','nmgy','','','','nmgy',
-                'nmgy','arcsec','nmgy','degrees','nmgy','','','','','','','nmgy',
-                'nmgy','nmgy','nmgy','nmgy/asec^2','nmgy/asec^2','','','','','','',
-                '','','','','','','','','','','','','','','','','','','','','','','']
+    def _decapitalize_column_name(self, colname):
+        if colname in  self.db_obj.columnMap.keys():
+            return self.column_by_name(colname)
+        else:
+            return self.column_by_name(colname.lower())
 
 class VariabilityDummy(Variability):
     """ Dummy class for avoiding InstanceCatalog inheritance """
@@ -143,17 +150,16 @@ class VariabilityDummy(Variability):
     def __init__(self, obs_metadata):
         self.obs_metadata = obs_metadata
 
+
 class VanillaStars(InstanceCatalog):
+
     catalog_type = 'vanilla_stars'
+
     column_outputs = ['ra', 'decl', 'rmag']
+    ucds = ['pos.eq.ra', 'pos.eq.dec', 'phot.mag']
+    units = ['rad', 'rad', '']
 
-    @staticmethod
-    def get_ucds():
-        return ['pos.eq.ra', 'pos.eq.dec', 'phot.mag']
-
-    @staticmethod
-    def get_units():
-        return ['rad', 'rad', '']
+"""
 
 class DIASources(InstanceCatalog):
     catalog_type = 'DIA_sources'
@@ -306,8 +312,6 @@ class DIASources(InstanceCatalog):
             'Mean surface brightness at which the aperture measurement is being performed.',
             'Standard deviation of pixel surface brightness in annulus.',
             'Flags, bitwise OR tbd.','HTM index.']
-    
-    
 
 class DIAObjects(InstanceCatalog):
     catalog_type = 'DIA_objects'
@@ -480,4 +484,4 @@ class DIAObjects(InstanceCatalog):
                 'Id of the third-closest nearby object.','Distance to nearbyObj3.',
                 'Natural log of the probability that the observed diaObject is the same as the nearbyObj3.',
                 'Flags, bitwise OR tbd.','HTM index.']
-
+    """
