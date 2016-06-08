@@ -76,78 +76,77 @@ def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
 
     event_count = 0
     sending_times = []
+    for catalog in obs_data:
+        for line in catalog.iter_catalog():
 
-    for line in obs_data.iter_catalog():
+            # current + historical exposures
+            cel_objects = []
 
-        # current + historical exposures
-        cel_objects = []
-
-        data_metadata = []
-            
-        # append metadata to each attribute
-        for (val, ucd, unit) in zip(line, obs_data.ucds, 
-                obs_data.units):
-            data_metadata.append(DataMetadata(val, ucd, unit))
-
-        # current exposure with all mags and deltas. 
-        # will need it for calculating historical variability in 
-        # different bands.
-
-        cel_obj_all_mags = CelestialObject(obs_data.iter_column_names(), 
-                data_metadata)
-        
-        if (cel_obj_all_mags.varParamStr.value == 'None'):
-            print "You should declare varParamStr not like " \
-                  "'None' in catsim constraint"
-            exit(1)
-
-        cel_obj = deepcopy(cel_obj_all_mags)
-        
-        # reduce to a single band
-        _remove_band_attrs(cel_obj, obs_metadata.bandpass)
-        cel_objects.append(cel_obj)
-
-        # historical exposures can be turned off
-        if history:
-            
-            base_mags = {}
-            for band in BANDNAMES:
-                # substract deltas from mags to get base for historical mags
-                mag_attr = getattr(cel_obj_all_mags, 'lsst_'+band)
-                delta_mag_attr = getattr(cel_obj_all_mags, 'delta_lsst_'+band)
-                # other way would be to calculate historical mags 
-                # via PhotometryStars. 
-                base_mags[band] = mag_attr.value + delta_mag_attr.value
-
-            for historical_metadata in observations_field:
-                vs = VariabilityDummy(historical_metadata)
-
-                # can we get filter-parametrized variabilities 
-                # from VariabilityMixin please? 
-                hist_delta_mags = vs.applyVariability(cel_obj_all_mags.varParamStr.value)
-                hist_cel_obj = deepcopy(cel_obj_all_mags)
-
-                # not optimal but most flexible for now
-                for band in BANDNAMES:
-                    hist_mag = base_mags[band] + hist_delta_mags[band] 
-                    hist_delta_mag = hist_delta_mags[band]
-                    _rsetattr(hist_cel_obj, 'lsst_'+band+'.value', hist_mag)
-                    _rsetattr(hist_cel_obj, 'delta_lsst_'+band+'.value', 
-                            hist_delta_mag)
+            data_metadata = []
                 
-                _remove_band_attrs(hist_cel_obj, historical_metadata.bandpass)
-                cel_objects.append(hist_cel_obj)
+            # append metadata to each attribute
+            for (val, ucd, unit) in zip(line, catalog.ucds, 
+                    catalog.units):
+                data_metadata.append(DataMetadata(val, ucd, unit))
+
+            # current exposure with all mags and deltas. 
+            # will need it for calculating historical variability in 
+            # different bands.
+
+            cel_obj_all_mags = CelestialObject(catalog.iter_column_names(), 
+                    data_metadata)
+            
+            if (cel_obj_all_mags.varParamStr.value == 'None'):
+                print "You should declare varParamStr not like " \
+                      "'None' in catsim constraint"
+                exit(1)
+
+            cel_obj = deepcopy(cel_obj_all_mags)
+            
+            # reduce to a single band
+            _remove_band_attrs(cel_obj, obs_metadata.bandpass)
+            cel_objects.append(cel_obj)
+
+            # historical exposures can be turned off
+            if history:
+            
+                base_mags = {}
+                for band in BANDNAMES:
+                    # substract deltas from mags to get base for historical mags
+                    mag_attr = getattr(cel_obj_all_mags, 'lsst_'+band)
+                    delta_mag_attr = getattr(cel_obj_all_mags, 'delta_lsst_'+band)
+                    # other way would be to calculate historical mags 
+                    # via PhotometryStars. 
+                    base_mags[band] = mag_attr.value + delta_mag_attr.value
+
+                for historical_metadata in observations_field:
+                    vs = VariabilityDummy(historical_metadata)
+
+                    # can we get filter-parametrized variabilities 
+                    # from VariabilityMixin please? 
+                    hist_delta_mags = vs.applyVariability(cel_obj_all_mags.varParamStr.value)
+                    hist_cel_obj = deepcopy(cel_obj_all_mags)
+
+                    # not optimal but most flexible for now
+                    for band in BANDNAMES:
+                        hist_mag = base_mags[band] + hist_delta_mags[band] 
+                        hist_delta_mag = hist_delta_mags[band]
+                        _rsetattr(hist_cel_obj, 'lsst_'+band+'.value', hist_mag)
+                        _rsetattr(hist_cel_obj, 'delta_lsst_'+band+'.value', 
+                                hist_delta_mag)
+                    
+                    _remove_band_attrs(hist_cel_obj, historical_metadata.bandpass)
+                    cel_objects.append(hist_cel_obj)
 
 
-        # generate and send
-        gen = VOEventGenerator(eventid = event_count)
-        xml = gen.generateFromObjects(cel_objects, obs_metadata)
-        #print xml
-        sender.send(xml)
-        event_count += 1
-        sending_times.append(time.time())
+            # generate and send
+            gen = VOEventGenerator(eventid = event_count)
+            xml = gen.generateFromObjects(cel_objects, obs_metadata)
+            #print xml
+            sender.send(xml)
+            event_count += 1
+            sending_times.append(time.time())
 
-    print "sdada"
     # add exception for index out of range
     try:
         sending_diff = sending_times[-1] - sending_times[0]
