@@ -36,7 +36,7 @@ def catsim_query_stack10 (objid, constraint, obs_metadata, dia):
     """ Query catsim and make a catalog """
 
     from lsst.sims.catalogs.db import CatalogDBObject
-    from lsst.sims.sims_alertsim.catalogs import *
+    from lsst.sims.catalogs import *
     
     dbobj = CatalogDBObject.from_objid(objid)
 

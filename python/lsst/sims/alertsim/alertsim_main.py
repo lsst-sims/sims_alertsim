@@ -8,10 +8,10 @@ import catsim_utils, opsim_utils
 #import threading
 #import itertools
 from copy import deepcopy
-from lsst.sims.sims_alertsim.alertsim.dataModel import DataMetadata, CelestialObject
-from lsst.sims.sims_alertsim.alertsim.generateVOEvent import VOEventGenerator
-from lsst.sims.sims_alertsim.broadcast import *
-from lsst.sims.sims_alertsim.catalogs import *
+from lsst.sims.alertsim.dataModel import DataMetadata, CelestialObject
+from lsst.sims.alertsim.generateVOEvent import VOEventGenerator
+from lsst.sims.broadcast import *
+from lsst.sims.catalogs import *
 
 BANDNAMES = ['u', 'g', 'r', 'i', 'z', 'y']
 STACK_VERSION = 10

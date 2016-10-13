@@ -1,6 +1,6 @@
 import sys, os
 
-from lsst.sims.sims_alertsim.VOEventLib import *
+from lsst.sims.VOEventLib import *
 
 from astropy.time import Time as AstropyTime
 
