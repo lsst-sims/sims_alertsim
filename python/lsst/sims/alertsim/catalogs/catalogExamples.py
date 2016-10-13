@@ -3,7 +3,6 @@ import numpy
 from lsst.sims.catalogs.definitions import InstanceCatalog
 from lsst.sims.catUtils.mixins import AstrometryStars, CameraCoords, PhotometryStars, Variability, VariabilityStars
 from lsst.sims.catUtils.baseCatalogModels import *
-from lsst.obs.lsstSim.utils import loadCamera
 
 def rf():
     """ random float """
