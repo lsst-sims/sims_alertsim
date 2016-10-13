@@ -25,8 +25,6 @@ def main(opsim_table, catsim_table, opsim_constraint,
         and broadcast VOEvents 
     """
 
-    print "Sims version: %s" % get_sims_version() 
-
     sender = get_sender(protocol, ipaddr, port, header)
     
     print "fetching opsim results..."
@@ -157,23 +155,6 @@ def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
     except IndexError:
         print "No events in this visit"
 
-def get_stack_version(fine_grain=True):
-    """ ask eups for stack version, return in 2 flavors """ 
-    # shell eups command to get version like 8.0.0.2
-    # how to get version without eups?
-
-    # obsolete for time being
-    stack_version = subprocess.check_output("eups list lsst --version " \
-            "--tag current", shell=True)
-    if fine_grain:
-        return stack_version
-    else:
-        return int(stack_version.split('.')[0])
-
-def get_sims_version():
-    """ current sims version """
-    return subprocess.check_output("eups list lsst_sims --version " \
-            "--tag current", shell=True)
 
 def _remove_band_attrs(obj, bandname):
     """ reduce object dictionary """
