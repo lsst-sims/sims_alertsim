@@ -31,7 +31,7 @@ def opsim_query_stack10 (objid, radius, constraint):
     import lsst.sims.maf.db as db
 
     """ old approach before the tunnel was introduced """
-    #from lsst.sims.catalogs.generation.db import CatalogDBObject 
+    #from lsst.sims.catalogs.db import CatalogDBObject
     #dbobj = CatalogDBObject.from_objid(objid)    
     #table = db.Table(tableName=objid, idColKey='obshistid', 
     #         database='LSSTCATSIM', driver='mssql+pymssql', 
