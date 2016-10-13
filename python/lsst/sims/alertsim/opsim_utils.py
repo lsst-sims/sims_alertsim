@@ -26,7 +26,7 @@ def opsim_query_stack8(path, objid, radius, constraint):
     print result
     return result
 
-def opsim_query_stack10 (path, objid, radius, constraint):
+def opsim_query_stack10 (opsim_path, objid, radius, constraint):
     """ for stack 10+ """
     import lsst.sims.maf.db as db
 
@@ -42,8 +42,7 @@ def opsim_query_stack10 (path, objid, radius, constraint):
     #                    driver='mssql+pymssql', host='localhost', port='51433' )
 
     """ local access """
-    # parametrize this asap!
-    dbaddress = path
+    dbaddress = opsim_path
     table = db.Table('Summary', 'obsHistID', dbaddress)
 
     obs_all = []

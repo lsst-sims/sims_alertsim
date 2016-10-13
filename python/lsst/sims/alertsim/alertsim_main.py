@@ -46,7 +46,7 @@ def main(opsim_table, catsim_table, opsim_constraint,
     """
 
     """ matrix of all observations per field up to current mjd """
-    obs_all = opsim_utils.opsim_query(stack_version=10, opsim_path,
+    obs_all = opsim_utils.opsim_query(stack_version=10, opsim_path=opsim_path,
             objid=opsim_table, radius=radius, constraint=opsim_constraint)
 
     print "opsim result fetched and transformed to ObservationMetaData objects"
