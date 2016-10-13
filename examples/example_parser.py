@@ -3,7 +3,7 @@
 import sys
 import argparse
 import socket
-import lsst.sims.sims_alertsim.alertsim.alertsim_main as alertsim
+import lsst.sims.alertsim.alertsim_main as alertsim
 
 PARSER = argparse.ArgumentParser(description="", 
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
