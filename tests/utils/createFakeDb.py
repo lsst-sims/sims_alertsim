@@ -5,6 +5,7 @@ import json
 
 from lsst.utils import getPackageDir
 from lsst.sims.catalogs.db import fileDBObject
+from lsst.sims.utils import _galacticFromEquatorial
 
 __all__ = ["createFakeOpSimDB", "createFakeCatSimDB"]
 
@@ -38,20 +39,25 @@ def createFakeOpSimDB(file_name, pointing_list):
     if os.path.exists(scratch_file_name):
         os.unlink(scratch_file_name)
 
+    obshistid = 0
     with open(scratch_file_name, 'w') as output_file:
         output_file.write('# mjd ra dec filter\n')
-        for pointing in pointing_list:
+        for i_p, pointing in enumerate(pointing_list):
             ra = np.radians(pointing[0])
             dec = np.radians(pointing[1])
             mjd_list = rng.random_sample(n_obs)*3653.0 + 59580.0
 
             bandpass_dex_list = rng.random_integers(0, 2, n_obs)
             for mjd, bandpass in zip(mjd_list, bandpass_list[bandpass_dex_list]):
-                output_file.write('%.6f %.6f %.6f %s\n' % (mjd, ra, dec, bandpass))
+                night = int(round(mjd-59580.0))
+                obshistid += 1
+                output_file.write('%.6f %.6f %.6f %s 23.0 0.7 %d %d %d\n' %
+                                 (mjd, ra, dec, bandpass, i_p, night, obshistid))
                 output_list.append((mjd, ra, dec, bandpass))
 
     dtype = np.dtype([('expMJD', float), ('fieldRA', float), ('fieldDec', float),
-                      ('filter', str, 1)])
+                      ('filter', str, 1), ('fiveSigmaDepth', float), ('rawSeeing', float),
+                      ('fieldID', int), ('night', int), ('obsHistID', int)])
 
     fileDBObject(scratch_file_name, runtable='Summary', database=file_name,
                  dtype=dtype, delimiter=' ', idColKey='expMJD')
@@ -91,7 +97,8 @@ def createFakeCatSimDB(file_name, pointing_list):
                       ('sedFilename', str, 100), ('magNorm', float),
                       ('ebv', float), ('varParamStr', str, 256),
                       ('parallax', float), ('mura', float), ('mudecl', float),
-                      ('vrad', float)])
+                      ('vrad', float), ('galacticAv', float), ('gal_l', float),
+                      ('gal_b', float)])
 
     scratch_file_name = os.path.join(scratch_dir, '%s.dat' % file_name)
     if os.path.exists(scratch_file_name):
@@ -108,10 +115,12 @@ def createFakeCatSimDB(file_name, pointing_list):
             ebv_list = 0.1 + rng.random_sample(n_obj)*0.5
             lc_dex_list = rng.random_integers(0, len(lc_list)-1, n_obj)
             magnorm_list = rng.random_sample(n_obj)*5.0+15.0
+            gal_l_list, gal_b_list = _galacticFromEquatorial(np.radians(ra_list),
+                                                             np.radians(dec_list))
 
-            for ra, dec, magnorm, sed, ebv, lc in zip(ra_list, dec_list, magnorm_list,
-                                                      sed_list[sed_dex_list],
-                                                      ebv_list, lc_list[lc_dex_list]):
+            for ra, dec, magnorm, sed, ebv, lc, gal_l, gal_b in \
+                zip(ra_list, dec_list, magnorm_list, sed_list[sed_dex_list],
+                    ebv_list, lc_list[lc_dex_list], gal_l_list, gal_b_list):
 
                 varParamDict = {'varMethodName': 'applyRRly',
                                 'pars': {'filename': os.path.join(lc_subdir, lc),
@@ -119,8 +128,8 @@ def createFakeCatSimDB(file_name, pointing_list):
 
                 varParamStr = json.dumps(varParamDict)
 
-                output_file.write("%d;%.6f;%.6f;%s;%.6f;%.6f;%s;0.0;0.0;0.0;0.0\n" %
-                                  (ct, ra, dec, sed, magnorm, ebv, varParamStr))
+                output_file.write("%d;%.6f;%.6f;%s;%.6f;%.6f;%s;0.0;0.0;0.0;0.0;0.1;%.6f;%.6f\n" %
+                                  (ct, ra, dec, sed, magnorm, ebv, varParamStr, gal_l, gal_b))
                 ct += 1
 
     fileDBObject(scratch_file_name, runtable='test', database=file_name,
