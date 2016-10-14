@@ -26,7 +26,7 @@ def createFakeOpSimDB(file_name):
 
     rng = np.random.RandomState(119)
     bandpass_list = np.array(['g', 'r', 'i'])
-    n_obs = 25
+    n_obs = 5
 
     scratch_dir = os.path.join(getPackageDir('sims_alertsim'),
                                'tests', 'scratch')
