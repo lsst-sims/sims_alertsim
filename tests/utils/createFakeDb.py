@@ -8,12 +8,13 @@ from lsst.sims.catalogs.db import fileDBObject
 __all__ = ["createFakeOpSimDB"]
 
 
-def createFakeOpSimDB(file_name):
+def createFakeOpSimDB(file_name, pointing_list):
     """
     Creates a fake OpSim database (i.e. a sqlite database with a Summary
     table that has the same schema as OpSim).
 
     file_name will be the name of the file created.
+    pointing_list is a list of (ra, dec) positions at which to point.
 
     Will output a list of (MJD, RA, Dec, filter) corresponding to the
     observations contained.
@@ -38,7 +39,9 @@ def createFakeOpSimDB(file_name):
 
     with open(scratch_file_name, 'w') as output_file:
         output_file.write('# mjd ra dec filter\n')
-        for ra, dec in zip((45.0, 100.0), (-11.0, -20.0)):
+        for pointing in pointing_list:
+            ra = np.radians(pointing[0])
+            dec = np.radians(pointing[1])
             mjd_list = rng.random_sample(n_obs)*3653.0 + 59580.0
 
             bandpass_dex_list = rng.random_integers(0, 2, n_obs)
