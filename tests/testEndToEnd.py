@@ -59,7 +59,7 @@ class AlertSimEndToEndTest(unittest.TestCase):
                        ('varParamStr', 'varParamStr', str, 256)]
 
         class ControlCatalog(VariabilityStars, PhotometryStars, InstanceCatalog):
-            column_outputs = ['mjd', 'raJ2000', 'decJ2000', 'lsst_u']
+            column_outputs = ['mjd', 'raJ2000', 'decJ2000', 'mag']
             delimiter = ' '
 
             transformations = {'raJ2000': np.degrees, 'decJ2000': np.degrees}
