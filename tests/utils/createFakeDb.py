@@ -87,8 +87,8 @@ def createFakeCatSimDB(file_name, pointing_list):
 
     rng = np.random.RandomState(771)
 
-    dtype = np.dtype([('id', int), ('ra', float), ('dec', float),
-                      ('sedFilename', float), ('magNorm', float),
+    dtype = np.dtype([('id', int), ('ra', float), ('decl', float),
+                      ('sedFilename', str, 100), ('magNorm', float),
                       ('ebv', float), ('varParamStr', str, 256),
                       ('parallax', float), ('mura', float), ('mudecl', float),
                       ('vrad', float)])
@@ -119,12 +119,12 @@ def createFakeCatSimDB(file_name, pointing_list):
 
                 varParamStr = json.dumps(varParamDict)
 
-                output_file.write('%d %.6f %.6f %s %.6f %.6f %s 0.0 0.0 0.0 0.0\n' %
+                output_file.write("%d;%.6f;%.6f;%s;%.6f;%.6f;%s;0.0;0.0;0.0;0.0\n" %
                                   (ct, ra, dec, sed, magnorm, ebv, varParamStr))
                 ct += 1
 
     fileDBObject(scratch_file_name, runtable='test', database=file_name,
-                 dtype=dtype, delimiter=' ', idColKey='id')
+                 dtype=dtype, delimiter=';', idColKey='id')
 
     if os.path.exists(scratch_file_name):
         os.unlink(scratch_file_name)
