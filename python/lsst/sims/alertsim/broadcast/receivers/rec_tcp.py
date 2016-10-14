@@ -6,7 +6,8 @@ import argparse
 def main(port):
 
     # more effective than // TCP_IP = os.popen("hostname -i").read()
-    TCP_IP = subprocess.check_output("hostname -i", shell=True)
+    #TCP_IP = subprocess.check_output("hostname -i", shell=True)
+    TCP_IP = socket.gethostbyname(socket.gethostname())
     TCP_PORT = port
     BUFFER_SIZE = 10000  # Normally 1024, but we want fast response
 
