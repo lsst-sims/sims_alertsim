@@ -49,6 +49,10 @@ def main(opsim_table, catsim_table, opsim_constraint,
     obs_all = opsim_utils.opsim_query(stack_version=10, opsim_path=opsim_path,
             objid=opsim_table, radius=radius, constraint=opsim_constraint)
 
+    if not obs_all:
+        print "opsim query returned empty set"
+        sys.exit(1)
+
     print "opsim result fetched and transformed to ObservationMetaData objects"
 
     for obs_per_field in obs_all:
