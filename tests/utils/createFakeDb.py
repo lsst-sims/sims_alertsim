@@ -1,11 +1,12 @@
 from __future__ import with_statement
 import numpy as np
 import os
+import json
 
 from lsst.utils import getPackageDir
 from lsst.sims.catalogs.db import fileDBObject
 
-__all__ = ["createFakeOpSimDB"]
+__all__ = ["createFakeOpSimDB", "createFakeCatSimDB"]
 
 
 def createFakeOpSimDB(file_name, pointing_list):
@@ -58,3 +59,72 @@ def createFakeOpSimDB(file_name, pointing_list):
     os.unlink(scratch_file_name)
 
     return output_list
+
+
+def createFakeCatSimDB(file_name, pointing_list):
+    """
+    Creates a sqlite database with a CatSim-like schema.
+    The database will be populated with a handful of RRLyrae for alertsim testing.
+
+    file_name is the name of the file to be created
+    pointing_list is a list of (ra, dec) tuples corresponding to the pointings to be populated
+
+    will return a listof (RA, Dec, sed, magNorm, EBV, varParamStr)
+    """
+
+    scratch_dir = os.path.join(getPackageDir('sims_alertsim'), 'tests', 'scratch')
+    sed_dir = os.path.join(getPackageDir('sims_sed_library'), 'starSED', 'kurucz')
+    sed_list = np.array(os.listdir(sed_dir))
+
+    lc_subdir = os.path.join('rrly_lc', 'RRab')
+    lc_dir = os.path.join(getPackageDir('sims_sed_library'), lc_subdir)
+    lc_list = np.array(os.listdir(lc_dir))
+
+    if os.path.exists(file_name):
+        os.unlink(file_name)
+
+    n_obj = 10
+
+    rng = np.random.RandomState(771)
+
+    dtype = np.dtype([('id', int), ('ra', float), ('dec', float),
+                      ('sedFilename', float), ('magNorm', float),
+                      ('ebv', float), ('varParamStr', str, 256),
+                      ('parallax', float), ('mura', float), ('mudecl', float),
+                      ('vrad', float)])
+
+    scratch_file_name = os.path.join(scratch_dir, '%s.dat' % file_name)
+    if os.path.exists(scratch_file_name):
+        os.unlink(scratch_file_name)
+
+    ct = 1
+    with open(scratch_file_name, 'w') as output_file:
+        for pointing in pointing_list:
+            rr = rng.random_sample(n_obj)*0.1
+            theta = rng.random_sample(n_obj)*2.0*np.pi
+            ra_list = pointing[0] + rr*np.cos(theta)
+            dec_list = pointing[1] + rr*np.sin(theta)
+            sed_dex_list = rng.random_integers(0, len(sed_list)-1, n_obj)
+            ebv_list = 0.1 + rng.random_sample(n_obj)*0.5
+            lc_dex_list = rng.random_integers(0, len(lc_list)-1, n_obj)
+            magnorm_list = rng.random_sample(n_obj)*5.0+15.0
+
+            for ra, dec, magnorm, sed, ebv, lc in zip(ra_list, dec_list, magnorm_list,
+                                                      sed_list[sed_dex_list],
+                                                      ebv_list, lc_list[lc_dex_list]):
+
+                varParamDict = {'varMethodName': 'applyRRly',
+                                'pars': {'filename': os.path.join(lc_subdir, lc),
+                                         'tStartMjd': 59579.0}}
+
+                varParamStr = json.dumps(varParamDict)
+
+                output_file.write('%d %.6f %.6f %s %.6f %.6f %s 0.0 0.0 0.0 0.0\n' %
+                                  (ct, ra, dec, sed, magnorm, ebv, varParamStr))
+                ct += 1
+
+    fileDBObject(scratch_file_name, runtable='test', database=file_name,
+                 dtype=dtype, delimiter=' ', idColKey='id')
+
+    if os.path.exists(scratch_file_name):
+        os.unlink(scratch_file_name)
