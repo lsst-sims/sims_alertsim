@@ -24,7 +24,7 @@ def main(port):
         data = conn.recv(BUFFER_SIZE)
         if not data: break
         header = data[0:4]
-        f.write("data")
+        f.write(data)
         print "header:", header
         print "received data:", data[4:]
         conn.send(header)  # echo
