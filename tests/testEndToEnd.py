@@ -89,6 +89,10 @@ class AlertSimEndToEndTest(unittest.TestCase):
 
             cat.write_catalog(cat_name, write_mode='a', write_header=False)
 
+        # run alertsim
+        # read the control catalog back in
+        # compare them
+
         del db
         if os.path.exists(cat_name):
             os.unlink(cat_name)
