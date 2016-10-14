@@ -1,7 +1,10 @@
 import unittest
 import os
+import time
+import subprocess
 import numpy as np
 import lsst.utils.tests
+import lsst.sims.alertsim.alertsim_main as alertsim
 from lsst.utils import getPackageDir
 from lsst.sims.catalogs.db import CatalogDBObject
 from lsst.sims.catUtils.mixins import VariabilityStars, PhotometryStars
@@ -92,6 +95,29 @@ class AlertSimEndToEndTest(unittest.TestCase):
         # run alertsim
         # read the control catalog back in
         # compare them
+
+
+        #receiver_path = os.path.join(getPackageDir('sims_alertsim'),
+        #                             "/python/lsst/sims/alertsim/broadcast/receivers/rec_tcp.py")
+        receiver_path =  "/Users/danielsf/physics/lsst_160212/Development/sims_alertsim/python/lsst/sims/alertsim/broadcast/receivers/rec_tcp.py"
+	command = "python " + receiver_path + " -p 8080"
+	subprocess.Popen([command], shell=True)
+
+        time.sleep(5)
+
+        alertsim.main(opsim_table = "",
+	    catsim_table = "test_allstars",
+            opsim_constraint = "", opsim_path = self.opsim_file_name,
+            catsim_constraint = "varParamStr not like 'None'",
+            radius = 1.75, protocol = "TcpIp", ipaddr="108.179.167.18",
+            port = 8080, header = False, history = False, dia = False)
+
+        filename = os.path.join(dir, "../python/lsst/sims/alertsim/broadcast/receivers/VOEvents.txt")
+        voevent_list = read_and_divide(filename)
+        ucds = ["pos.eq.ra", "pos.eq.dec", "phot.mag"]
+        voevent_data_tuples = parse_parameters(ucds, voevent_list)
+
+	print voevent_data_tuples
 
         del db
         if os.path.exists(cat_name):
