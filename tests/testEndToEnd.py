@@ -2,6 +2,7 @@ import unittest
 import os
 import time
 import subprocess
+import socket
 import numpy as np
 import lsst.utils.tests
 import lsst.sims.alertsim.alertsim_main as alertsim
@@ -109,7 +110,7 @@ class AlertSimEndToEndTest(unittest.TestCase):
 	    catsim_table = "test_allstars",
             opsim_constraint = "", opsim_path = self.opsim_file_name,
             catsim_constraint = "varParamStr not like 'None'",
-            radius = 1.75, protocol = "TcpIp", ipaddr="108.179.167.18",
+            radius = 1.75, protocol = "TcpIp", ipaddr=socket.gethostbyname(socket.gethostname()),
             port = 8080, header = False, history = False, dia = False)
 
         filename = os.path.join(dir, "../python/lsst/sims/alertsim/broadcast/receivers/VOEvents.txt")
