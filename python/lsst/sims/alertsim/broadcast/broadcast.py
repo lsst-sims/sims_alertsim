@@ -22,7 +22,7 @@ class Broadcast(object):
         self.sock.close()
         print >>sys.stderr, 'closing socket'
 
-    def close_and_exist(self):
+    def close_and_exit(self):
         self.close()
         sys.exit(1)
 
@@ -57,22 +57,22 @@ class TcpIp(Broadcast):
             if e.errno == errno.EPIPE:
                 self._connect_socket()
                 self._send_and_receive(message)
-            else: 
+            else:
                 print(e)
                 self.close_and_exit()
-    
+
     def _connect_socket(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((self.ip, self.port))
         print "Connected to %s at port %d" % (self.ip, self.port)
 
     def _send_and_receive(self, message):
-        self.sock.send(self._add_voevent_header(message)) if self.header else self.sock.send(message) 
+        self.sock.send(self._add_voevent_header(message)) if self.header else self.sock.send(message)
         data = self.sock.recv(self.BUFFER_SIZE)
         print "received data:", data
 
 class Multicast(Broadcast):
-    
+
     '''
     class for multicast // to be revised
     '''
