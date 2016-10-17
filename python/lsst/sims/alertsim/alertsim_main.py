@@ -145,7 +145,6 @@ def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
         event_count += 1
         sending_times.append(time.time())
 
-    print "sdada"
     # add exception for index out of range
     try:
         sending_diff = sending_times[-1] - sending_times[0]
