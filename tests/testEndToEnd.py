@@ -99,13 +99,17 @@ class AlertSimEndToEndTest(unittest.TestCase):
         # read the control catalog back in
         # compare them
 
+        #current path
+        dir_path = os.path.dirname(os.path.realpath(__file__))
 
-        #receiver_path = os.path.join(getPackageDir('sims_alertsim'),
-        #                             "/python/lsst/sims/alertsim/broadcast/receivers/rec_tcp.py")
-        receiver_path =  "/Users/danielsf/physics/lsst_160212/Development/sims_alertsim/python/lsst/sims/alertsim/broadcast/receivers/rec_tcp.py"
-	command = "python " + receiver_path + " -p 8080"
-	subprocess.Popen([command], shell=True)
+        #combine parent path with receiver path
+        receiver_path = os.path.dirname(dir_path) + "/python/lsst/sims/alertsim/broadcast/receivers/rec_tcp.py"
 
+        #shell command for a receiver to be executed in a different process
+        command = "python " + receiver_path + " -p 8080"
+        subprocess.Popen([command], shell=True)
+
+        #wait a bit till receiver warms up
         time.sleep(5)
 
         alertsim.main(opsim_table = "",
