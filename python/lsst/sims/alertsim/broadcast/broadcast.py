@@ -21,8 +21,11 @@ class Broadcast(object):
     def close(self):
         self.sock.close()
         print >>sys.stderr, 'closing socket'
+
+    def close_and_exist(self):
+        self.close()
         sys.exit(1)
-    
+
     #@staticmethod
     def _add_voevent_header(self, message):
         header = '%08x' % (len(message))
@@ -42,7 +45,7 @@ class TcpIp(Broadcast):
             self._connect_socket()
         except socket.error as e:
             print(e)
-            self.close()
+            self.close_and_exit()
 
     def send(self, message):
         #message = zlib.compress(message, 9)
@@ -56,7 +59,7 @@ class TcpIp(Broadcast):
                 self._send_and_receive(message)
             else: 
                 print(e)
-                self.close()
+                self.close_and_exit()
     
     def _connect_socket(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -111,5 +114,5 @@ class Multicast(Broadcast):
 
         finally:
             print >>sys.stderr, 'closing socket'
-            self.close()
+            self.close_and_exit()
 
