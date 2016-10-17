@@ -36,9 +36,9 @@ def read_and_divide(uri):
                 else:
                     voevent += line
 
-return voevent_list
+    return voevent_list
 
-def parse_parameters(ucds, voevent_list)
+def parse_parameters(ucds, voevent_list):
 
     """
     Returns a list which contains tuples of values for each ucd

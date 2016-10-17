@@ -13,6 +13,8 @@ from lsst.sims.catalogs.definitions import InstanceCatalog
 from lsst.sims.utils import ObservationMetaData
 from utils import createFakeOpSimDB, createFakeCatSimDB
 
+from receiver_parser import read_and_divide, parse_parameters
+
 def setup_module(module):
     lsst.utils.tests.init()
 
@@ -113,7 +115,7 @@ class AlertSimEndToEndTest(unittest.TestCase):
             radius = 1.75, protocol = "TcpIp", ipaddr=socket.gethostbyname(socket.gethostname()),
             port = 8080, header = False, history = False, dia = False)
 
-        filename = os.path.join(dir, "../python/lsst/sims/alertsim/broadcast/receivers/VOEvents.txt")
+        filename = "VOEvents.txt"
         voevent_list = read_and_divide(filename)
         ucds = ["pos.eq.ra", "pos.eq.dec", "phot.mag"]
         voevent_data_tuples = parse_parameters(ucds, voevent_list)
