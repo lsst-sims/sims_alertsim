@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<voe:VOEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:voe="http://www.ivoa.net/xml/VOEvent/v2.0"
+xsi:schemaLocation="http://www.ivoa.net/xml/VOEvent/v2.0 http://www.cacr.caltech.edu/~roy/VOEvent/VOEvent2-110220.xsd"
+ version="2.0" role="test" ivorn="ivo://servo.aob.rs/alertsim#0">
+    <Who>
+        <Author>
+            <contactName></contactName>
+            <contactEmail></contactEmail>
+        </Author>
+    </Who>
+    <What>
+        <Group type="DIASource" name="DIASource">
+            <Param name="varParamStr" dataType="string" value='{"varMethodName": "applyRRly", "pars": {"tStartMjd": 59579.0, "filename": "rrly_lc/RRab/3455861.txt"}}' ucd="src.var" unit=""/>
+            <Param name="lsst_g" dataType="string" value="20.0356144886" ucd="phot.mag" unit=""/>
+            <Param name="decJ2000" dataType="string" value="-0.157183741569" ucd="pos.eq.dec" unit="rad"/>
+            <Param name="id" dataType="string" value="2" ucd="meta.id" unit=""/>
+            <Param name="gal_l" dataType="string" value="2.041986" ucd="" unit=""/>
+            <Param name="gal_b" dataType="string" value="-1.252994" ucd="" unit=""/>
+            <Param name="raJ2000" dataType="string" value="0.191722062137" ucd="pos.eq.ra" unit="rad"/>
+            <Param name="delta_lsst_g" dataType="string" value="-0.154798692592" ucd="phot.mag" unit=""/>
+        </Group>
+    </What>
+    <WhereWhen>
+        <ObsDataLocation>
+            <ObservatoryLocation id="LSST CatSim"/>
+            <ObservationLocation>
+                <AstroCoordSystem id="UTC-FK5-GEO"/>
+                <AstroCoords coord_system_id="UTC-FK5-GEO">
+                    <Time>
+                        <TimeInstant>
+                            <ISOTime>2030-06-25 04:09:26.899</ISOTime>
+                        </TimeInstant>
+                    </Time>
+                    <Position2D>
+                        <Value2>
+                            <C1>0.191722</C1> <!-- RA -->
+                            <C2>-0.157184</C2> <!-- Dec -->
+                        </Value2>
+                        <Error2Radius>0.010000</Error2Radius>
+                    </Position2D>
+                </AstroCoords>
+            </ObservationLocation>
+        </ObsDataLocation>
+    </WhereWhen>
+    <Citations>
+        <EventIVORN cite="followup">ivo:lsst.org/resource#89474</EventIVORN>
+        <EventIVORN cite="followup">ivo:lsst.org/resource#89475</EventIVORN>
+    </Citations>
+    <Description></Description>
+</voe:VOEvent>

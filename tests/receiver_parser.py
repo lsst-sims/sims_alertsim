@@ -7,7 +7,7 @@ def read_and_divide(uri):
     """
     Takes the file outputted by the receiver
     (lsst.sims.alertsim.broadcast.receivers.rec_tcp)
-    and returns a list of VOEvents
+    and divides it to a list of VOEvents
     """
 
     voevent_list = []
@@ -51,10 +51,14 @@ def parse_parameters(ucds, voevent_list):
         root = ET.fromstring(voevent)
         print root
         for ucd in ucds:
+            #XPATH expression for matching given ucd
             lines = root.findall("What//Param[@ucd='%s']" % (ucd,))
             for line in lines:
                 value = line.attrib["value"]
                 data_tuple.append(value)
+            #XPATH expression for matching ISOTime
+            isoTime = root.findtext("*//ISOTime")
+            data_tuple.append(isoTime)
         data_tuples.append(data_tuple)
 
     return data_tuples
