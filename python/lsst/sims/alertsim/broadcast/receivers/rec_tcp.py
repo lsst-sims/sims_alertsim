@@ -7,7 +7,18 @@ def main(port):
 
     # more effective than // TCP_IP = os.popen("hostname -i").read()
     #TCP_IP = subprocess.check_output("hostname -i", shell=True)
-    TCP_IP = socket.gethostbyname(socket.gethostname())
+
+    TCP_IP = '127.0.0.1'
+
+    #works on mac
+    if sys.platform == 'darwin':
+        TCP_IP = socket.gethostbyname(socket.gethostname())
+    else:
+    #works on linux, at least OpenSuSE
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8', 0))  # connecting to a UDP address doesn't send packets
+        TCP_IP = s.getsockname()[0]
+
     TCP_PORT = port
     BUFFER_SIZE = 10000  # Normally 1024, but we want fast response
 

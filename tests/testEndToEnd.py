@@ -1,5 +1,6 @@
 import unittest
 import os
+import sys
 import time
 import subprocess
 import socket
@@ -112,15 +113,28 @@ class AlertSimEndToEndTest(unittest.TestCase):
         #wait a bit till receiver warms up
         time.sleep(5)
 
+        #retreive local ipaddress
+        local_ip_adress = "127.0.0.1"
+
+        #works on mac
+        if sys.platform == 'darwin':
+            local_ip_address = socket.gethostbyname(socket.gethostname())
+        else:
+        #works on linux, at least OpenSuSE
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect(('8.8.8.8', 0))  # connecting to a UDP address doesn't send packets
+            local_ip_address = s.getsockname()[0]
+
         alertsim.main(opsim_table = "",
 	    catsim_table = "test_allstars",
             opsim_constraint = "", opsim_path = self.opsim_file_name,
             catsim_constraint = "varParamStr not like 'None'",
-            radius = 1.75, protocol = "TcpIp", ipaddr=socket.gethostbyname(socket.gethostname()),
+            radius = 1.75, protocol = "TcpIp", ipaddr=local_ip_address,
             port = 8080, header = False, history = False, dia = False)
 
         filename = "VOEvents.txt"
         voevent_list = read_and_divide(filename)
+
         ucds = ["pos.eq.ra", "pos.eq.dec", "phot.mag"]
         voevent_data_tuples = parse_parameters(ucds, voevent_list)
 
