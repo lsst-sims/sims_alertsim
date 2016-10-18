@@ -142,8 +142,6 @@ class AlertSimEndToEndTest(unittest.TestCase):
         ucds = ["pos.eq.ra", "pos.eq.dec", "phot.mag"]
         voevent_data_tuples = parse_parameters(ucds, voevent_list)
 
-	print voevent_data_tuples
-
         dtype = np.dtype([('mjd', float), ('ra', float), ('dec', float),
                           ('mag', float)])
         control_data = np.genfromtxt(cat_name, dtype=dtype)
