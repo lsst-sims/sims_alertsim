@@ -16,6 +16,8 @@ from utils import createFakeOpSimDB, createFakeCatSimDB
 
 from receiver_parser import read_and_divide, parse_parameters
 
+from astropy.time import Time
+
 def setup_module(module):
     lsst.utils.tests.init()
 
@@ -145,9 +147,25 @@ class AlertSimEndToEndTest(unittest.TestCase):
         dtype = np.dtype([('mjd', float), ('ra', float), ('dec', float),
                           ('mag', float)])
         control_data = np.genfromtxt(cat_name, dtype=dtype)
+
+        # check that the number of voevents matches
+        # the number of rows in our test column
         self.assertEqual(len(control_data), len(voevent_data_tuples),
                          msg=('%d catalog entries; %d voevents'
                               % (len(control_data), len(voevent_data_tuples))))
+
+        # loop over voevents, verifying that each one agrees with
+        # the contents of the catalog
+        tol = 1.0e-7
+        for event in voevent_data_tuples:
+            date = Time(event[4], scale='tai', format='isot')
+            tai = data.tai.mjd
+            ix = np.argmin(np.abs(tai-control_data['mjd']))
+            catobj = control_data[ix]
+            self.assertLess(np.abs(tai-catobj['mjd']), tol)
+            self.assertLess(np.abs(np.degrees(event[0])-catobj['ra']), tol)
+            self.assertLess(np.abs(np.degrees(event[1])-catobj['dec']), tol)
+            self.assertLess(np.abs(event[2]-cataobj['mag']), tol)
 
         del db
         if os.path.exists(cat_name):
