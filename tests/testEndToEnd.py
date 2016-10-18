@@ -11,7 +11,7 @@ from lsst.utils import getPackageDir
 from lsst.sims.catalogs.db import CatalogDBObject
 from lsst.sims.catUtils.mixins import VariabilityStars, PhotometryStars
 from lsst.sims.catalogs.definitions import InstanceCatalog
-from lsst.sims.utils import ObservationMetaData
+from lsst.sims.utils import ObservationMetaData, haversine
 from utils import createFakeOpSimDB, createFakeCatSimDB
 
 from receiver_parser import read_and_divide, parse_parameters
@@ -156,16 +156,29 @@ class AlertSimEndToEndTest(unittest.TestCase):
 
         # loop over voevents, verifying that each one agrees with
         # the contents of the catalog
-        tol = 1.0e-7
+        tol = 1.0e-4
         for event in voevent_data_tuples:
-            date = Time(event[4], scale='tai', format='isot')
-            tai = data.tai.mjd
-            ix = np.argmin(np.abs(tai-control_data['mjd']))
-            catobj = control_data[ix]
+            date = Time(event[4].replace(' ','T'), scale='tai', format='isot')
+            tai = date.tai.mjd
+
+            # find all of the catalog entries with the same
+            # mjd as the voevent being considered
+            delta_date = np.abs(tai-control_data['mjd'])
+            correct_date = control_data[np.where(delta_date<tol)]
+
+            # from those catalog entries with the same mjd,
+            # find the one with the same ra, dec
+            dist = haversine(float(event[0]),
+                             float(event[1]),
+                             np.radians(correct_date['ra']),
+                             np.radians(correct_date['dec']))
+            ix = np.argmin(dist)
+            catobj = correct_date[ix]
+
             self.assertLess(np.abs(tai-catobj['mjd']), tol)
-            self.assertLess(np.abs(np.degrees(event[0])-catobj['ra']), tol)
-            self.assertLess(np.abs(np.degrees(event[1])-catobj['dec']), tol)
-            self.assertLess(np.abs(event[2]-cataobj['mag']), tol)
+            self.assertLess(np.abs(np.degrees(float(event[0]))-catobj['ra']), tol)
+            self.assertLess(np.abs(np.degrees(float(event[1]))-catobj['dec']), tol)
+            self.assertLess(np.abs(float(event[2])-catobj['mag']), tol)
 
         del db
         if os.path.exists(cat_name):
