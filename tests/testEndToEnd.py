@@ -145,6 +145,9 @@ class AlertSimEndToEndTest(unittest.TestCase):
         dtype = np.dtype([('mjd', float), ('ra', float), ('dec', float),
                           ('mag', float)])
         control_data = np.genfromtxt(cat_name, dtype=dtype)
+        self.assertEqual(len(control_data), len(voevent_data_tuples),
+                         msg=('%d catalog entries; %d voevents'
+                              % (len(control_data), len(voevent_data_tuples))))
 
         del db
         if os.path.exists(cat_name):
