@@ -87,10 +87,12 @@ class AlertSimEndToEndTest(unittest.TestCase):
             os.unlink(cat_name)
 
         for pointing in self.opsim_pointing_list:
-            obs = ObservationMetaData(pointingRA=pointing[1],
-                                      pointingDec=pointing[2],
+            obs = ObservationMetaData(pointingRA=np.degrees(pointing[1]),
+                                      pointingDec=np.degrees(pointing[2]),
                                       mjd=pointing[0],
-                                      bandpassName=pointing[3])
+                                      bandpassName=pointing[3],
+                                      boundLength=1.75,
+                                      boundType='circle')
 
             cat = ControlCatalog(db, obs_metadata=obs)
 
@@ -143,6 +145,9 @@ class AlertSimEndToEndTest(unittest.TestCase):
         dtype = np.dtype([('mjd', float), ('ra', float), ('dec', float),
                           ('mag', float)])
         control_data = np.genfromtxt(cat_name, dtype=dtype)
+        self.assertEqual(len(control_data), len(voevent_data_tuples),
+                         msg=('%d catalog entries; %d voevents'
+                              % (len(control_data), len(voevent_data_tuples))))
 
         del db
         if os.path.exists(cat_name):
