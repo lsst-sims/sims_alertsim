@@ -140,6 +140,10 @@ class AlertSimEndToEndTest(unittest.TestCase):
 
 	print voevent_data_tuples
 
+        dtype = np.dtype([('mjd', float), ('ra', float), ('dec', float),
+                          ('mag', float)])
+        control_data = np.genfromtxt(cat_name, dtype=dtype)
+
         del db
         if os.path.exists(cat_name):
             os.unlink(cat_name)
