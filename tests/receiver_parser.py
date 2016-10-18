@@ -49,7 +49,6 @@ def parse_parameters(ucds, voevent_list):
     for voevent in voevent_list:
         data_tuple = []
         root = ET.fromstring(voevent)
-        print root
         for ucd in ucds:
             #XPATH expression for matching given ucd
             lines = root.findall("What//Param[@ucd='%s']" % (ucd,))
@@ -58,7 +57,7 @@ def parse_parameters(ucds, voevent_list):
                 data_tuple.append(value)
             #XPATH expression for matching ISOTime
             isoTime = root.findtext("*//ISOTime")
-            data_tuple.append(isoTime)
+        data_tuple.append(isoTime)
         data_tuples.append(data_tuple)
 
     return data_tuples
