@@ -89,7 +89,7 @@ def createFakeCatSimDB(file_name, pointing_list):
     if os.path.exists(file_name):
         os.unlink(file_name)
 
-    n_obj = 10
+    n_obj = 3
 
     rng = np.random.RandomState(771)
 
@@ -106,6 +106,7 @@ def createFakeCatSimDB(file_name, pointing_list):
 
     ct = 1
     with open(scratch_file_name, 'w') as output_file:
+        output_file.write("# a header\n")
         for pointing in pointing_list:
             rr = rng.random_sample(n_obj)*0.1
             theta = rng.random_sample(n_obj)*2.0*np.pi
