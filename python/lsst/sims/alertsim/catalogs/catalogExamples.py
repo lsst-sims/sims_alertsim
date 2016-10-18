@@ -18,124 +18,120 @@ def rbi():
 
 class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
 
-    """ Class for describing variable stars output """ 
-    
+    """ Class for describing variable stars output """
+
     catalog_type = 'variable_stars'
-    
-    column_outputs = ['id', 'raJ2000', 'decJ2000', 
-            'lsst_u', 'lsst_g', 'lsst_r', 
-            'lsst_i', 'lsst_z', 'lsst_y', 
-            'delta_lsst_u', 'delta_lsst_g', 
-            'delta_lsst_r', 'delta_lsst_i', 
-            'delta_lsst_z', 'delta_lsst_y', 
+
+    column_outputs = ['id', 'raJ2000', 'decJ2000',
+            'lsst_u', 'lsst_g', 'lsst_r',
+            'lsst_i', 'lsst_z', 'lsst_y',
+            'delta_lsst_u', 'delta_lsst_g',
+            'delta_lsst_r', 'delta_lsst_i',
+            'delta_lsst_z', 'delta_lsst_y',
             #'sigma_lsst_u','sigma_lsst_g','sigma_lsst_r',
-            #'sigma_lsst_i','sigma_lsst_z', 'sigma_lsst_y', 
+            #'sigma_lsst_i','sigma_lsst_z', 'sigma_lsst_y',
             'gal_l', 'gal_b', 'varParamStr']
 
-    ucds = ['meta.id', 'pos.eq.ra', 'pos.eq.dec', 
-                'phot.mag', 'phot.mag', 
-                'phot.mag', 'phot.mag', 
-                'phot.mag', 'phot.mag', 
-                'phot.mag', 'phot.mag', 
-                'phot.mag', 'phot.mag', 
-                'phot.mag', 'phot.mag', 
-                #'stat.error', 'stat.error', 
-                #'stat.error', 'stat.error', 
-                #'stat.error', 'stat.error', 
+    ucds = ['meta.id', 'pos.eq.ra', 'pos.eq.dec',
+                'phot.mag', 'phot.mag',
+                'phot.mag', 'phot.mag',
+                'phot.mag', 'phot.mag',
+                'phot.mag', 'phot.mag',
+                'phot.mag', 'phot.mag',
+                'phot.mag', 'phot.mag',
+                #'stat.error', 'stat.error',
+                #'stat.error', 'stat.error',
+                #'stat.error', 'stat.error',
                 '', '', 'src.var',]
 
-    units = ['', 'rad', 'rad', '', '', '', 
-             '', '', '', '', '', '', 
-            #'', '', '', '', '', '', 
+    units = ['', 'rad', 'rad', '', '', '',
+             '', '', '', '', '', '',
+            #'', '', '', '', '', '',
              '', '', '', '', '', '']
-    
+
     @staticmethod
     def get_column_outputs(bandname):
         return ['id', 'raJ2000', 'decJ2000','lsst_'+bandname,
                 'delta_lsst_'+bandname, 'sigma_lsst_'+bandname, 'varParamStr']
 
 class VariableStarsDia(VariableStars):
-    
+
     catalog_type = 'variable_stars_dia'
-    
-    column_outputs = VariableStars.column_outputs + ['diaSourceId', 'ccdVisitId', 'diaObjectId', 'ssObjectId',
-          'parentDiaSourceId', 'filterName', 'procHistoryId',
-          'ssObjectReassocTime', 'midPointTai', 'raSigma',
-          'declSigma', 'ra_decl_Cov', 'x', 'xSigma', 'y', 'ySigma', 
-          'x_y_Cov', 'snr', 'psFlux', 'psFluxSigma', 'psLnL', 'psChi2', 
-          'psN', 'trailFlux', 'trailFluxSigma', 'trailLength', 
-          'trailLengthSigma', 'trailAngle', 'trailAngleSigma', 
-          'trailFlux_trailLength_Cov', 'trailFlux_trailAngle_Cov', 
-          'trailLength_trailAngle_Cov', 'trailLnL', 'trailChi2', 'trailN', 
-          'fpFlux', 'fpFluxSigma', 'diffFlux', 'diffFluxSigma', 'fpSky', 
-          'fpSkySigma', 'E1', 'E1Sigma', 'E2', 'E2Sigma', 'E1_E2_Cov', 'mSum', 
-          'mSumSigma', 'extendedness', 'apMeanSb01', 'apMeanSb01Sigma', 
-          'apMeanSb02', 'apMeanSb02Sigma', 'apMeanSb03', 'apMeanSb03Sigma', 
-          'apMeanSb04', 'apMeanSb04Sigma', 'apMeanSb05', 'apMeanSb05Sigma', 
-          'apMeanSb06', 'apMeanSb06Sigma', 'apMeanSb07', 'apMeanSb07Sigma', 
-          'apMeanSb08', 'apMeanSb08Sigma', 'apMeanSb09', 'apMeanSb09Sigma', 
-          'apMeanSb10', 'apMeanSb10Sigma', 'flags', 'htmId20',]
 
-    ucds = VariableStars.ucds + ['meta.id;obs.image', 'meta.id;obs.image', 'meta.id;src', 
-                'meta.id;src', 'meta.id;src', 'meta.id;instr.filter', '', '', 
-                'time.epoch', 'stat.error;pos.eq.ra', 
-                'stat.error;pos.eq.dec', '', 'pos.cartesian.x', 
-                'stat.error;pos.cartesian.x', 'pos.cartesian.y', 
-                'stat.error;pos.cartesian.y', '', '', 'phot.count', '', '', 
-                '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-                'phot.count','stat.error;phot.count', '', 
-                'stat.error;phot.count', '', '', 'phys.size.axisRatio', 
-                'stat.error;phys.size.axisRatio', 'phys.size.axisRatio', 
-                'stat.error;phys.size.axisRatio', '', '', '', '', '', '', '', 
-                '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 
-                '', '', 'meta.code',]
+    column_outputs = VariableStars.column_outputs + ['diaSourceId', 'ccdVisitId',
+          'diaObjectId', 'ssObjectId', 'parentSourceId', 'midPointTai',
+          'radec', 'radecCov', 'xy', 'xyCov', 'apFlux', 'apFluxErr', 'SNR',
+          'psFlux', 'psRadec', 'psCov', 'psLnL', 'psChi2', 'psNdata', 'trailFlux',
+          'trailRadec', 'trailLength', 'trailAngle', 'trailCov', 'trailLnL',
+          'trailChi2', 'trailNdata', 'dipMeanFlux', 'dipFluxDiff', 'dipRadec',
+          'dipLength', 'dipAngle', 'dipCov', 'dipLnL', 'dipChi2', 'dipNdata',
+          'totFlux', 'totFluxErr', 'diffFlux', 'diffFluxErr', 'fpBkgd', 'fpBkgdErr',
+          'Ixx', 'Iyy', 'Ixy', 'Icov', 'IxxPSF', 'IyyPSF', 'IxyPSF', 'extendedness',
+          'spuriousness', 'flags',]
 
-    units = VariableStars.units + ['','','','','','','','','d','deg','deg','deg^2','pixel',
-             'pixel','pixel','pixel','pixel^2','','nmgy','nmgy','','','','nmgy',
-             'nmgy','arcsec','nmgy','degrees','nmgy','','','','','','','nmgy',
-             'nmgy','nmgy','nmgy','nmgy/asec^2','nmgy/asec^2','','','','','','',
-             '','','','','','','','','','','','','','','','','','','','','','','']
-    
-    default_columns = [('diaSourceId', rbi(), int), ('ccdVisitId', rbi(), int), 
-          ('diaObjectId', rbi(), int), ('ssObjectId', rbi(), int), 
-          ('parentDiaSourceId', rbi(), int), ('filterName', 0, (str,1)), 
-          ('procHistoryId', rbi(), int), ('ssObjectReassocTime', ri(), str), 
-	      ('midPointTai', rf(), float), ('raSigma', rf(), float), ('declSigma', rf(), float), 
-          ('ra_decl_Cov', rf(), float), ('x', rf(), float), ('xSigma', rf(), float), 
-          ('y', rf(), float), ('ySigma', rf(), float), ('x_y_Cov', rf(), float), 
-          ('snr', rf(), float), ('psFlux', rf(), float), ('psFluxSigma', rf(), float), 
-          ('psLnL', rf(), float), ('psChi2', rf(), float), ('psN', ri(), int), 
-          ('trailFlux', rf(), float), ('trailFluxSigma', rf(), float), 
-          ('trailLength', rf(), float), ('trailLengthSigma', rf(), float), 
-          ('trailAngle', rf(), float), ('trailAngleSigma', rf(), float), 
-          ('trailFlux_trailLength_Cov', rf(), float), 
-          ('trailFlux_trailAngle_Cov', rf(), float), 
-          ('trailLength_trailAngle_Cov', rf(), float), ('trailLnL', rf(), float), 
-          ('trailChi2', rf(), float), ('trailN', ri(), int), ('fpFlux', rf(), float), 
-          ('fpFluxSigma', rf(), float), ('diffFlux', rf(), float), 
-          ('diffFluxSigma', rf(), float), ('fpSky', rf(), float), 
-          ('fpSkySigma', rf(), float), ('E1', rf(), float), ('E1Sigma', rf(), float), 
-          ('E2', rf(), float), ('E2Sigma', rf(), float), ('E1_E2_Cov', rf(), float), 
-          ('mSum', rf(), float), ('mSumSigma', rf(), float), 
-          ('extendedness', rf(), float), 
-          ('apMeanSb01', rf(), float), ('apMeanSb01Sigma', rf(), float), 
-          ('apMeanSb02', rf(), float), ('apMeanSb02Sigma', rf(), float), 
-          ('apMeanSb03', rf(), float), ('apMeanSb03Sigma', rf(), float), 
-          ('apMeanSb04', rf(), float), ('apMeanSb04Sigma', rf(), float), 
-          ('apMeanSb05', rf(), float), ('apMeanSb05Sigma', rf(), float), 
-          ('apMeanSb06', rf(), float), ('apMeanSb06Sigma', rf(), float), 
-          ('apMeanSb07', rf(), float), ('apMeanSb07Sigma', rf(), float), 
-          ('apMeanSb08', rf(), float), ('apMeanSb08Sigma', rf(), float), 
-          ('apMeanSb09', rf(), float), ('apMeanSb09Sigma', rf(), float), 
-          ('apMeanSb10', rf(), float), ('apMeanSb10Sigma', rf(), float), 
-          ('flags', rbi(), int), ('htmId20', rbi(), int),]
+    ucds = VariableStars.ucds + ['meta.id;meta.main', 'meta.id;instr.param',
+                'meta.id.assoc', 'meta.id.assoc', 'meta.id.parent',
+                'time.epoch', 'pos.?', 'stat.covariance',
+                'instr.pixel', 'stat.covariance',
+                'phot.flux;arith.diff;phot.calib',
+                'stat.error;phot.flux', 'stat.snr',
+                'phot.flux;arith.diff', 'pos.?', 'stat.covariance',
+                'stat.likelihood;', 'stat.fit.chi2', 'stat.value',
+                'phot.flux;arith.diff;phot.calib', 'pos.?',
+                'stat.likelihood;stat.max', 'stat.likelihood;stat.max',
+                'stat.covariance', 'stat.likelihood', 'stat.fit.chi2',
+                'stat.value', 'stat.likelihood;stat.max',
+                'stat.likelihood;stat.max', 'pos.?',
+                'stat.likelihood;stat.max', 'stat.likelihood;stat.max',
+                'stat.covariance', 'stat.likelihood', 'stat.fit.chi2',
+                'stat.value', 'phot.flux;arith.diff;phot.calib',
+                'stat.error;phot.flux', 'phot.flux;arith.diff;phot.calib',
+                'stat.error;phot.flux', 'pos.?', 'stat.error;pos.?',
+                '', '', '', 'stat.covariance', 'instr.det.psf',
+                'instr.det.psf', 'instr.det.psf', '', '', 'meta.code']
+
+
+    units = VariableStars.units + ['', '', '', '', '', 'time', 'degrees',
+             'various', 'pixels', 'various', 'nmgy', 'nmgy', 'nmgy',
+             'degrees', 'various', '', '', '', 'nmgy', 'degrees', 'arcsec',
+             'degrees', 'various', '', '', '', 'nmgy', 'nmgy', 'degrees',
+             'arcsec', 'degrees', 'various', '', '', '', 'nmgy', 'nmgy',
+             'nmgy', 'nmgy', 'nmgy/asec^2', 'nmgy/asec^2', 'nmgy/asec^2',
+             'nmgy/asec^2', 'nmgy/asec^2', 'nmgy^2 asec^4', 'nmgy/asec^2',
+             'nmgy/asec^2', 'nmgy/asec^2', '', '', 'bit',]
+
+    default_columns = [('diaSourceId', rbi(), int), ('ccdVisitId', rbi(), int),
+          ('diaObjectId', rbi(), int), ('ssObjectId', rbi(), int),
+          ('parentSourceId', rbi(), int), ('midPointTai', rf(), float),
+          ('radec', rf(), float), ('radecCov', rf(), float),
+          ('xy', rf(), float), ('xyCov', rf(), float), ('apFlux', rf(), float),
+          ('apFluxErr', rf(), float), ('SNR', rf(), float),
+          ('psFlux', rf(), float), ('psRadec', rf(), float),
+          ('psCov', rf(), float), ('psLnL', rf(), float),
+          ('psChi2', rf(), float), ('psNdata', ri(), int),
+          ('trailFlux', rf(), float), ('trailRadec', rf(), float),
+          ('trailLength', rf(), float), ('trailAngle', rf(), float),
+          ('trailCov', rf(), float), ('trailLnL', rf(), float),
+          ('trailChi2', rf(), float), ('trailNdata', ri(), int),
+          ('dipMeanFlux', rf(), float), ('dipFluxDiff', rf(), float),
+          ('dipRadec', rf(), float), ('dipLength', rf(), float),
+          ('dipAngle', rf(), float), ('dipCov', rf(), float),
+          ('dipLnL', rf(), float), ('dipChi2', rf(), float),
+          ('dipNdata', ri(), int), ('totFlux', rf(), float),
+          ('totFluxErr', rf(), float), ('diffFlux', rf(), float),
+          ('diffFluxErr', rf(), float), ('fpBkgd', rf(), float),
+          ('fpBkgdErr', rf(), float), ('Ixx', rf(), float), ('Iyy', rf(), float),
+          ('Ixy', rf(), float), ('Icov', rf(), float), ('IxxPSF', rf(), float),
+          ('IyyPSF', rf(), float), ('IxyPSF', rf(), float),
+          ('extendedness', rf(), float), ('spuriousness', rf(), float),
+          ('flags', 0, (str, 1)),]
 
     def get_diaSourceId(self):
         return self.column_by_name('simobjid')
 
     # resolve db column case-sensitivness
-    def get_htmId20(self):
-        return self._decapitalize_column_name('htmID')
+    #def get_htmId20(self):
+    #    return self._decapitalize_column_name('htmID')
 
     def _decapitalize_column_name(self, colname):
         if colname in  self.db_obj.columnMap.keys():
@@ -165,79 +161,79 @@ class DIASources(InstanceCatalog):
     column_outputs = ['diaSourceId', 'ccdVisitId', 'diaObjectId', 'ssObjectId',
           'parentDiaSourceId', 'filterName', 'procHistoryId',
           'ssObjectReassocTime', 'midPointTai', 'ra', 'raSigma', 'decl',
-          'declSigma', 'ra_decl_Cov', 'x', 'xSigma', 'y', 'ySigma', 
-          'x_y_Cov', 'snr', 'psFlux', 'psFluxSigma', 'psLnL', 'psChi2', 
-          'psN', 'trailFlux', 'trailFluxSigma', 'trailLength', 
-          'trailLengthSigma', 'trailAngle', 'trailAngleSigma', 
-          'trailFlux_trailLength_Cov', 'trailFlux_trailAngle_Cov', 
-          'trailLength_trailAngle_Cov', 'trailLnL', 'trailChi2', 'trailN', 
-          'fpFlux', 'fpFluxSigma', 'diffFlux', 'diffFluxSigma', 'fpSky', 
-          'fpSkySigma', 'E1', 'E1Sigma', 'E2', 'E2Sigma', 'E1_E2_Cov', 'mSum', 
-          'mSumSigma', 'extendedness', 'apMeanSb01', 'apMeanSb01Sigma', 
-          'apMeanSb02', 'apMeanSb02Sigma', 'apMeanSb03', 'apMeanSb03Sigma', 
-          'apMeanSb04', 'apMeanSb04Sigma', 'apMeanSb05', 'apMeanSb05Sigma', 
-          'apMeanSb06', 'apMeanSb06Sigma', 'apMeanSb07', 'apMeanSb07Sigma', 
-          'apMeanSb08', 'apMeanSb08Sigma', 'apMeanSb09', 'apMeanSb09Sigma', 
+          'declSigma', 'ra_decl_Cov', 'x', 'xSigma', 'y', 'ySigma',
+          'x_y_Cov', 'snr', 'psFlux', 'psFluxSigma', 'psLnL', 'psChi2',
+          'psN', 'trailFlux', 'trailFluxSigma', 'trailLength',
+          'trailLengthSigma', 'trailAngle', 'trailAngleSigma',
+          'trailFlux_trailLength_Cov', 'trailFlux_trailAngle_Cov',
+          'trailLength_trailAngle_Cov', 'trailLnL', 'trailChi2', 'trailN',
+          'fpFlux', 'fpFluxSigma', 'diffFlux', 'diffFluxSigma', 'fpSky',
+          'fpSkySigma', 'E1', 'E1Sigma', 'E2', 'E2Sigma', 'E1_E2_Cov', 'mSum',
+          'mSumSigma', 'extendedness', 'apMeanSb01', 'apMeanSb01Sigma',
+          'apMeanSb02', 'apMeanSb02Sigma', 'apMeanSb03', 'apMeanSb03Sigma',
+          'apMeanSb04', 'apMeanSb04Sigma', 'apMeanSb05', 'apMeanSb05Sigma',
+          'apMeanSb06', 'apMeanSb06Sigma', 'apMeanSb07', 'apMeanSb07Sigma',
+          'apMeanSb08', 'apMeanSb08Sigma', 'apMeanSb09', 'apMeanSb09Sigma',
           'apMeanSb10', 'apMeanSb10Sigma', 'flags', 'htmId20', 'varParamStr']
-    default_columns = [('diaSourceId', rbi(), int), ('ccdVisitId', rbi(), int), 
-          ('diaObjectId', rbi(), int), ('ssObjectId', rbi(), int), 
-          ('parentDiaSourceId', rbi(), int), ('filterName', 0, (str,1)), 
-          ('procHistoryId', rbi(), int), ('ssObjectReassocTime', ri(), str), 
-	      ('midPointTai', rf(), float), ('ra', rf(), float), ('raSigma', rf(), float), 
-          ('decl', rf(), float), ('declSigma', rf(), float), 
-          ('ra_decl_Cov', rf(), float), ('x', rf(), float), ('xSigma', rf(), float), 
-          ('y', rf(), float), ('ySigma', rf(), float), ('x_y_Cov', rf(), float), 
-          ('snr', rf(), float), ('psFlux', rf(), float), ('psFluxSigma', rf(), float), 
-          ('psLnL', rf(), float), ('psChi2', rf(), float), ('psN', ri(), int), 
-          ('trailFlux', rf(), float), ('trailFluxSigma', rf(), float), 
-          ('trailLength', rf(), float), ('trailLengthSigma', rf(), float), 
-          ('trailAngle', rf(), float), ('trailAngleSigma', rf(), float), 
-          ('trailFlux_trailLength_Cov', rf(), float), 
-          ('trailFlux_trailAngle_Cov', rf(), float), 
-          ('trailLength_trailAngle_Cov', rf(), float), ('trailLnL', rf(), float), 
-          ('trailChi2', rf(), float), ('trailN', ri(), int), ('fpFlux', rf(), float), 
-          ('fpFluxSigma', rf(), float), ('diffFlux', rf(), float), 
-          ('diffFluxSigma', rf(), float), ('fpSky', rf(), float), 
-          ('fpSkySigma', rf(), float), ('E1', rf(), float), ('E1Sigma', rf(), float), 
-          ('E2', rf(), float), ('E2Sigma', rf(), float), ('E1_E2_Cov', rf(), float), 
-          ('mSum', rf(), float), ('mSumSigma', rf(), float), 
-          ('extendedness', rf(), float), 
-          ('apMeanSb01', rf(), float), ('apMeanSb01Sigma', rf(), float), 
-          ('apMeanSb02', rf(), float), ('apMeanSb02Sigma', rf(), float), 
-          ('apMeanSb03', rf(), float), ('apMeanSb03Sigma', rf(), float), 
-          ('apMeanSb04', rf(), float), ('apMeanSb04Sigma', rf(), float), 
-          ('apMeanSb05', rf(), float), ('apMeanSb05Sigma', rf(), float), 
-          ('apMeanSb06', rf(), float), ('apMeanSb06Sigma', rf(), float), 
-          ('apMeanSb07', rf(), float), ('apMeanSb07Sigma', rf(), float), 
-          ('apMeanSb08', rf(), float), ('apMeanSb08Sigma', rf(), float), 
-          ('apMeanSb09', rf(), float), ('apMeanSb09Sigma', rf(), float), 
-          ('apMeanSb10', rf(), float), ('apMeanSb10Sigma', rf(), float), 
-          ('flags', rbi(), int), ('htmId20', rbi(), int), 
+    default_columns = [('diaSourceId', rbi(), int), ('ccdVisitId', rbi(), int),
+          ('diaObjectId', rbi(), int), ('ssObjectId', rbi(), int),
+          ('parentDiaSourceId', rbi(), int), ('filterName', 0, (str,1)),
+          ('procHistoryId', rbi(), int), ('ssObjectReassocTime', ri(), str),
+	      ('midPointTai', rf(), float), ('ra', rf(), float), ('raSigma', rf(), float),
+          ('decl', rf(), float), ('declSigma', rf(), float),
+          ('ra_decl_Cov', rf(), float), ('x', rf(), float), ('xSigma', rf(), float),
+          ('y', rf(), float), ('ySigma', rf(), float), ('x_y_Cov', rf(), float),
+          ('snr', rf(), float), ('psFlux', rf(), float), ('psFluxSigma', rf(), float),
+          ('psLnL', rf(), float), ('psChi2', rf(), float), ('psN', ri(), int),
+          ('trailFlux', rf(), float), ('trailFluxSigma', rf(), float),
+          ('trailLength', rf(), float), ('trailLengthSigma', rf(), float),
+          ('trailAngle', rf(), float), ('trailAngleSigma', rf(), float),
+          ('trailFlux_trailLength_Cov', rf(), float),
+          ('trailFlux_trailAngle_Cov', rf(), float),
+          ('trailLength_trailAngle_Cov', rf(), float), ('trailLnL', rf(), float),
+          ('trailChi2', rf(), float), ('trailN', ri(), int), ('fpFlux', rf(), float),
+          ('fpFluxSigma', rf(), float), ('diffFlux', rf(), float),
+          ('diffFluxSigma', rf(), float), ('fpSky', rf(), float),
+          ('fpSkySigma', rf(), float), ('E1', rf(), float), ('E1Sigma', rf(), float),
+          ('E2', rf(), float), ('E2Sigma', rf(), float), ('E1_E2_Cov', rf(), float),
+          ('mSum', rf(), float), ('mSumSigma', rf(), float),
+          ('extendedness', rf(), float),
+          ('apMeanSb01', rf(), float), ('apMeanSb01Sigma', rf(), float),
+          ('apMeanSb02', rf(), float), ('apMeanSb02Sigma', rf(), float),
+          ('apMeanSb03', rf(), float), ('apMeanSb03Sigma', rf(), float),
+          ('apMeanSb04', rf(), float), ('apMeanSb04Sigma', rf(), float),
+          ('apMeanSb05', rf(), float), ('apMeanSb05Sigma', rf(), float),
+          ('apMeanSb06', rf(), float), ('apMeanSb06Sigma', rf(), float),
+          ('apMeanSb07', rf(), float), ('apMeanSb07Sigma', rf(), float),
+          ('apMeanSb08', rf(), float), ('apMeanSb08Sigma', rf(), float),
+          ('apMeanSb09', rf(), float), ('apMeanSb09Sigma', rf(), float),
+          ('apMeanSb10', rf(), float), ('apMeanSb10Sigma', rf(), float),
+          ('flags', rbi(), int), ('htmId20', rbi(), int),
           ('varParamString', 0, (str,1))]
 
     def get_diaSourceId(self):
         return self.column_by_name('simobjid')
-    
+
     def get_htmId20(self):
 	    return self.column_by_name('htmid')
 	    #return self.column_by_name('htmID')
-  
+
     @staticmethod
     def get_ucds():
-        return ['meta.id;obs.image', 'meta.id;obs.image', 'meta.id;src', 
-                'meta.id;src', 'meta.id;src', 'meta.id;instr.filter', '', '', 
-                'time.epoch', 'pos.eq.ra', 'stat.error;pos.eq.ra', 
-                'pos.eq.dec', 'stat.error;pos.eq.dec', '', 'pos.cartesian.x', 
-                'stat.error;pos.cartesian.x', 'pos.cartesian.y', 
-                'stat.error;pos.cartesian.y', '', '', 'phot.count', '', '', 
+        return ['meta.id;obs.image', 'meta.id;obs.image', 'meta.id;src',
+                'meta.id;src', 'meta.id;src', 'meta.id;instr.filter', '', '',
+                'time.epoch', 'pos.eq.ra', 'stat.error;pos.eq.ra',
+                'pos.eq.dec', 'stat.error;pos.eq.dec', '', 'pos.cartesian.x',
+                'stat.error;pos.cartesian.x', 'pos.cartesian.y',
+                'stat.error;pos.cartesian.y', '', '', 'phot.count', '', '',
                 '', '', '', '', '', '', '', '', '', '', '', '', '', '',
-                'phot.count','stat.error;phot.count', '', 
-                'stat.error;phot.count', '', '', 'phys.size.axisRatio', 
-                'stat.error;phys.size.axisRatio', 'phys.size.axisRatio', 
-                'stat.error;phys.size.axisRatio', '', '', '', '', '', '', '', 
-                '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 
+                'phot.count','stat.error;phot.count', '',
+                'stat.error;phot.count', '', '', 'phys.size.axisRatio',
+                'stat.error;phys.size.axisRatio', 'phys.size.axisRatio',
+                'stat.error;phys.size.axisRatio', '', '', '', '', '', '', '',
+                '', '', '', '', '', '', '', '', '', '', '', '', '', '', '',
                 '', '', 'meta.code', 'src.var']
-  
+
     @staticmethod
     def get_units():
         return ['','','','','','','','','d','deg','deg','deg','deg','deg^2','pixel',
@@ -245,7 +241,7 @@ class DIASources(InstanceCatalog):
             'nmgy','arcsec','nmgy','degrees','nmgy','','','','','','','nmgy',
             'nmgy','nmgy','nmgy','nmgy/asec^2','nmgy/asec^2','','','','','','',
             '','','','','','','','','','','','','','','','','','','','','','','','']
-  
+
     @staticmethod
     def get_datatypes():
         return ['BIGINT','BIGINT','BIGINT','BIGINT','BIGINT','CHAR(1)','BIGINT',
@@ -257,10 +253,10 @@ class DIASources(InstanceCatalog):
             'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT',
             'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT',
             'FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','FLOAT','BIGINT','BIGINT','STRING']
-  
+
     @staticmethod
     def get_descriptions():
-        return ['Unique id.', 
+        return ['Unique id.',
                 'Id of the ccdVisit where this diaSource was measured. Note that we are allowing a diaSource to belong to multiple amplifiers, but it may not span multiple ccds.',
             'Id of the diaObject this source was associated with, if any. If not, it is set to NULL (each diaSource will be associated with either a diaObject or ssObject).',
             'Id of the ssObject this source was associated with, if any. If not, it is set to NULL (each diaSource will be associated with either a diaObject or ssObject).',
@@ -331,55 +327,55 @@ class DIAObjects(InstanceCatalog):
 		      'yLcNonPeriodic','nearbyObj1','nearbyObj1Dist','nearbyObj1LnP',
 		      'nearbyObj2','nearbyObj2Dist','nearbyObj2LnP','nearbyObj3',
 		      'nearbyObj3Dist','nearbyObj3LnP','flags','htmId20']
-    default_columns = [('diaObjectId', rbi(), int), ('procHistoryId', rbi(), int), 
-                       ('validityStart', 0, str), ('validityEnd', 0, str), 
-                       ('ra', rf(), float), ('raSigma', rf(), float), ('decl', rf(), float), 
-                       ('declSigma', rf(), float), ('ra_decl_Cov', rf(), float), 
-                       ('muRa', rf(), float), ('muRaSigma', rf(), float), 
-                       ('muDecl', rf(), float), ('muDecSigma', rf(), float), 
-                       ('muRa_muDeclCov', rf(), float), ('parallax', rf(), float), 
-                       ('parallaxSigma', rf(), float), ('muRa_parallax_Cov', rf(), float), 
-                       ('muDecl_parallax_Cov', rf(), float), ('lnL', rf(), float), 
-                       ('chi2', rf(), float), ('N', ri(), int), ('uPSFlux', rf(), float), 
-                       ('uPSFluxErr', rf(), float), ('uPSFluxSigma', rf(), float), 
-                       ('uFPFlux', rf(), float), ('uFPFluxErr', rf(), float), 
-                       ('uFPFluxSigma', rf(), float), ('gPSFlux', rf(), float), 
-                       ('gPSFluxErr', rf(), float), ('gPSFluxSigma', rf(), float), 
-                       ('gFPFlux', rf(), float), ('gFPFluxErr', rf(), float), 
-                       ('gFPFluxSigma', rf(), float), ('rPSFlux', rf(), float), 
-                       ('rPSFluxErr', rf(), float), ('rPSFluxSigma', rf(), float), 
-                       ('rFPFlux', rf(), float), ('rFPFluxErr', rf(), float), 
-                       ('rFPFluxSigma', rf(), float), ('iPSFlux', rf(), float), 
-                       ('iPSFluxErr', rf(), float), ('iPSFluxSigma', rf(), float), 
-                       ('iFPFlux', rf(), float), ('iFPFluxErr', rf(), float), 
-                       ('iFPFluxSigma', rf(), float), ('zPSFlux', rf(), float), 
-                       ('zPSFluxErr', rf(), float), ('zPSFluxSigma', rf(), float), 
-                       ('zFPFlux', rf(), float), ('zFPFluxErr', rf(), float), 
-                       ('zFPFluxSigma', rf(), float), ('yPSFlux', rf(), float), 
-                       ('yPSFluxErr', rf(), float), ('yPSFluxSigma', rf(), float), 
-                       ('yFPFlux', rf(), float), ('yFPFluxErr', rf(), float), 
-                       ('yFPFluxSigma', rf(), float), ('uLcPeriodic', rf(), float), 
-                       ('gLcPeriodic', rf(), float), ('rLcPeriodic', rf(), float), 
-                       ('iLcPeriodic', rf(), float), ('zLcPeriodic', rf(), float), 
-                       ('yLcPeriodic', rf(), float), ('uLcNonPeriodic', rf(), float), 
-                       ('gLcNonPeriodic', rf(), float), ('rLcNonPeriodic', rf(), float), 
-                       ('iLcNonPeriodic', rf(), float), ('zLcNonPeriodic', rf(), float), 
-                       ('yLcNonPeriodic', rf(), float), ('nearbyObj1', rbi(), int), 
-                       ('nearbyObj1Dist', rf(), float), ('nearbyObj1LnP', rf(), float), 
-                       ('nearbyObj2', rbi(), int), ('nearbyObj2Dist', rf(), float), 
-                       ('nearbyObj2LnP', rf(), float), ('nearbyObj3', rbi(), int), 
-                       ('nearbyObj3Dist', rf(), float), ('nearbyObj3LnP', rf(), float), 
+    default_columns = [('diaObjectId', rbi(), int), ('procHistoryId', rbi(), int),
+                       ('validityStart', 0, str), ('validityEnd', 0, str),
+                       ('ra', rf(), float), ('raSigma', rf(), float), ('decl', rf(), float),
+                       ('declSigma', rf(), float), ('ra_decl_Cov', rf(), float),
+                       ('muRa', rf(), float), ('muRaSigma', rf(), float),
+                       ('muDecl', rf(), float), ('muDecSigma', rf(), float),
+                       ('muRa_muDeclCov', rf(), float), ('parallax', rf(), float),
+                       ('parallaxSigma', rf(), float), ('muRa_parallax_Cov', rf(), float),
+                       ('muDecl_parallax_Cov', rf(), float), ('lnL', rf(), float),
+                       ('chi2', rf(), float), ('N', ri(), int), ('uPSFlux', rf(), float),
+                       ('uPSFluxErr', rf(), float), ('uPSFluxSigma', rf(), float),
+                       ('uFPFlux', rf(), float), ('uFPFluxErr', rf(), float),
+                       ('uFPFluxSigma', rf(), float), ('gPSFlux', rf(), float),
+                       ('gPSFluxErr', rf(), float), ('gPSFluxSigma', rf(), float),
+                       ('gFPFlux', rf(), float), ('gFPFluxErr', rf(), float),
+                       ('gFPFluxSigma', rf(), float), ('rPSFlux', rf(), float),
+                       ('rPSFluxErr', rf(), float), ('rPSFluxSigma', rf(), float),
+                       ('rFPFlux', rf(), float), ('rFPFluxErr', rf(), float),
+                       ('rFPFluxSigma', rf(), float), ('iPSFlux', rf(), float),
+                       ('iPSFluxErr', rf(), float), ('iPSFluxSigma', rf(), float),
+                       ('iFPFlux', rf(), float), ('iFPFluxErr', rf(), float),
+                       ('iFPFluxSigma', rf(), float), ('zPSFlux', rf(), float),
+                       ('zPSFluxErr', rf(), float), ('zPSFluxSigma', rf(), float),
+                       ('zFPFlux', rf(), float), ('zFPFluxErr', rf(), float),
+                       ('zFPFluxSigma', rf(), float), ('yPSFlux', rf(), float),
+                       ('yPSFluxErr', rf(), float), ('yPSFluxSigma', rf(), float),
+                       ('yFPFlux', rf(), float), ('yFPFluxErr', rf(), float),
+                       ('yFPFluxSigma', rf(), float), ('uLcPeriodic', rf(), float),
+                       ('gLcPeriodic', rf(), float), ('rLcPeriodic', rf(), float),
+                       ('iLcPeriodic', rf(), float), ('zLcPeriodic', rf(), float),
+                       ('yLcPeriodic', rf(), float), ('uLcNonPeriodic', rf(), float),
+                       ('gLcNonPeriodic', rf(), float), ('rLcNonPeriodic', rf(), float),
+                       ('iLcNonPeriodic', rf(), float), ('zLcNonPeriodic', rf(), float),
+                       ('yLcNonPeriodic', rf(), float), ('nearbyObj1', rbi(), int),
+                       ('nearbyObj1Dist', rf(), float), ('nearbyObj1LnP', rf(), float),
+                       ('nearbyObj2', rbi(), int), ('nearbyObj2Dist', rf(), float),
+                       ('nearbyObj2LnP', rf(), float), ('nearbyObj3', rbi(), int),
+                       ('nearbyObj3Dist', rf(), float), ('nearbyObj3LnP', rf(), float),
                        ('flags', rbi(), int), ('htmId20', rbi(), int)]
-  
+
     def get_diaObjectId(self):
         return self.column_by_name('simobjid')
-    
+
     def get_muRa(self):
         return self.column_by_name('mura')
-    
+
     def get_muDecl(self):
         return self.column_by_name('mudecl')
-    
+
     @staticmethod
     def get_ucds():
         return ['meta.id;src','','','','pos.eq.ra','stat.error;pos.eq.ra','pos.eq.dec',
@@ -392,7 +388,7 @@ class DIAObjects(InstanceCatalog):
                 'phot.count','phot.count','phot.count','','','','','','','','','',
                 '','','','meta.id;src','','','meta.id;src','','','meta.id;src','','',
                 'meta.code']
-  
+
     @staticmethod
     def get_units():
         return ['','','','','deg','deg','deg','deg','deg^2','mas/yr','mas/yr',
@@ -403,7 +399,7 @@ class DIAObjects(InstanceCatalog):
                 'nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy','nmgy',
                 '','','','','','','','','','','','','','arcsec','','','arcsec',
                 '','','arcsec','','']
-  
+
     @staticmethod
     def get_datatypes():
         return ['BIGINT','BIGINT','DATETIME','DATETIME','DOUBLE','FLOAT','DOUBLE',
@@ -416,7 +412,7 @@ class DIAObjects(InstanceCatalog):
                 'FLOAT','FLOAT','BLOB','BLOB','BLOB','BLOB','BLOB','BLOB','BLOB',
                 'BLOB','BLOB','BLOB','BLOB','BLOB','BIGINT','FLOAT','FLOAT',
                 'BIGINT','FLOAT','FLOAT','BIGINT','FLOAT','FLOAT','BIGINT','BIGINT']
-  
+
     @staticmethod
     def get_descriptions():
         return ['Unique id.',
