@@ -49,11 +49,12 @@ def parse_parameters(ucds, voevent_list):
     for voevent in voevent_list:
         data_tuple = []
         root = ET.fromstring(voevent)
+        print root
         for ucd in ucds:
-            lines = root.findall("[@ucd]=%s" % (ucd,))
+            lines = root.findall("What//Param[@ucd='%s']" % (ucd,))
             for line in lines:
-                value = line.get("value")
-                data_tuple.add(value)
-        data_tuples.add(data_tuple)
+                value = line.attrib["value"]
+                data_tuple.append(value)
+        data_tuples.append(data_tuple)
 
     return data_tuples
