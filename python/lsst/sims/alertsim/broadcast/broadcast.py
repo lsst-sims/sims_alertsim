@@ -50,7 +50,7 @@ class TcpIp(Broadcast):
     def send(self, message):
         #message = zlib.compress(message, 9)
         #message += "\nEOF\n"
-        print message
+        #print message
         try:
             self._send_and_receive(message)
         except socket.error as e:
