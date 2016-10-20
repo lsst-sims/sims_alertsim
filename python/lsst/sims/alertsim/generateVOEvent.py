@@ -52,7 +52,7 @@ class VOEventGenerator:
 
         ############ What ############################
         w = What()
-#        
+#
         for diaSourceData in diaSourcesData:
             g = Group(type_="DIASource", name="DIASource")
             for key, val in diaSourceData.__dict__.items():
@@ -60,7 +60,7 @@ class VOEventGenerator:
                     p = Param(name=key, ucd=val.ucd, value=val.value, unit = val.unit)
                     g.add_Param(p)
             w.add_Group(g)
-        
+
         """
         g = Group(type_="DIAObject", name="DIAObject")
         for key, val in diaObjectData.__dict__.items():
@@ -68,7 +68,7 @@ class VOEventGenerator:
                 p = Param(name=key, ucd=val.ucd, value=val.value, unit = val.unit)
                 g.add_Param(p)
         w.add_Group(g)
-#       """ 
+#       """
         self.voevent.set_What(w)
 
         ############ Wherewhen ############################
@@ -121,9 +121,9 @@ class VOEventGenerator:
         ############ output the event ############################
         xml = stringVOEvent(self.voevent, schemaURL)
         return xml
-    
+
     """
 
     def _convertToIso(self, mjd):
-        t = AstropyTime(mjd, format='mjd', scale='utc')
+        t = AstropyTime(mjd, format='mjd', scale='tai')
         return t.iso

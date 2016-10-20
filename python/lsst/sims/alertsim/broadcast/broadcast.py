@@ -21,8 +21,11 @@ class Broadcast(object):
     def close(self):
         self.sock.close()
         print >>sys.stderr, 'closing socket'
+
+    def close_and_exit(self):
+        self.close()
         sys.exit(1)
-    
+
     #@staticmethod
     def _add_voevent_header(self, message):
         header = '%08x' % (len(message))
@@ -42,34 +45,34 @@ class TcpIp(Broadcast):
             self._connect_socket()
         except socket.error as e:
             print(e)
-            self.close()
+            self.close_and_exit()
 
     def send(self, message):
         #message = zlib.compress(message, 9)
         #message += "\nEOF\n"
-        print message
+        #print message
         try:
             self._send_and_receive(message)
         except socket.error as e:
             if e.errno == errno.EPIPE:
                 self._connect_socket()
                 self._send_and_receive(message)
-            else: 
+            else:
                 print(e)
-                self.close()
-    
+                self.close_and_exit()
+
     def _connect_socket(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((self.ip, self.port))
         print "Connected to %s at port %d" % (self.ip, self.port)
 
     def _send_and_receive(self, message):
-        self.sock.send(self._add_voevent_header(message)) if self.header else self.sock.send(message) 
+        self.sock.send(self._add_voevent_header(message)) if self.header else self.sock.send(message)
         data = self.sock.recv(self.BUFFER_SIZE)
         print "received data:", data
 
 class Multicast(Broadcast):
-    
+
     '''
     class for multicast // to be revised
     '''
@@ -111,5 +114,5 @@ class Multicast(Broadcast):
 
         finally:
             print >>sys.stderr, 'closing socket'
-            self.close()
+            self.close_and_exit()
 
