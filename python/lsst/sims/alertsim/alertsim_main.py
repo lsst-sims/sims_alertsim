@@ -18,14 +18,13 @@ STACK_VERSION = 10
 
 def main(opsim_table, catsim_table, opsim_constraint,
          opsim_path, catsim_constraint, radius, protocol,
-         ipaddr, port, header, history, dia):
+         ipaddr, port, header, history, dia, serialize_json):
 
     """ Takes input args from cmd line parser or other,
         query opsim, catsim, generate
         and broadcast VOEvents
     """
 
-    sender = get_sender(protocol, ipaddr, port, header)
 
     print "fetching opsim results..."
 
@@ -46,27 +45,58 @@ def main(opsim_table, catsim_table, opsim_constraint,
     """
 
     """ matrix of all observations per field up to current mjd """
-    obs_all = opsim_utils.opsim_query(stack_version=10, opsim_path=opsim_path,
+    obs_all = opsim_utils.opsim_query(stack_version=STACK_VERSION, opsim_path=opsim_path,
             objid=opsim_table, radius=radius, constraint=opsim_constraint)
 
     print "opsim result fetched and transformed to ObservationMetaData objects"
 
-    for obs_per_field in obs_all:
+    if not serialize_json:
 
-        """ current observation - largest mjd from a sorted list  """
-        obs_metadata = obs_per_field[0]
+        """ establish connection """
+        sender = get_sender(protocol, ipaddr, port, header)
 
-        obs_data = catsim_utils.catsim_query(stack_version=10,
-                objid=catsim_table, constraint=catsim_constraint,
-                obs_metadata=obs_metadata, dia=dia)
+        for obs_per_field in obs_all:
 
-        iter_and_send(sender, obs_data, obs_metadata, obs_per_field, history)
+            """ current observation - largest mjd from a sorted list  """
+            obs_metadata = obs_per_field[0]
 
-    sender.close()
+            obs_data = catsim_utils.catsim_query(stack_version=STACK_VERSION,
+                    objid=catsim_table, constraint=catsim_constraint,
+                    obs_metadata=obs_metadata, dia=dia)
+
+            """ query catsim, pack voevents and send """
+            iter_and_send(sender, obs_data, obs_metadata, obs_per_field, history)
+
+        """ close connection """
+        sender.close()
+
+    else:
+
+        for obs_per_field in obs_all:
+
+            """ current observation - largest mjd from a sorted list  """
+            obs_metadata = obs_per_field[0]
+
+            obs_data = catsim_utils.catsim_query(stack_version=STACK_VERSION,
+                    objid=catsim_table, constraint=catsim_constraint,
+                    obs_metadata=obs_metadata, dia=dia)
+
+            """ query catsim and serialize to json  """
+            iter_and_serialize(obs_data, obs_metadata, obs_per_field, history)
+
 
 def get_sender(protocol, ipaddr, port, header):
     """ Instantiate proper child class for the protocol """
     return vars(broadcast)[protocol](ipaddr, port, header)
+
+def iter_and_serialize(obs_data, obs_metadata, observations_field, history):
+
+    """ Iterate over catalog and serialize JSON """
+
+    for line in obs_data.iter_catalog():
+
+        query_dict = dict(zip(obs_data.iter_column_names(), line))
+        print query_dict
 
 def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
 

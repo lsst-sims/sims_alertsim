@@ -42,6 +42,9 @@ PARSER.add_argument("--no_history",
 PARSER.add_argument("--no_dia",
         help="emit basic attributes only, not full DIASources",
         action="store_false", default=True)
+PARSER.add_argument("--serialize_json",
+        help="doesn't emit VOEvents but serializes them in json format, " \
+            "one file per CCD", action="store_true", default=False)
 ARGS = PARSER.parse_args()
 
 def validate_ip(ipaddr, protocol):
@@ -73,4 +76,4 @@ if __name__ == "__main__":
                 ARGS.opsim_constraint, ARGS.opsim_path,
                 ARGS.catsim_constraint, ARGS.radius, ARGS.protocol,
                 ARGS.ipaddress, ARGS.port, ARGS.no_header,
-                ARGS.no_history, ARGS.no_dia))
+                ARGS.no_history, ARGS.no_dia, ARGS.serialize_json ))
