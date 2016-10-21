@@ -8,10 +8,10 @@ def rf():
     """ random float """
     return np.random.ranf()
 
-def rflist(count):
+def rflist(catalog, count):
     rflist = []
     for i in range(0, count):
-        rflist.append(rf())
+        rflist.append([rf()] * len(catalog.column_by_name('simobjid')))
     return rflist
 
 def ri():
@@ -163,42 +163,42 @@ class VariableStarsDia(VariableStars):
         return self.column_by_name('simobjid')
 
     def get_radec(self):
-       ra = self.column_by_name('raJ2000')
-       dec = self.column_by_name('decJ2000')
-       return np.array([ra, dec]).transpose()
+        ra = self.column_by_name('raJ2000')
+        dec = self.column_by_name('decJ2000')
+        return np.array([ra, dec]).transpose()
 
     # DIASource attributes in a form of a list
     # with randomly assigned values (for the time being)
 
     def get_radecCov(self):
-        return np.array(rflist(3)).transpose()
+        return np.array(rflist(self, 3)).transpose()
 
     def get_xy(self):
-        return np.array(rflist(2)).transpose()
+        return np.array(rflist(self, 2)).transpose()
 
     def get_xyCov(self):
-        return np.array(rflist(3)).transpose()
+        return np.array(rflist(self, 3)).transpose()
 
     def get_psRadec(self):
-        return np.array(rflist(2)).transpose()
+        return np.array(rflist(self, 2)).transpose()
 
     def get_psCov(self):
-        return np.array(rflist(6)).transpose()
+        return np.array(rflist(self, 6)).transpose()
 
     def get_trailRadec(self):
-        return np.array(rflist(2)).transpose()
+        return np.array(rflist(self, 2)).transpose()
 
     def get_trailCov(self):
-        return np.array(rflist(15)).transpose()
+        return np.array(rflist(self, 15)).transpose()
 
     def get_dipRadec(self):
-        return np.array(rflist(2)).transpose()
+        return np.array(rflist(self, 2)).transpose()
 
     def get_dipCov(self):
-        return np.array(rflist(15)).transpose()
+        return np.array(rflist(self, 15)).transpose()
 
     def get_Icov(self):
-        return np.array(rflist(6)).transpose()
+        return np.array(rflist(self, 6)).transpose()
 
     # resolve db column case-sensitivness
     #def get_htmId20(self):
