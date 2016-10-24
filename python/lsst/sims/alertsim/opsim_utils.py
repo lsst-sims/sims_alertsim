@@ -30,13 +30,6 @@ def opsim_query_stack10 (opsim_path, objid, radius, constraint):
     """ for stack 10+ """
     import lsst.sims.maf.db as db
 
-    """ old approach before the tunnel was introduced """
-    #from lsst.sims.catalogs.db import CatalogDBObject
-    #dbobj = CatalogDBObject.from_objid(objid)
-    #table = db.Table(tableName=objid, idColKey='obshistid',
-    #         database='LSSTCATSIM', driver='mssql+pymssql',
-    #         host='localhost', port='51433' )
-
     if not opsim_path:
         """ access to fatboy """
         table = db.Table(tableName=objid, idColKey='obshistid', database='LSSTCATSIM', 
