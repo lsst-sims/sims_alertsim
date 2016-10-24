@@ -18,22 +18,9 @@ def catsim_to_avro(list_of_query_dicts, schemaURI='avsc/diasource.avsc'):
     writer = DataFileWriter(open("diamock.avro", "wb"), DatumWriter(), schema)
     
     for qd in list_of_query_dicts:
-        """
-        writer.append({"diaSourceId": qd["diaSourceId"], 
-            "ccdVisitId": qd["ccdVisitId"], "diaObjectId": qd["diaObjectId"], 
-            "ssObjectId": qd["ssObjectId"], "midPointTai": 134245.424, 
-            "filterName": "u", "radec": {"ra": qd["radec"][0], "decl": qd["radec"][1]}, "apFlux": 14.32})
-        """
-        with open('avsc/diasource_full.json', 'w') as outfile:
-            json.dump(qd, outfile)
 
-        with open('avsc/diasource_full.json') as datafile:
-            data = json.load(datafile)
-
+        json_qd = json.loads(json.dumps(qd))
         writer.append(json_qd)
-        print qd
-        print json_qd
-        print data
 
     writer.close()
     print "writing time %s" % (timer() - writing_time)
