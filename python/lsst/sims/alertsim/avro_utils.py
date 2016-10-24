@@ -15,7 +15,7 @@ def catsim_to_avro(list_of_query_dicts, schemaURI='avsc/diasource.avsc'):
     schema = avro.schema.parse(open(schemaURI, "rb").read())
 
     writing_time = timer()
-    writer = DataFileWriter(open("diamock.avro", "wb"), DatumWriter(), schema)
+    writer = DataFileWriter(open("diasource.avro", "wb"), DatumWriter(), schema)
     
     for qd in list_of_query_dicts:
 
@@ -23,15 +23,17 @@ def catsim_to_avro(list_of_query_dicts, schemaURI='avsc/diasource.avsc'):
         writer.append(json_qd)
 
     writer.close()
+    
     print "writing time %s" % (timer() - writing_time)
 
-    reading_time = timer()
-    reader = DataFileReader(open("diamock.avro", "rb"), DatumReader())
+    
+    #reading_time = timer()
+    #reader = DataFileReader(open("diamock.avro", "rb"), DatumReader())
     """
     for line in reader:
         print line
     """
 
-    print "reading time %s" % (timer() - reading_time)
+    #print "reading time %s" % (timer() - reading_time)
 
-    reader.close()
+    #reader.close()
