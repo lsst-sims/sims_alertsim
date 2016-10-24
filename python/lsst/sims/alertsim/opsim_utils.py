@@ -37,13 +37,17 @@ def opsim_query_stack10 (opsim_path, objid, radius, constraint):
     #         database='LSSTCATSIM', driver='mssql+pymssql',
     #         host='localhost', port='51433' )
 
-    """ access to fatboy """
-    #table = db.Table(tableName=objid, idColKey='obshistid', database='LSSTCATSIM',
-    #                    driver='mssql+pymssql', host='localhost', port='51433' )
-
-    """ local access """
-    dbaddress = opsim_path
-    table = db.Table('Summary', 'obsHistID', dbaddress)
+    if opsim_path == "":
+        
+        """ access to fatboy """
+        table = db.Table(tableName=objid, idColKey='obshistid', database='LSSTCATSIM', 
+                driver='mssql+pymssql', host='localhost', port='51433' )
+    
+    else:
+        
+        """ local access """
+        dbaddress = opsim_path
+        table = db.Table('Summary', 'obsHistID', dbaddress)
 
     obs_all = []
     night_obs_query = _query_opsim(table, constraint)
