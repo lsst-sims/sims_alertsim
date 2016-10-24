@@ -16,8 +16,8 @@ PARSER.add_argument("-oc", "--opsim_constraint",
         default="(night=10 and rawseeing<0.6) and filter like \'i\' ",
         help="constraint for opsim query")
 PARSER.add_argument("-op", "--opsim_path",
-        default="/home/darko/alertsim/enigma_1189_sqlite.db",
-        help="your local opsim db path")
+        default="",
+        help="your local opsim db path. If left empty fatboy is queried")
 PARSER.add_argument("-cc", "--catsim_constraint",
         default="rmag between 10 and 30 and varParamStr not like 'None'",
         help="constraint for catsim query")
