@@ -1,8 +1,10 @@
 """Instance Catalog"""
 import numpy as np
+from collections import OrderedDict
 from lsst.sims.catalogs.definitions import InstanceCatalog
 from lsst.sims.catUtils.mixins import AstrometryStars, CameraCoords, PhotometryStars, Variability, VariabilityStars
 from lsst.sims.catUtils.baseCatalogModels import *
+from lsst.sims.catalogs.decorators import compound
 
 def rf():
     """ random float """
@@ -21,6 +23,15 @@ def ri():
 def rbi():
     """ random big integer """
     return np.random.randint(0,9223372036854775807)
+    
+def array_to_dict(cols, vals):
+    """ from list of arrays to list of dicts """
+    l = []
+    for val in vals:
+        d = dict(zip(cols, val))
+        l.append(d)
+    #print l
+    return l
 
 class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
 
@@ -75,23 +86,34 @@ class VariableStarsDia(VariableStars):
 
     # DIASource columns as of DPDD from May 6th 2016
 
-    column_outputs = VariableStars.column_outputs + ['diaSourceId', 'ccdVisitId',
+    #column_outputs = VariableStars.column_outputs + ['diaSourceId', 'ccdVisitId',
+    
+    """
+    differences between DPDD and L1 schema
+    N = Ndata
+    fpFlux, fpFluxSigma = totFlux, totFluxErr
+    diffFluxSigma = diffFluxErr
+    fpSky, fpSkySigma = fpBkgd, fpBkgdErr
+    """
+
+    column_outputs = ['diaSourceId', 'ccdVisitId',
           'diaObjectId', 'ssObjectId', 'parentSourceId', 'midPointTai',
-          'radec', 'radecCov', 'xy', 'xyCov', 'apFlux', 'apFluxErr', 'SNR',
-          'psFlux', 'psRadec', 'psCov', 'psLnL', 'psChi2', 'psNdata', 'trailFlux',
+          'filterName', 'radec', 'radecCov', 'xy', 'xyCov', 'apFlux', 'apFluxErr', 'snr',
+          'psFlux', 'psRadec', 'psCov', 'psLnL', 'psChi2', 'psN', 'trailFlux',
           'trailRadec', 'trailLength', 'trailAngle', 'trailCov', 'trailLnL',
-          'trailChi2', 'trailNdata', 'dipMeanFlux', 'dipFluxDiff', 'dipRadec',
-          'dipLength', 'dipAngle', 'dipCov', 'dipLnL', 'dipChi2', 'dipNdata',
-          'totFlux', 'totFluxErr', 'diffFlux', 'diffFluxErr', 'fpBkgd', 'fpBkgdErr',
+          'trailChi2', 'trailN', 'dipMeanFlux', 'dipFluxDiff', 'dipRadec',
+          'dipLength', 'dipAngle', 'dipCov', 'dipLnL', 'dipChi2', 'dipN',
+          'totFlux', 'totFluxErr', 'diffFlux', 'diffFluxSigma', 'fpBkgd', 'fpBkgdErr',
           'Ixx', 'Iyy', 'Ixy', 'Icov', 'IxxPSF', 'IyyPSF', 'IxyPSF', 'extendedness',
           'spuriousness', 'flags',]
 
     # UCD's - Veljko's best guesses. Check this one day please
 
-    ucds = VariableStars.ucds + ['meta.id;meta.main', 'meta.id;instr.param',
+    #ucds = VariableStars.ucds + ['meta.id;meta.main', 'meta.id;instr.param',
+    ucds = ['meta.id;meta.main', 'meta.id;instr.param',
                 'meta.id.assoc', 'meta.id.assoc', 'meta.id.parent',
-                'time.epoch', 'pos.eq.ra;pos.eq.dec;meta.main', 'stat.covariance;pos.eq',
-                'instr.pixel', 'stat.covariance',
+                'time.epoch', 'instr.filter', 'pos.eq.ra;pos.eq.dec;meta.main',
+                'stat.covariance;pos.eq','instr.pixel', 'stat.covariance',
                 'phot.flux;arith.diff;phot.calib',
                 'stat.error;phot.flux', 'stat.snr',
                 'phot.flux;arith.diff', 'pos.eq.ra;pos.eq.dec', 'stat.covariance;pos.eq',
@@ -111,8 +133,9 @@ class VariableStarsDia(VariableStars):
 
     # Datatypes as stated in DPDD
 
-    datatypes = VariableStars.datatypes + ['uint64', 'uint64', 'uint64',
-                'uint64', 'uint64', 'double', 'double[2]', 'float[3]',
+    #datatypes = VariableStars.datatypes + ['uint64', 'uint64', 'uint64',
+    datatypes = ['uint64', 'uint64', 'uint64',
+                'uint64', 'uint64', 'double', 'bit[8]', 'double[2]', 'float[3]',
                 'float[2]', 'float[3]', 'float', 'float', 'float', 'float',
                 'double[2]', 'float[6]', 'float', 'float', 'int', 'float',
                 'double[2]', 'float', 'float', 'float[15]', 'float', 'float',
@@ -124,7 +147,8 @@ class VariableStarsDia(VariableStars):
 
     # Units as stated in DPDD
 
-    units = VariableStars.units + ['', '', '', '', '', 'time', 'degrees',
+    #units = VariableStars.units + ['', '', '', '', '', 'time', 'degrees',
+    units = ['', '', '', '', '', 'time', '', 'degrees',
              'various', 'pixels', 'various', 'nmgy', 'nmgy', 'nmgy',
              'degrees', 'various', '', '', '', 'nmgy', 'degrees', 'arcsec',
              'degrees', 'various', '', '', '', 'nmgy', 'nmgy', 'degrees',
@@ -138,23 +162,23 @@ class VariableStarsDia(VariableStars):
     default_columns = [('ccdVisitId', rbi(), int),
           ('diaObjectId', rbi(), int), ('ssObjectId', rbi(), int),
           ('parentSourceId', rbi(), int), ('midPointTai', rf(), float),
-          ('apFlux', rf(), float), ('apFluxErr', rf(), float),
-          ('SNR', rf(), float), ('psFlux', rf(), float),
+          ('filterName', 0, (str, 8)),
+          ('snr', rf(), float), ('psFlux', rf(), float),
           ('psLnL', rf(), float), ('psChi2', rf(), float),
-          ('psNdata', ri(), int), ('trailFlux', rf(), float),
+          ('psN', ri(), int), ('trailFlux', rf(), float),
           ('trailLength', rf(), float), ('trailAngle', rf(), float),
           ('trailLnL', rf(), float), ('trailChi2', rf(), float),
-          ('trailNdata', ri(), int), ('dipMeanFlux', rf(), float),
+          ('trailN', ri(), int), ('dipMeanFlux', rf(), float),
           ('dipFluxDiff', rf(), float), ('dipLength', rf(), float),
           ('dipAngle', rf(), float), ('dipLnL', rf(), float),
-          ('dipChi2', rf(), float), ('dipNdata', ri(), int),
+          ('dipChi2', rf(), float), ('dipN', ri(), int),
           ('totFlux', rf(), float), ('totFluxErr', rf(), float),
-          ('diffFlux', rf(), float), ('diffFluxErr', rf(), float),
+          ('diffFlux', rf(), float), ('diffFluxSigma', rf(), float),
           ('fpBkgd', rf(), float), ('fpBkgdErr', rf(), float),
           ('Ixx', rf(), float), ('Iyy', rf(), float), ('Ixy', rf(), float),
           ('IxxPSF', rf(), float), ('IyyPSF', rf(), float),
           ('IxyPSF', rf(), float), ('extendedness', rf(), float),
-          ('spuriousness', rf(), float), ('flags', 0, (str, 64)),]
+          ('spuriousness', rf(), float), ('flags', ri(), int)]
 
 
     # getters for DIASource attributes which are generated from catsim
@@ -165,40 +189,89 @@ class VariableStarsDia(VariableStars):
     def get_radec(self):
         ra = self.column_by_name('raJ2000')
         dec = self.column_by_name('decJ2000')
-        return np.array([ra, dec]).transpose()
+        vals = np.array([ra, dec]).T
+        cols = ['ra', 'decl']
+        return array_to_dict(cols, vals)
 
     # DIASource attributes in a form of a list
     # with randomly assigned values (for the time being)
 
     def get_radecCov(self):
-        return np.array(rflist(self, 3)).transpose()
+        vals = np.array(rflist(self, 3)).T
+        cols = ['raSigma', 'declSigma', 'ra_decl_Cov']
+        return array_to_dict(cols, vals)
+
 
     def get_xy(self):
-        return np.array(rflist(self, 2)).transpose()
+        vals = np.array(rflist(self, 2)).T
+        cols = ['x', 'y']
+        return array_to_dict(cols, vals)
 
     def get_xyCov(self):
-        return np.array(rflist(self, 3)).transpose()
+        vals = np.array(rflist(self, 3)).T
+        cols = ['xSigma', 'ySigma', 'x_y_Cov']
+        return array_to_dict(cols, vals)
 
+    def get_apFlux(self):
+        vals = np.array(rflist(self, 10)).T
+        cols = ['apMeanSb01', 'apMeanSb02', 'apMeanSb03', 
+                 'apMeanSb04', 'apMeanSb05', 'apMeanSb06', 
+                 'apMeanSb07', 'apMeanSb08', 'apMeanSb09', 
+                 'apMeanSb10']
+        return array_to_dict(cols, vals)
+
+    def get_apFluxErr(self):
+        vals = np.array(rflist(self, 10)).T
+        cols = ['apMeanSb01Sigma', 'apMeanSb02Sigma', 'apMeanSb03Sigma', 
+                 'apMeanSb04Sigma', 'apMeanSb05Sigma', 'apMeanSb06Sigma', 
+                 'apMeanSb07Sigma', 'apMeanSb08Sigma', 'apMeanSb09Sigma', 
+                 'apMeanSb10Sigma']
+        return array_to_dict(cols, vals)
+    
     def get_psRadec(self):
-        return np.array(rflist(self, 2)).transpose()
+        vals = np.array(rflist(self, 2)).T
+        cols = ['psRa', 'psDec']
+        return array_to_dict(cols, vals)
 
     def get_psCov(self):
-        return np.array(rflist(self, 6)).transpose()
+        vals = np.array(rflist(self, 6)).T
+        cols = ['psCov01', 'psCov02', 'psCov03', 'psCov04', 
+                'psCov05', 'psCov06']
+        return array_to_dict(cols, vals)
 
     def get_trailRadec(self):
-        return np.array(rflist(self, 2)).transpose()
+        vals = np.array(rflist(self, 2)).T
+        cols = ['trailRa', 'trailDec']
+        return array_to_dict(cols, vals)
 
     def get_trailCov(self):
-        return np.array(rflist(self, 15)).transpose()
+        vals = np.array(rflist(self, 15)).T
+        cols = ['trailCov01', 'trailCov02', 'trailCov03', 
+                'trailCov04', 'trailCov05', 'trailCov06', 
+                'trailCov07', 'trailCov08', 'trailCov09', 
+                'trailCov10', 'trailCov11', 'trailCov12', 
+                'trailCov13', 'trailCov14', 'trailCov15']
+        return array_to_dict(cols, vals)
 
     def get_dipRadec(self):
-        return np.array(rflist(self, 2)).transpose()
+        vals = np.array(rflist(self, 2)).T
+        cols = ['dipRa', 'dipDec']
+        return array_to_dict(cols, vals)
 
     def get_dipCov(self):
-        return np.array(rflist(self, 15)).transpose()
+        vals = np.array(rflist(self, 15)).T
+        cols = ['dipCov01', 'dipCov02', 'dipCov03', 
+                'dipCov04', 'dipCov05', 'dipCov06', 
+                'dipCov07', 'dipCov08', 'dipCov09', 
+                'dipCov10', 'dipCov11', 'dipCov12', 
+                'dipCov13', 'dipCov14', 'dipCov15']
+        return array_to_dict(cols, vals)
 
     def get_Icov(self):
-        return np.array(rflist(self, 6)).transpose()
+        vals = np.array(rflist(self, 6)).T
+        cols = ["Icov01", "Icov02", "Icov03", 
+                "Icov04", "Icov05", "Icov06"]
+        return array_to_dict(cols, vals)
 
     # resolve db column case-sensitivness
     #def get_htmId20(self):
