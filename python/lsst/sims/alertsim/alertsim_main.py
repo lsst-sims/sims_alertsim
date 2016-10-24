@@ -4,7 +4,7 @@ import subprocess
 import sys
 import time
 import functools
-import catsim_utils, opsim_utils
+import catsim_utils, opsim_utils, avro_utils
 #import threading
 #import itertools
 from copy import deepcopy
@@ -93,10 +93,13 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field, history):
 
     """ Iterate over catalog and serialize JSON """
 
-    for line in obs_data.iter_catalog():
+    list_of_query_dicts = []
 
+    for line in obs_data.iter_catalog():
         query_dict = dict(zip(obs_data.iter_column_names(), line))
-        print query_dict
+        list_of_query_dicts.append(query_dict)
+
+    avro_utils.catsim_to_avro(list_of_query_dicts = list_of_query_dicts)
 
 def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
 
