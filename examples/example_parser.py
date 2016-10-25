@@ -13,7 +13,7 @@ PARSER.add_argument("-o", "--opsim_table", default="output_opsim3_61",
 PARSER.add_argument("-c", "--catsim_table", default="allstars",
         help="catsim objid")
 PARSER.add_argument("-oc", "--opsim_constraint",
-        default="(night=10 and rawseeing<0.6) and filter like \'i\' ",
+        default="night=100",
         help="constraint for opsim query")
 PARSER.add_argument("-op", "--opsim_path",
         default="",
@@ -24,7 +24,7 @@ PARSER.add_argument("-cc", "--catsim_constraint",
 #PARSER.add_argument("-ca", "--catsim_catalog",
 #        choices=["variable_stars", "vanilla_stars", "DIA_sources", "DIA_objects"],
 #        default="variable_stars", help="name of catsim catalog")
-PARSER.add_argument("-r", "--radius", type=float, default="0.05",
+PARSER.add_argument("-r", "--radius", type=float, default="1.75",
         help="cone search radius")
 PARSER.add_argument("-p", "--port", type=int,
         help="tcp port", default='8098')
