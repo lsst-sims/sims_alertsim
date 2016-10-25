@@ -200,9 +200,19 @@ class VariableStarsDia(VariableStars):
           ('spuriousness', rf(), float), ('flags', ri(), int)]
 
 
+    def write_catalog(self, *arks, **kwargs):
+        raise NotImplementedError("You cannot call write_catalog() on "
+                                  "VariableStarsDia; write_catalog() does not "
+                                  "know how to deal with the nested structure "
+                                  "of the DIASource schema")
+
     # getters for DIASource attributes which are generated from catsim
 
     def get_diaSourceId(self):
+        """
+        A unique identifier for each DIASource (this needs to be unique for
+        each apparition of a given object)
+        """
         return self.column_by_name('simobjid')
 
     def get_radec(self):
