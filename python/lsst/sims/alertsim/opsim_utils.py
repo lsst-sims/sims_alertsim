@@ -4,6 +4,7 @@
 from math import pi
 from operator import itemgetter, attrgetter
 from lsst.sims.utils import ObservationMetaData
+from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
 
 def opsim_query(stack_version, **kwargs):
 
@@ -53,19 +54,24 @@ def opsim_query_stack10 (opsim_path, objid, radius, constraint):
     @param [in] radius is the radius of the field of view for a visit
 
     @param [in] constraint is sql constraint for the opsim table
+
+    Returns a list of ObservationMetaData
     """
 
     import lsst.sims.maf.db as db
 
     if not opsim_path:
         """ access to fatboy """
+        raise NotImplementedError("Not yet sure how to do the OpSim queries from fatboy")
         table = db.Table(tableName=objid, idColKey='obshistid', database='LSSTCATSIM', 
                 driver='mssql+pymssql', host='localhost', port='51433' )
     else:
         """ local access """
         dbaddress = opsim_path
-        table = db.Table('Summary', 'obsHistID', dbaddress)
+        obs_gen = ObservationMetaDataGenerator(database=opsim_path, driver='sqlite')
+        return obs_gen.getObservationMetaDataFromConstraint(constraint)
 
+    raise RuntimeError("How did you get this far?")
     obs_all = []
     
     #query fields for the current night

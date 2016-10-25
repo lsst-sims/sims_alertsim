@@ -5,6 +5,7 @@ import sys
 import time
 import functools
 import catsim_utils, opsim_utils, avro_utils
+import numpy as np
 from copy import deepcopy
 from lsst.sims.alertsim.dataModel import DataMetadata, CelestialObject
 from lsst.sims.alertsim.generateVOEvent import VOEventGenerator
@@ -16,6 +17,28 @@ STACK_VERSION = 10
 OPSIM_CONSTRAINT = "night=100"
 CATSIM_CONSTRAINT = "varParamStr not like 'None'"
 IPADDR = "147.91.240.29"
+
+def _construct_history(obs_list):
+    """
+    Take a list of ObservationMetaData and rearrange it into a 2-d list in which each row
+    corresponds to the current ObservationMetaData but also contains all of the prior
+    observations of the same field up to that date in sorted order
+    """
+    # sort the ObservationMetaData in chronological order
+    mjd_array = np.array([obs.mjd.TAI for obs in obs_list])
+    sorted_dex = np.argsort(mjd_array)
+    obs_list = obs_list[sorted_dex]
+
+    field_arr = np.array([obs.OpsimMetaData['fieldID'] for obs in obs_list])
+
+    output_history = []
+    for ix, obs in enumerate(obs_list):
+        # find all of the other observations of the same field
+        other_obs = np.where(field_arr[:ix] == obs.OpsimMetaData['fieldID'])[0]
+        current_obs = [obs] + [obs_list[ix] for ix in range(len(other_obs)-1,-1,-1)]
+        output_history.append(current_obs)
+
+    return output_history
 
 def main(opsim_table = None, catsim_table = 'allstars', 
          opsim_constraint = OPSIM_CONSTRAINT, opsim_path = None, 
@@ -71,6 +94,12 @@ def main(opsim_table = None, catsim_table = 'allstars',
     obs_all = opsim_utils.opsim_query(stack_version=STACK_VERSION, opsim_path=opsim_path,
             objid=opsim_table, radius=radius, constraint=opsim_constraint)
 
+    if history:
+        obs_history = _construct_history(obs_all)
+    else:
+        # we do not need the historical information; construct a dummy history
+        obs_history = [[obs, None] for obs in obs_all]
+
     print "opsim result fetched and transformed to ObservationMetaData objects"
 
     if not serialize_json:
@@ -78,7 +107,7 @@ def main(opsim_table = None, catsim_table = 'allstars',
         """ establish connection """
         sender = get_sender(protocol, ipaddr, port, header)
 
-        for obs_per_field in obs_all:
+        for obs_per_field in obs_history:
 
             """ current observation - largest mjd from a sorted list  """
             obs_metadata = obs_per_field[0]
