@@ -209,6 +209,10 @@ class VariableStarsDia(VariableStars):
     # getters for DIASource attributes which are generated from catsim
 
     def get_diaSourceId(self):
+        """
+        A unique identifier for each DIASource (this needs to be unique for
+        each apparition of a given object)
+        """
         return self.column_by_name('simobjid')
 
     def get_radec(self):
