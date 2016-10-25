@@ -48,8 +48,12 @@ class AlertSimCatalogTestCase(unittest.TestCase):
         cls.control_stars = createFakeCatSimDB(cls.db_file_name,
                                                [(cls.obs.pointingRA, cls.obs.pointingDec)])
 
+        cls.db = LocalStarDB(database=cls.db_file_name, host=None, port=None,
+                             driver='sqlite')
+
     @classmethod
     def tearDownClass(cls):
+        del cls.db
         if os.path.exists(cls.db_file_name):
             os.unlink(cls.db_file_name)
 
@@ -57,10 +61,7 @@ class AlertSimCatalogTestCase(unittest.TestCase):
         """
         Just test that the VariableStars catalog runs
         """
-        db = LocalStarDB(database=self.db_file_name, host=None, port=None,
-                         driver='sqlite')
-
-        cat = VariableStars(db, obs_metadata=self.obs)
+        cat = VariableStars(self.db, obs_metadata=self.obs)
         cat_name = os.path.join(getPackageDir("sims_alertsim"),
                                 "tests", "scratch", "variable_stars_test_output.txt")
 
