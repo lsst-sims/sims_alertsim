@@ -6,38 +6,53 @@ import zlib
 
 class Broadcast(object):
 
-    '''
-    abstract base class, with common broadcast functionalities (expecting more to come)
-    '''
+    """
+    Abstract base class, with common broadcast functionalities 
+    """
 
     BUFFER_SIZE = 10000
 
     def __init__(self):
+        """ implemented in daughter classes """
         pass
 
     def send(self, message):
+        """ implemented in daughter classes """
         pass
 
     def close(self):
+        """ close socket """
         self.sock.close()
         print >>sys.stderr, 'closing socket'
 
     def close_and_exit(self):
+        """ close socket and exit with code 1 (there was an issue) """
         self.close()
         sys.exit(1)
 
     #@staticmethod
     def _add_voevent_header(self, message):
+        """ add 4 byte hex header at the beginning of the message """
         header = '%08x' % (len(message))
         return header.decode('hex') + message
 
 class TcpIp(Broadcast):
 
-    '''
-    class for TcpIp broadcast
-    '''
+    """
+    Class for TcpIp broadcast
+    """
 
     def __init__(self, ip, port, header):
+        
+        """
+        @param [in] ip is IP address of the receiver
+
+        @param [in] port is TCP port
+
+        @param [in] header is boolean for message header 
+        
+        """
+        
         self.header = header
         self.ip = ip
         self.port = port
@@ -48,6 +63,13 @@ class TcpIp(Broadcast):
             self.close_and_exit()
 
     def send(self, message):
+        
+        """ Tries to send the message via socket 
+        
+        @param [in] message is an xml VOEvent document
+
+        """
+        
         #message = zlib.compress(message, 9)
         #message += "\nEOF\n"
         #print message
@@ -62,20 +84,28 @@ class TcpIp(Broadcast):
                 self.close_and_exit()
 
     def _connect_socket(self):
+        """ Connects to a socket """
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((self.ip, self.port))
         print "Connected to %s at port %d" % (self.ip, self.port)
 
     def _send_and_receive(self, message):
+        
+        """ Sends a message and receives ack (or some other data) 
+        
+        @param [in] message is an xml VOEvent document
+        
+        """
+        
         self.sock.send(self._add_voevent_header(message)) if self.header else self.sock.send(message)
         data = self.sock.recv(self.BUFFER_SIZE)
         print "received data:", data
 
 class Multicast(Broadcast):
 
-    '''
-    class for multicast // to be revised
-    '''
+    """
+    Class for multicast // to be revised
+    """
 
     def __init__(self, ip, port):
         self.multicast_group = (ip, 5032)

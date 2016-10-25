@@ -6,14 +6,30 @@ from operator import itemgetter, attrgetter
 from lsst.sims.utils import ObservationMetaData
 
 def opsim_query(stack_version, **kwargs):
-    """ for different stack versions """
+
+    """ Pass arguments to a function which handles 
+        specifics of the stack version """
+
     if stack_version < 10:
         return opsim_query_stack8(**kwargs)
     else:
         return opsim_query_stack10(**kwargs)
 
-def opsim_query_stack8(path, objid, radius, constraint):
-    """ for stack 8. obsolete at the moment """
+def opsim_query_stack8(opsim_path, objid, radius, constraint):
+
+    """ Query opsim and make a catalog for stack 8
+    Obsolete at the moment
+
+    @param [in] opsim_path is the path of the local db
+
+    @param [in] objid of the opsim table
+
+    @param [in] radius is the radius of the field of view for a visit
+
+    @param [in] constraint is sql constraint for the opsim table
+    """
+
+
     from lsst.sims.catalogs.generation.db import DBObject
 
     dbobj = DBObject.from_objid(objid)
@@ -27,7 +43,18 @@ def opsim_query_stack8(path, objid, radius, constraint):
     return result
 
 def opsim_query_stack10 (opsim_path, objid, radius, constraint):
-    """ for stack 10+ """
+
+    """ Query opsim and make a catalog for stack 10
+
+    @param [in] opsim_path is the path of the local db
+
+    @param [in] objid of the opsim table
+
+    @param [in] radius is the radius of the field of view for a visit
+
+    @param [in] constraint is sql constraint for the opsim table
+    """
+
     import lsst.sims.maf.db as db
 
     if not opsim_path:
@@ -40,33 +67,57 @@ def opsim_query_stack10 (opsim_path, objid, radius, constraint):
         table = db.Table('Summary', 'obsHistID', dbaddress)
 
     obs_all = []
+    
+    #query fields for the current night
     night_obs_query = _query_opsim(table, constraint)
 
-    for arr in night_obs_query:
+    for obs in night_obs_query:
         field_obs = []
 
-        _append_to_file(str(arr[6])+" "+str(arr[1])+"\n")
-        constraint = "expMJD < %s and fieldID = %s" % (arr[6], arr[1])
+        _append_to_file(str(obs[6])+" "+str(obs[1])+"\n")
+        
+        #constraint for previous observations for the field
+        constraint = "expMJD < %s and fieldID = %s" % (obs[6], obs[1])
 
-        field_obs.append(_array_to_metadata_object(arr, radius))
+        #append current night observation transformed 
+        #to ObservationMetaData object
+        field_obs.append(_array_to_metadata_object(obs, radius))
+        
+        #query opsim for historical observations, 
+        #reversely sorted by mjd
         field_obs_hist_query = sorted(_query_opsim(table, constraint),
                 key=itemgetter(6), reverse=True)
 
-        for arr in field_obs_hist_query:
-            field_obs.append(_array_to_metadata_object(arr, radius))
+        for hist_obs in field_obs_hist_query:
+            #append current night observation transformed 
+            #to ObservationMetaData object
+            field_obs.append(_array_to_metadata_object(hist_obs, radius))
+        
         _append_to_file("\n"+str(len(field_obs)))
+        #append list (consisting of current and all previous 
+        #observations for a field) to a list of all observations
         obs_all.append(field_obs)
         _append_to_file("-----\n")
 
     return obs_all
 
 def _append_to_file(text):
+    """ opens a file and appends text """
     with open("opsim_stats.txt", "a") as myfile:
         myfile.write(text)
 
 def _query_opsim(table, constraint):
 
-    """ opsim query """
+    """ A function for opsim query 
+    
+    @param [in] table is lsst.sims.maf.db.Table object with connection 
+    parameters already set
+
+    @param [in] constraint is sql opsim query constraint
+
+    @param [out] result is a list of tuples returned by the query
+    """
+
     result = table.query_columns_Array(colnames=['fieldID',
         'fieldRA', 'fieldDec', 'rawSeeing', 'filter', 'expMJD',
         'fiveSigmaDepth', 'night'], constraint=constraint)
@@ -78,6 +129,16 @@ def _query_opsim(table, constraint):
     return result
 
 def _array_to_metadata_object(arr, radius):
+
+    """ Turns an array of opsim metadata to ObservationMetaData object
+
+    @param [in] arr is opsim metadata for a single visit
+
+    @param [in] radius is FOV radius
+
+    @param [out] metadata_object is an ObservationMetaData object
+    """
+
     metadata_object = ObservationMetaData(boundType='circle',
                 pointingRA=arr[2]*180/pi,
                 pointingDec=arr[3]*180/pi,

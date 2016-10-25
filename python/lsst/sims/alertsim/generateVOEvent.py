@@ -1,10 +1,12 @@
 import sys, os
-
 from lsst.sims.alertsim.VOEventLib import *
-
 from astropy.time import Time as AstropyTime
 
 class VOEventGenerator:
+
+    """ A class for generating VOEvent documents.
+    Uses VOEventLib by Roy Williams
+    """
 
     schemaURL = "http://www.cacr.caltech.edu/~roy/VOEvent/VOEvent2-110220.xsd"
     voevent_version = "2.0"

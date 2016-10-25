@@ -5,10 +5,21 @@ import argparse
 
 def main(port):
 
+    """
+    A simple tcp receiver which accepts messages (VOEvents) 
+    and returns acknowledgement
+
+    @param [in] port is a TCP port
+    
+    """
+
     # more effective than // TCP_IP = os.popen("hostname -i").read()
     #TCP_IP = subprocess.check_output("hostname -i", shell=True)
 
+    #default ip address
     TCP_IP = '127.0.0.1'
+
+    #determine local ip address
 
     #works on mac
     if sys.platform == 'darwin':
@@ -42,6 +53,7 @@ def main(port):
     f.close()
     conn.close()
 
+#command line parser for tcp port
 PARSER = argparse.ArgumentParser(description = "")
 PARSER.add_argument("-p", "--port", type=int, default='8098',
         help="tcp port")
