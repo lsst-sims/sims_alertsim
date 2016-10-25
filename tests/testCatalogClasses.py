@@ -6,7 +6,7 @@ from lsst.utils import getPackageDir
 from utils import createFakeCatSimDB
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.catalogs.db import CatalogDBObject
-from lsst.sims.alertsim.catalogs import VariableStars
+from lsst.sims.alertsim.catalogs import VariableStars, VariableStarsDia
 
 
 def setup_module(module):
@@ -72,6 +72,32 @@ class AlertSimCatalogTestCase(unittest.TestCase):
         with open(cat_name, 'r') as input_file:
             lines = input_file.readlines()
             self.assertGreater(len(lines), 1)
+
+        if os.path.exists(cat_name):
+            os.unlink(cat_name)
+
+    def test_variable_stars_dia(self):
+        """
+        Just test that the VariableStarsDia catalog runs
+        """
+        cat = VariableStarsDia(self.db, obs_metadata=self.obs)
+
+        # You cannot write a VariableStarsDia catalog, but you can iterate
+        # over it.  Test that iter_catalog() works but that write_catalog()
+        # raises a NotImplementedError
+        ct = 0
+        for line in cat.iter_catalog():
+            ct += 1
+        self.assertGreater(ct, 1)
+
+        cat_name = os.path.join(getPackageDir("sims_alertsim"),
+                                "tests", "scratch", "variable_stars_dia_test_output.txt")
+
+        if os.path.exists(cat_name):
+            os.unlink(cat_name)
+
+        with self.assertRaises(NotImplementedError):
+            cat.write_catalog(cat_name)
 
         if os.path.exists(cat_name):
             os.unlink(cat_name)
