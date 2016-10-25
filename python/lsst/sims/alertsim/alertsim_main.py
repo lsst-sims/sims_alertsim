@@ -17,32 +17,52 @@ BANDNAMES = ['u', 'g', 'r', 'i', 'z', 'y']
 STACK_VERSION = 10
 
 def main(opsim_table, catsim_table, opsim_constraint,
-         opsim_path, catsim_constraint, radius, protocol,
+         opsim_path, catsim_constraint, radius = 1.75, protocol,
          ipaddr, port, header, history, dia, serialize_json):
 
-    """ Takes input args from cmd line parser or other,
-        query opsim, catsim, generate
-        and broadcast VOEvents
+    """ Controls all of Alertsim functionalities
+        
+    Takes input args from cmd line parser (examples/exampleParser.py) 
+    or other script, queries opsim & catsim, generates and broadcasts 
+    VOEvents via TCP to a specified ip address or serializes 
+    data to json format.
+
+    @param [in] opsim_table is objid of opsim table to be queried on fatboy
+    
+    @param [in] catsim_table is objid of catsim table to be queried on fatboy
+   
+    @param [in] opsim_constraint is sql (string) constraint for opsim query 
+
+    @param [in] opsim_path is path of local opsim DB. If left empty, 
+    fatboy is queried
+    
+    @param [in] catsim_constraint is sql (string) constraint for catsim query
+
+    @param [in] radius is radius of catsim query
+
+    @param [in] protocol is tcpip or multicast
+
+    @param [in] ipaddr is ip address of the VOEvent stream receiver
+
+    @param [in] port is the tcp port of the VOEvent stream receiver
+
+    @param [in] header is boolean which includes/excludes 4 byte hex header in 
+    each VOEvent message (VOEvent standard asks for a header)
+
+    @param [in] history is boolean which determines whether historical 
+    occurancies of same DIASource are emitted within each VOEvent
+
+    @param [in] dia is boolean which switches between vanilla attributes
+    and full DIASource attributes for each VOEvent
+
+    @param [in] serialize_json is boolean. In case of true, events are not 
+    emitted but serialized in JSON format, divided into files based on CCD 
+    number
     """
 
 
     print "fetching opsim results..."
 
-    # keeping this for now, will try to build a thread-based spinner
-    # for db queries as they can last quite a bit
-    """
-    obs_all = []
-    t1 = threading.Thread(target = thread_wrapper,
-            args = (opsim_utils.opsim_query,
-                (stack_version=STACK_VERSION, objid=opsim_table,
-                    radius=radius, constraint=opsim_constraint), obs_all))
-
-    while t1.is_alive():
-        sys.stdout.write(spinner.next())  # write the next character
-        sys.stdout.flush()                # flush stdout buffer (actual character display)
-        sys.stdout.write('\b')            # erase the last written char
-        t1.join(0.2)
-    """
 
     """ matrix of all observations per field up to current mjd """
     obs_all = opsim_utils.opsim_query(stack_version=STACK_VERSION, opsim_path=opsim_path,
@@ -86,12 +106,39 @@ def main(opsim_table, catsim_table, opsim_constraint,
 
 
 def get_sender(protocol, ipaddr, port, header):
-    """ Instantiate proper child class for the protocol """
+    """ Instantiate proper child class for the given protocol 
+    
+    @param [in] protocol is name of transmission protocol
+
+    @param [in] ipaddr is IP address of the receiver
+
+    @param [in] port is tcp port of the receiver
+    
+    @param [in] header is boolean which includes/excludes 4 byte hex header in 
+    each VOEvent message (VOEvent standard asks for a header)
+    
+    @param [out] is object of the broadcast child class
+    
+    """
     return vars(broadcast)[protocol](ipaddr, port, header)
 
 def iter_and_serialize(obs_data, obs_metadata, observations_field, history):
 
-    """ Iterate over catalog and serialize JSON """
+    """ Iterate over catalog and serialize data as JSON, divided
+    into files by CCD number
+    
+    @param [in] obs_data the data from catsim query (one visit)
+
+    @param [in] obs_metadata is the metadata for the given night, 
+    or obs_per_field[0], kept for clarity
+
+    @param [in] observations_field is a list of all observations 
+    for the given field
+
+    @param [in] history is boolean which determines whether historical 
+    occurancies of same DIASource are emitted within each VOEvent
+    
+    """
 
     list_of_query_dicts = []
 
@@ -103,7 +150,19 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field, history):
 
 def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
 
-    """ Iterate over catalog and generate XML """
+    """ Iterate over catalog and generate XML 
+
+    @param [in] obs_data the data from catsim query (one visit)
+
+    @param [in] obs_metadata is the metadata for the given night, 
+    or obs_per_field[0], kept for clarity
+
+    @param [in] observations_field is a list of all observations 
+    for the given field
+
+    @param [in] history is boolean which determines whether historical 
+    occurancies of same DIASource are emitted within each VOEvent
+    """
 
     event_count = 0
     sending_times = []
@@ -189,7 +248,15 @@ def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
 
 
 def _remove_band_attrs(obj, bandname):
-    """ reduce object dictionary """
+    """ Remove attributes not connected to the given bandname
+    
+    @param [in] obj is the object with astronomical data and metadata
+
+    @param [in] bandname is the bandname for the visit
+    
+    """
+
+
     # this may not be the safest way and needs to be revised
     for key in obj.__dict__.keys():
         if ('lsst' in key) and not (key.endswith(bandname)):
@@ -208,11 +275,3 @@ def _rsetattr(obj, attr, val):
     pre, _, post = attr.rpartition('.')
     return setattr(functools.reduce(getattr,
         [obj]+pre.split('.')) if pre else obj, post, val)
-
-"""
-def thread_wrapper(func, args, res):
-    res.append(func(*args))
-
-def spinner():
-    return itertools.cycle(['-', '/', '|', '\\'])
-"""
