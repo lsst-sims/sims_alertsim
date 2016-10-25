@@ -5,8 +5,6 @@ import sys
 import time
 import functools
 import catsim_utils, opsim_utils, avro_utils
-#import threading
-#import itertools
 from copy import deepcopy
 from lsst.sims.alertsim.dataModel import DataMetadata, CelestialObject
 from lsst.sims.alertsim.generateVOEvent import VOEventGenerator
@@ -15,10 +13,14 @@ from lsst.sims.alertsim.catalogs import *
 
 BANDNAMES = ['u', 'g', 'r', 'i', 'z', 'y']
 STACK_VERSION = 10
+OPSIM_CONSTRAINT = "night=100"
+CATSIM_CONSTRAINT = "varParamStr not like 'None'"
+IPADDR = "147.91.240.29"
 
-def main(opsim_table, catsim_table, opsim_constraint,
-         opsim_path, catsim_constraint, radius = 1.75, protocol,
-         ipaddr, port, header, history, dia, serialize_json):
+def main(opsim_table, catsim_table, opsim_constraint = OPSIM_CONSTRAINT, 
+         opsim_path, catsim_constraint = CATSIM_CONSTRAINT, radius = 1.75, 
+         protocol, ipaddr = IPADDR, port = 8089, header = True, 
+         history = True, dia = True, serialize_json = False):
 
     """ Controls all of Alertsim functionalities
         
