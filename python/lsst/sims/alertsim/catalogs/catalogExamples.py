@@ -110,9 +110,6 @@ class VariableStarsDia(VariableStars):
     """
     differences between DPDD and L1 schema
     N = Ndata
-    fpFlux, fpFluxSigma = totFlux, totFluxErr
-    diffFluxSigma = diffFluxErr
-    fpSky, fpSkySigma = fpBkgd, fpBkgdErr
     """
 
     column_outputs = ['diaSourceId', 'ccdVisitId',
@@ -122,7 +119,7 @@ class VariableStarsDia(VariableStars):
           'trailRadec', 'trailLength', 'trailAngle', 'trailCov', 'trailLnL',
           'trailChi2', 'trailN', 'dipMeanFlux', 'dipFluxDiff', 'dipRadec',
           'dipLength', 'dipAngle', 'dipCov', 'dipLnL', 'dipChi2', 'dipN',
-          'totFlux', 'totFluxErr', 'diffFlux', 'diffFluxSigma', 'fpBkgd', 'fpBkgdErr',
+          'totFlux', 'totFluxErr', 'diffFlux', 'diffFluxErr', 'fpBkgd', 'fpBkgdErr',
           'Ixx', 'Iyy', 'Ixy', 'Icov', 'IxxPSF', 'IyyPSF', 'IxyPSF', 'extendedness',
           'spuriousness', 'flags',]
 
@@ -192,7 +189,7 @@ class VariableStarsDia(VariableStars):
           ('dipAngle', rf(), float), ('dipLnL', rf(), float),
           ('dipChi2', rf(), float), ('dipN', ri(), int),
           ('totFlux', rf(), float), ('totFluxErr', rf(), float),
-          ('diffFlux', rf(), float), ('diffFluxSigma', rf(), float),
+          ('diffFlux', rf(), float), ('diffFluxErr', rf(), float),
           ('fpBkgd', rf(), float), ('fpBkgdErr', rf(), float),
           ('Ixx', rf(), float), ('Iyy', rf(), float), ('Ixy', rf(), float),
           ('IxxPSF', rf(), float), ('IyyPSF', rf(), float),
@@ -219,7 +216,7 @@ class VariableStarsDia(VariableStars):
         ra = self.column_by_name('raJ2000')
         dec = self.column_by_name('decJ2000')
         vals = np.array([ra, dec]).T
-        cols = ['ra', 'decl']
+        cols = ['ra', 'dec']
         return array_to_dict(cols, vals)
 
     # DIASource attributes in a form of a list
@@ -227,7 +224,7 @@ class VariableStarsDia(VariableStars):
 
     def get_radecCov(self):
         vals = np.array(rflist(self, 3)).T
-        cols = ['raSigma', 'declSigma', 'ra_decl_Cov']
+        cols = ['raVar', 'decVar', 'ra_dec_Cov']
         return array_to_dict(cols, vals)
 
 
@@ -238,7 +235,7 @@ class VariableStarsDia(VariableStars):
 
     def get_xyCov(self):
         vals = np.array(rflist(self, 3)).T
-        cols = ['xSigma', 'ySigma', 'x_y_Cov']
+        cols = ['xVar', 'yVar', 'x_y_Cov']
         return array_to_dict(cols, vals)
 
     def get_apFlux(self):
@@ -264,8 +261,9 @@ class VariableStarsDia(VariableStars):
 
     def get_psCov(self):
         vals = np.array(rflist(self, 6)).T
-        cols = ['psCov01', 'psCov02', 'psCov03', 'psCov04', 
-                'psCov05', 'psCov06']
+        cols = ['psFluxVar', 'psRaVar', 'psDecVar', 
+                'psFlux_psRa_Cov', 'psFlux_psDec_Cov', 
+                'psRa_psDec_Cov']
         return array_to_dict(cols, vals)
 
     def get_trailRadec(self):
@@ -275,11 +273,13 @@ class VariableStarsDia(VariableStars):
 
     def get_trailCov(self):
         vals = np.array(rflist(self, 15)).T
-        cols = ['trailCov01', 'trailCov02', 'trailCov03', 
-                'trailCov04', 'trailCov05', 'trailCov06', 
-                'trailCov07', 'trailCov08', 'trailCov09', 
-                'trailCov10', 'trailCov11', 'trailCov12', 
-                'trailCov13', 'trailCov14', 'trailCov15']
+        cols = ['trailFluxVar', 'trailRaVar', 'trailDecVar', 
+                'trailLengthVar', 'trailAngleVar', 'trailFlux_trailRa_Cov', 
+                'trailFlux_trailDec_Cov', 'trailFlux_trailLength_Cov', 
+                'trailFlux_trailAngle_Cov', 'trailRa_trailDec_Cov', 
+                'trailRa_trailLength_Cov', 'trailRa_trailAngle_Cov', 
+                'trailDec_trailLength_Cov', 'trailDec_trailAngle_Cov', 
+                'trailLength_trailAngle_Cov']
         return array_to_dict(cols, vals)
 
     def get_dipRadec(self):
@@ -288,18 +288,22 @@ class VariableStarsDia(VariableStars):
         return array_to_dict(cols, vals)
 
     def get_dipCov(self):
-        vals = np.array(rflist(self, 15)).T
-        cols = ['dipCov01', 'dipCov02', 'dipCov03', 
-                'dipCov04', 'dipCov05', 'dipCov06', 
-                'dipCov07', 'dipCov08', 'dipCov09', 
-                'dipCov10', 'dipCov11', 'dipCov12', 
-                'dipCov13', 'dipCov14', 'dipCov15']
+        vals = np.array(rflist(self, 21)).T
+        cols = ['dipMeanFluxVar', 'dipFluxDiffVar', 'dipRaVar', 
+                'dipDecVar', 'dipLengthVar', 'dipAngleVar', 
+                'dipMeanFlux_dipFluxDiff_Cov', 'dipMeanFlux_dipRa_Cov', 
+                'dipMeanFlux_dipDec_Cov', 'dipMeanFlux_dipLength_Cov', 
+                'dipMeanFlux_dipAngle_Cov', 'dipFluxDiff_dipRa_Cov', 
+                'dipFluxDiff_dipDec_Cov', 'dipFluxDiff_dipLength_Cov', 
+                'dipFluxDiff_dipAngle_Cov', 'dipRa_dipDec_Cov', 
+                'dipRa_dipLength_Cov', 'dipRa_dipAngle_Cov', 'dipDec_dipLength_Cov', 
+                'dipDec_dipAngle_Cov', 'dipLength_dipAngle_Cov']
         return array_to_dict(cols, vals)
 
     def get_Icov(self):
         vals = np.array(rflist(self, 6)).T
-        cols = ["Icov01", "Icov02", "Icov03", 
-                "Icov04", "Icov05", "Icov06"]
+        cols = ["IxxVar", "IyyVar", "IxyVar", 
+                "Ixx_Iyy_Cov", "Ixx_Ixy_Cov", "Iyy_Ixy_Cov"]
         return array_to_dict(cols, vals)
 
     # resolve db column case-sensitivness
