@@ -17,9 +17,10 @@ OPSIM_CONSTRAINT = "night=100"
 CATSIM_CONSTRAINT = "varParamStr not like 'None'"
 IPADDR = "147.91.240.29"
 
-def main(opsim_table, catsim_table, opsim_constraint = OPSIM_CONSTRAINT, 
-         opsim_path, catsim_constraint = CATSIM_CONSTRAINT, radius = 1.75, 
-         protocol, ipaddr = IPADDR, port = 8089, header = True, 
+def main(opsim_table = None, catsim_table = 'allstars', 
+         opsim_constraint = OPSIM_CONSTRAINT, opsim_path = None, 
+         catsim_constraint = CATSIM_CONSTRAINT, radius = 1.75, 
+         protocol = None, ipaddr = IPADDR, port = 8089, header = True, 
          history = True, dia = True, serialize_json = False):
 
     """ Controls all of Alertsim functionalities
