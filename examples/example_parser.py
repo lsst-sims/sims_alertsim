@@ -48,7 +48,17 @@ PARSER.add_argument("--serialize_json",
 ARGS = PARSER.parse_args()
 
 def validate_ip(ipaddr, protocol):
-    """ check validity of ip's and ip/protocol pairings """
+    
+    """ Check validity of ip's and ip/protocol pairings 
+    
+    @param [in] ipaddr is IP address of the receiver
+    
+    @param [in] protocol is the protocol used for transmission
+
+    @param [out] boolean inicates whether validation succeeded
+
+    """
+
     try:
     #check if ip is valid
         socket.inet_aton(ipaddr)
@@ -71,6 +81,7 @@ def validate_ip(ipaddr, protocol):
         return True
 
 if __name__ == "__main__":
+    #if everything is ok call alertsim.main
     if (validate_ip(ARGS.ipaddress, ARGS.protocol)):
         sys.exit(alertsim.main(ARGS.opsim_table, ARGS.catsim_table,
                 ARGS.opsim_constraint, ARGS.opsim_path,
