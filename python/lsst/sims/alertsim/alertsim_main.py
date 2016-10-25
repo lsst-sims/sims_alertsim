@@ -27,6 +27,9 @@ def _construct_history(obs_list):
     # sort the ObservationMetaData in chronological order
     mjd_array = np.array([obs.mjd.TAI for obs in obs_list])
     sorted_dex = np.argsort(mjd_array)
+    if not isinstance(obs_list, np.ndarray):
+        obs_list = np.array(obs_list)
+
     obs_list = obs_list[sorted_dex]
 
     field_arr = np.array([obs.OpsimMetaData['fieldID'] for obs in obs_list])
@@ -98,7 +101,9 @@ def main(opsim_table = None, catsim_table = 'allstars',
         obs_history = _construct_history(obs_all)
     else:
         # we do not need the historical information; construct a dummy history
-        obs_history = [[obs, None] for obs in obs_all]
+        mjd_arr = np.array([obs.mjd.TAI for obs in obs_all])
+        obs_history = np.array(obs_all)[np.argsort(mjd_arr)]
+        obs_history = [[obs, None] for obs in obs_history]
 
     print "opsim result fetched and transformed to ObservationMetaData objects"
 
