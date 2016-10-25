@@ -50,7 +50,7 @@ def array_to_dict(cols, vals):
     for val in vals:
         dicty = dict(zip(cols, val))
         list_of_dicts.append(dicty)
-    return l
+    return list_of_dicts
 
 class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
 
