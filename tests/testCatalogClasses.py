@@ -70,7 +70,7 @@ class AlertSimCatalogTestCase(unittest.TestCase):
         cat.write_catalog(cat_name)
         with open(cat_name, 'r') as input_file:
             lines = input_file.readlines()
-            self.assertGreater(lines, 1)
+            self.assertGreater(len(lines), 1)
 
         if os.path.exists(cat_name):
             os.unlink(cat_name)
