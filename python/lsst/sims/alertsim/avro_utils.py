@@ -1,8 +1,17 @@
-import avro.schema
-from avro.datafile import DataFileReader, DataFileWriter
-from avro.io import DatumReader, DatumWriter
+try:
+    import avro.schema
+    from avro.datafile import DataFileReader, DataFileWriter
+    from avro.io import DatumReader, DatumWriter
+    _avro_installed = True
+except:
+    _avro_installed = False
+
 from timeit import default_timer as timer
 import json
+
+def _raise_no_avro(method_name):
+    msg = "To use %s you must install avro from https://avro.apache.org" % method_name
+    raise RuntimeError(msg)
 
 
 def catsim_to_avro(list_of_query_dicts, schemaURI='avsc/diasource.avsc'):
@@ -11,6 +20,10 @@ def catsim_to_avro(list_of_query_dicts, schemaURI='avsc/diasource.avsc'):
     Input: list of dictionaries for a catsim visit which consists
     of transformed catsim column_name-value pairs, URI of avsc shema    
     """
+    global _avro_installed
+    if not _avro_installed:
+        _raise_no_avro("catsim_to_avro")
+
 
     known_schemas = avro.schema.Names()
 
@@ -58,6 +71,10 @@ def load_avsc_schema(schema_path, names = None):
     @param [out] schema is avro schema
 
     """
+    global _avro_installed
+    if not _avro_installed:
+        _raise_no_avro("load_avsc_schema")
+
 
     schema_json = json.loads(open(schema_path).read())
     
