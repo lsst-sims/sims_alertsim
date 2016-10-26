@@ -108,7 +108,7 @@ class AlertSimEndToEndTest(unittest.TestCase):
         dir_path = os.path.dirname(os.path.realpath(__file__))
 
         #combine parent path with receiver path
-        receiver_path = os.path.dirname(dir_path) + "/python/lsst/sims/alertsim/broadcast/receivers/rec_tcp.py"
+        receiver_path = os.path.dirname(dir_path) + "/python/lsst/sims/alertsim/broadcast/receivers/rec_tcp_python.py"
 
         #shell command for a receiver to be executed in a different process
         command = "python " + receiver_path + " -p 8080"
