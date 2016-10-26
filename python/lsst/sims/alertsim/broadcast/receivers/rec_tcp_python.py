@@ -87,9 +87,12 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = "")
     parser.add_argument("-p", "--port", type=int, default='8098',
                         help="tcp port")
+    parser.add_argument("-f", "--filename", type=str, default='None',
+                        help="test file to which we write events (optional)")
     args = parser.parse_args()
 
     receiver = TCPReceiver(args.port)
-    receiver.output_to_file("VOEvents.txt")
+    if args.filename != 'None':
+        receiver.output_to_file(args.filename)
     receiver.listen()
     receiver.close_connection()

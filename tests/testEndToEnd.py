@@ -110,8 +110,12 @@ class AlertSimEndToEndTest(unittest.TestCase):
         #combine parent path with receiver path
         receiver_path = os.path.dirname(dir_path) + "/python/lsst/sims/alertsim/broadcast/receivers/rec_tcp_python.py"
 
+        filename = os.path.join(self.scratch_dir, "end2end_VOEvents.txt")
+        if os.path.exists(filename):
+            os.unlink(filename)
+
         #shell command for a receiver to be executed in a different process
-        command = "python " + receiver_path + " -p 8080"
+        command = "python " + receiver_path + " -p 8080 -f %s " % filename
         subprocess.Popen([command], shell=True)
 
         #wait a bit till receiver warms up
@@ -136,7 +140,6 @@ class AlertSimEndToEndTest(unittest.TestCase):
             radius = 1.75, protocol = "TcpIp", ipaddr=local_ip_address,
             port = 8080, header = False, history = False, dia = False)
 
-        filename = "VOEvents.txt"
         voevent_list = read_and_divide(filename)
 
         ucds = ["pos.eq.ra", "pos.eq.dec", "phot.mag"]
@@ -179,6 +182,8 @@ class AlertSimEndToEndTest(unittest.TestCase):
             self.assertLess(np.abs(float(event[2])-catobj['mag']), tol)
 
         del db
+        if os.path.exists(filename):
+            os.unlink(filename)
         if os.path.exists(cat_name):
             os.unlink(cat_name)
 
