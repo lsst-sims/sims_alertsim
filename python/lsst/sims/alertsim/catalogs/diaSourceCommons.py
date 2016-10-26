@@ -74,15 +74,14 @@ class DiaSourceCommons(InstanceCatalog):
 
     # Units as stated in DPDD
 
-    #units = VariableStars.units + ['', '', '', '', '', 'time', 'degrees',
     units = ['', '', '', '', '', 'time', '', 'degrees',
-             'various', 'pixels', 'various', 'nmgy', 'nmgy', 'nmgy',
+             'various', 'pixels', 'various', 'nmgy', 'nmgy', '', 'nmgy',
              'degrees', 'various', '', '', '', 'nmgy', 'degrees', 'arcsec',
              'degrees', 'various', '', '', '', 'nmgy', 'nmgy', 'degrees',
              'arcsec', 'degrees', 'various', '', '', '', 'nmgy', 'nmgy',
-             'nmgy', 'nmgy', 'nmgy/asec^2', 'nmgy/asec^2', 'nmgy/asec^2',
-             'nmgy/asec^2', 'nmgy/asec^2', 'nmgy^2 asec^4', 'nmgy/asec^2',
-             'nmgy/asec^2', 'nmgy/asec^2', '', '', 'bit',]
+             'nmgy', 'nmgy', 'nmgy/asec^2', 'nmgy/asec^2', 'nmgy asec^2',
+             'nmgy asec^2', 'nmgy asec^2', 'nmgy^2 asec^4', 'nmgy asec^2',
+             'nmgy asec^2', 'nmgy asec^2', '', '', 'bit',]
 
     # DIASource attributes with randomly assigned values (for the time being)
 
