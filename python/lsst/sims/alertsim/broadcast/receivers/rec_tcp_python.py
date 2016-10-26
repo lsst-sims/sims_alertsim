@@ -81,14 +81,15 @@ class TCPReceiver(object):
 
         self.close_connection()
 
-#command line parser for tcp port
-PARSER = argparse.ArgumentParser(description = "")
-PARSER.add_argument("-p", "--port", type=int, default='8098',
-        help="tcp port")
-ARGS = PARSER.parse_args()
-
 if __name__ == "__main__":
-    receiver = TCPReceiver(ARGS.port)
+
+    #command line parser for tcp port
+    parser = argparse.ArgumentParser(description = "")
+    parser.add_argument("-p", "--port", type=int, default='8098',
+                        help="tcp port")
+    args = parser.parse_args()
+
+    receiver = TCPReceiver(args.port)
     receiver.output_to_file("VOEvents.txt")
     receiver.listen()
     receiver.close_connection()
