@@ -18,7 +18,7 @@ OPSIM_CONSTRAINT = "night=100"
 CATSIM_CONSTRAINT = "varParamStr not like 'None'"
 IPADDR = "147.91.240.29"
 
-def _construct_history(obs_list):
+def convert_obs_to_history(obs_list):
     """
     Take a list of ObservationMetaData and rearrange it into a 2-d list in which each row
     corresponds to the current ObservationMetaData but also contains all of the prior
@@ -98,7 +98,7 @@ def main(opsim_table = None, catsim_table = 'allstars',
             objid=opsim_table, radius=radius, constraint=opsim_constraint)
 
     if history:
-        obs_history = _construct_history(obs_all)
+        obs_history = convert_obs_to_history(obs_all)
     else:
         # we do not need the historical information; construct a dummy history
         mjd_arr = np.array([obs.mjd.TAI for obs in obs_all])
