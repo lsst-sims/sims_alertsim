@@ -49,15 +49,26 @@ class TCPReceiver(object):
         print 'Connection address:', addr
 
     def output_to_file(self, file_name):
+        """
+        Set the receiver to record all of the data it receives
+        as text in the file specified by file_name
+        """
         self._output_to_file = True
         self._file_name = file_name
 
     def close_connection(self):
+        """
+        Gracefully close the receiver's connection
+        """
         if self._connection is not None:
             self._connection.close()
         self._connection = None
 
     def _listen(self, file_handle=None):
+        """
+        Do the actual work of listening for events on the port specified
+        in the constructor
+        """
         while 1:
             data = self._connection.recv(self.BUFFER_SIZE)
             if not data: break
@@ -70,6 +81,9 @@ class TCPReceiver(object):
 
 
     def listen(self):
+        """
+        Listen for VOEvents on the port specified in the constructor
+        """
         if self._connection is None:
             raise RuntimeError("There is no connection to listen to")
 
