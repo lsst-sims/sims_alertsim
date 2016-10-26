@@ -6,7 +6,7 @@ from lsst.sims.catUtils.baseCatalogModels import *
 from lsst.sims.catalogs.decorators import compound
 from lsst.sims.alertsim.catalogs import DiaSourceCommons
 
-class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
+class BasicVarStars(InstanceCatalog,PhotometryStars,VariabilityStars):
 
     """ Class for describing variable stars output """
 
@@ -46,16 +46,21 @@ class VariableStars(InstanceCatalog,PhotometryStars,VariabilityStars):
     units = ['', 'rad', 'rad', '', '', '',
              '', '', '', '', '', '',
             #'', '', '', '', '', '',
-             '', '', '', '', '', '']
+             '', '', '', '', '', '',
+             '', '', '']
 
     @staticmethod
     def get_column_outputs(bandname):
         return ['id', 'raJ2000', 'decJ2000','lsst_'+bandname,
                 'delta_lsst_'+bandname, 'sigma_lsst_'+bandname, 'varParamStr']
 
-class DiaSourceVarStars(DiaSourceCommons):
+class DiaSourceVarStars(DiaSourceCommons, BasicVarStars):
 
     catalog_type = 'variable_stars_dia'
+    column_outputs = DiaSourceCommons.column_outputs + BasicVarStars.column_outputs
+    ucds = DiaSourceCommons.ucds + BasicVarStars.ucds
+    datatypes = DiaSourceCommons.datatypes + BasicVarStars.datatypes
+    units = DiaSourceCommons.units + BasicVarStars.units
 
 class VariabilityDummy(Variability):
     """ Dummy class for avoiding InstanceCatalog inheritance """
