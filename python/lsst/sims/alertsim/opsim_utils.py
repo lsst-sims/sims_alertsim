@@ -1,8 +1,7 @@
 """ Query opsim """
 
 #from lsst.sims.catUtils.baseCatalogModels import *
-from math import pi
-from operator import itemgetter, attrgetter
+import numpy as np
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
 
@@ -16,7 +15,8 @@ def opsim_query(stack_version, **kwargs):
     else:
         return opsim_query_stack10(**kwargs)
 
-def opsim_query_stack8(opsim_path, objid, radius, constraint):
+def opsim_query_stack8(opsim_path, objid, radius, opsim_night, 
+        opsim_filter, opsim_mjd, history):
 
     """ Query opsim and make a catalog for stack 8
     Obsolete at the moment
@@ -43,7 +43,8 @@ def opsim_query_stack8(opsim_path, objid, radius, constraint):
     print result
     return result
 
-def opsim_query_stack10 (opsim_path, objid, radius, constraint):
+def opsim_query_stack10(opsim_path, objid, radius, opsim_night, 
+        opsim_filter, opsim_mjd, history):
 
     """ Query opsim and make a catalog for stack 10
 
@@ -69,4 +70,43 @@ def opsim_query_stack10 (opsim_path, objid, radius, constraint):
         """ local access """
         dbaddress = opsim_path
         obs_gen = ObservationMetaDataGenerator(database=opsim_path, driver='sqlite')
-        return obs_gen.getObservationMetaDataFromConstraint(constraint)
+        #return obs_gen.getObservationMetaDataFromConstraint(constraint)
+        obs_all = obs_gen.getObservationMetaData(night=opsim_night, 
+                    telescopeFilter=opsim_filter, expMJD=opsim_mjd)
+        
+        obs_history = []
+
+        if history:
+            obs_history = _convert_obs_to_history(obs_all)
+        else:
+            # we do not need the historical information; construct a dummy history
+            mjd_arr = np.array([obs.mjd.TAI for obs in obs_all])
+            obs_history = np.array(obs_all)[np.argsort(mjd_arr)]
+            obs_history = [[obs, None] for obs in obs_history]
+
+        return obs_history
+
+def _convert_obs_to_history(obs_list):
+    """
+    Take a list of ObservationMetaData and rearrange it into a 2-d list in which each row
+    corresponds to the current ObservationMetaData but also contains all of the prior
+    observations of the same field up to that date in sorted order
+    """
+    # sort the ObservationMetaData in chronological order
+    mjd_array = np.array([obs.mjd.TAI for obs in obs_list])
+    sorted_dex = np.argsort(mjd_array)
+    if not isinstance(obs_list, np.ndarray):
+        obs_list = np.array(obs_list)
+
+    obs_list = obs_list[sorted_dex]
+
+    field_arr = np.array([obs.OpsimMetaData['fieldID'] for obs in obs_list])
+
+    output_history = []
+    for ix, obs in enumerate(obs_list):
+        # find all of the other observations of the same field
+        other_obs = np.where(field_arr[:ix] == obs.OpsimMetaData['fieldID'])[0]
+        current_obs = [obs] + [obs_list[other_obs[ix]] for ix in range(len(other_obs)-1,-1,-1)]
+        output_history.append(current_obs)
+
+    return output_history

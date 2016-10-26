@@ -12,11 +12,13 @@ PARSER.add_argument("-o", "--opsim_table", default="output_opsim3_61",
         help="opsim objid")
 PARSER.add_argument("-c", "--catsim_table", default="allstars",
         help="catsim objid")
-PARSER.add_argument("-oc", "--opsim_constraint",
-        default="night=100",
-        help="constraint for opsim query")
-PARSER.add_argument("-op", "--opsim_path",
-        default="",
+PARSER.add_argument("-on", "--opsim_night", default=100,
+        help="night constraint for the opsim query. You can specify range with (x, y)")
+PARSER.add_argument("-of", "--opsim_filter",default=None,
+        help="filter constraint for opsim query. If left empty it will return all")
+PARSER.add_argument("-om", "--opsim_mjd", default=None,
+        help="expMJD constraint for opsim query")
+PARSER.add_argument("-op", "--opsim_path", default=None,
         help="your local opsim db path. If left empty fatboy is queried")
 PARSER.add_argument("-cc", "--catsim_constraint",
         default="rmag between 10 and 30 and varParamStr not like 'None'",
@@ -84,7 +86,8 @@ if __name__ == "__main__":
     #if everything is ok call alertsim.main
     if (validate_ip(ARGS.ipaddress, ARGS.protocol)):
         sys.exit(alertsim.main(ARGS.opsim_table, ARGS.catsim_table,
-                ARGS.opsim_constraint, ARGS.opsim_path,
+                ARGS.opsim_night,
+                ARGS.opsim_filter, ARGS.opsim_mjd, 
                 ARGS.catsim_constraint, ARGS.radius, ARGS.protocol,
                 ARGS.ipaddress, ARGS.port, ARGS.no_header,
                 ARGS.no_history, ARGS.no_dia, ARGS.serialize_json ))

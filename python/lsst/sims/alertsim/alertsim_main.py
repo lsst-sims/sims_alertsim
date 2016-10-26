@@ -14,40 +14,14 @@ from lsst.sims.alertsim.catalogs import *
 
 BANDNAMES = ['u', 'g', 'r', 'i', 'z', 'y']
 STACK_VERSION = 10
-OPSIM_CONSTRAINT = "night=100"
 CATSIM_CONSTRAINT = "varParamStr not like 'None'"
 IPADDR = "147.91.240.29"
 
-def convert_obs_to_history(obs_list):
-    """
-    Take a list of ObservationMetaData and rearrange it into a 2-d list in which each row
-    corresponds to the current ObservationMetaData but also contains all of the prior
-    observations of the same field up to that date in sorted order
-    """
-    # sort the ObservationMetaData in chronological order
-    mjd_array = np.array([obs.mjd.TAI for obs in obs_list])
-    sorted_dex = np.argsort(mjd_array)
-    if not isinstance(obs_list, np.ndarray):
-        obs_list = np.array(obs_list)
-
-    obs_list = obs_list[sorted_dex]
-
-    field_arr = np.array([obs.OpsimMetaData['fieldID'] for obs in obs_list])
-
-    output_history = []
-    for ix, obs in enumerate(obs_list):
-        # find all of the other observations of the same field
-        other_obs = np.where(field_arr[:ix] == obs.OpsimMetaData['fieldID'])[0]
-        current_obs = [obs] + [obs_list[other_obs[ix]] for ix in range(len(other_obs)-1,-1,-1)]
-        output_history.append(current_obs)
-
-    return output_history
-
-def main(opsim_table = None, catsim_table = 'allstars', 
-         opsim_constraint = OPSIM_CONSTRAINT, opsim_path = None, 
-         catsim_constraint = CATSIM_CONSTRAINT, radius = 1.75, 
-         protocol = None, ipaddr = IPADDR, port = 8089, header = True, 
-         history = True, dia = True, serialize_json = False):
+def main(opsim_table=None, catsim_table='allstars', 
+         opsim_night=100, opsim_filter=None, opsim_mjd = None, 
+         opsim_path=None, catsim_constraint = CATSIM_CONSTRAINT, 
+         radius=1.75, protocol=None, ipaddr=IPADDR, port=8089, 
+         header=True, history=True, dia=True, serialize_json=False):
 
     """ Controls all of Alertsim functionalities
         
@@ -60,7 +34,12 @@ def main(opsim_table = None, catsim_table = 'allstars',
     
     @param [in] catsim_table is objid of catsim table to be queried on fatboy
    
-    @param [in] opsim_constraint is sql (string) constraint for opsim query 
+    @param [in] opsim_night is constraint for opsim query 
+    
+    @param [in] opsim_filter is constraint for opsim query. If none, it
+    will return observations through all filters
+    
+    @param [in] opsim_mjd is constraint for opsim query 
 
     @param [in] opsim_path is path of local opsim DB. If left empty, 
     fatboy is queried
@@ -94,9 +73,11 @@ def main(opsim_table = None, catsim_table = 'allstars',
 
 
     """ matrix of all observations per field up to current mjd """
-    obs_all = opsim_utils.opsim_query(stack_version=STACK_VERSION, opsim_path=opsim_path,
-            objid=opsim_table, radius=radius, constraint=opsim_constraint)
-
+    obs_all = opsim_utils.opsim_query(stack_version=STACK_VERSION, 
+            opsim_path=opsim_path, objid=opsim_table, radius=radius, 
+            opsim_night=opsim_night, opsim_filter=opsim_filter, 
+            opsim_mjd=opsim_mjd, history=history)
+    """
     if history:
         obs_history = convert_obs_to_history(obs_all)
     else:
@@ -104,6 +85,7 @@ def main(opsim_table = None, catsim_table = 'allstars',
         mjd_arr = np.array([obs.mjd.TAI for obs in obs_all])
         obs_history = np.array(obs_all)[np.argsort(mjd_arr)]
         obs_history = [[obs, None] for obs in obs_history]
+    """
 
     print "opsim result fetched and transformed to ObservationMetaData objects"
 
