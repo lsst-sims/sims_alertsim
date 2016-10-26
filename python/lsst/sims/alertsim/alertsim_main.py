@@ -38,7 +38,7 @@ def convert_obs_to_history(obs_list):
     for ix, obs in enumerate(obs_list):
         # find all of the other observations of the same field
         other_obs = np.where(field_arr[:ix] == obs.OpsimMetaData['fieldID'])[0]
-        current_obs = [obs] + [obs_list[ix] for ix in range(len(other_obs)-1,-1,-1)]
+        current_obs = [obs] + [obs_list[other_obs[ix]] for ix in range(len(other_obs)-1,-1,-1)]
         output_history.append(current_obs)
 
     return output_history
