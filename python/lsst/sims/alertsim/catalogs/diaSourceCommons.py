@@ -232,16 +232,21 @@ class DiaSourceCommons(CameraCoords):
                  'apMeanSb10Sigma']
         return array_to_dict(cols, vals)
     
+    def _radec_epsilon(self):
+        """
+        Return a numpy array of [raICRS+epsilon, decICRS+epsilon].transpose()
+        """
+        ra = self.column_by_name('raICRS')
+        dec = self.column_by_name('decICRS')
+        return np.array([ra + 1.0e-6*np.random.random_sample(len(ra)),
+                         dec + 1.0e-6*np.random.random_sample(len(dec))]).T
+
     def get_psRadec(self):
         """
         Just return raICRS, decICRS with a small epsilon added,
         since CatSim does not have methods to calculate psf RA, Dec
         """
-        ra = self.column_by_name('raICRS')
-        dec = self.column_by_name('decICRS')
-        vals = np.array([ra + 1.0e-6*np.random.random_sample(len(ra)),
-                         dec + 1.0e-6*np.random.random_sample(len(dec))]).T
-
+        vals = self._radec_epsilon()
         cols = ['psRa', 'psDec']
         return array_to_dict(cols, vals)
 
@@ -257,11 +262,7 @@ class DiaSourceCommons(CameraCoords):
         Return raICRS, decICRS with small epsilon, since CatSim
         does not have methods to calculate trailing RA, Dec
         """
-        ra = self.column_by_name('raICRS')
-        dec = self.column_by_name('decICRS')
-        vals = np.array([ra + 1.0e-6*np.random.random_sample(len(ra)),
-                         dec + 1.0e-6*np.random.random_sample(len(dec))]).T
-
+        vals = self._radec_epsilon()
         cols = ['trailRa', 'trailDec']
         return array_to_dict(cols, vals)
 
