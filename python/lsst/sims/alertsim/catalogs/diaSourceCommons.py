@@ -3,6 +3,7 @@ import numpy as np
 from random_utils import *
 from lsst.sims.catalogs.definitions import InstanceCatalog
 from lsst.sims.catUtils.mixins import CameraCoords
+from lsst.sims.photUtils import Sed  # for converting magnitudes into fluxes
 from lsst.obs.lsstSim import LsstSimMapper
 from lsst.sims.catUtils.baseCatalogModels import *
 #from lsst.sims.catalogs.decorators import compound
@@ -159,7 +160,27 @@ class DiaSourceCommons(CameraCoords):
         return array_to_dict(cols, vals)
 
     def get_apFlux(self):
-        vals = np.array(rflist(self, 10)).T
+        """
+        apMeanSb01 will be the true flux of the source.
+
+        All others will be apMeanSb01 multiplied by 1.0 + epsilon,
+        since CatSim does not contain methods to calculate different
+        types of flux.
+        """
+        true_mag = self.column_by_name('lsst_%s' % self.obs_metadata.bandpass)
+        ss = Sed()
+        true_flux = ss.fluxFromMag(true_mag)
+        vals = np.array([true_flux,
+                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux)))]).T
+
         cols = ['apMeanSb01', 'apMeanSb02', 'apMeanSb03', 
                  'apMeanSb04', 'apMeanSb05', 'apMeanSb06', 
                  'apMeanSb07', 'apMeanSb08', 'apMeanSb09', 
