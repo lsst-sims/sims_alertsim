@@ -6,7 +6,8 @@ from lsst.sims.catUtils.baseCatalogModels import *
 from lsst.sims.catalogs.decorators import compound
 from lsst.sims.alertsim.catalogs import DiaSourceCommons
 
-class BasicVarStars(InstanceCatalog,PhotometryStars,VariabilityStars):
+class BasicVarStars(InstanceCatalog, 
+        PhotometryStars, VariabilityStars, AstrometryStars):
 
     """ Class for describing variable stars output """
 
@@ -61,6 +62,7 @@ class DiaSourceVarStars(DiaSourceCommons, BasicVarStars):
     ucds = DiaSourceCommons.ucds + BasicVarStars.ucds
     datatypes = DiaSourceCommons.datatypes + BasicVarStars.datatypes
     units = DiaSourceCommons.units + BasicVarStars.units
+
 
 class VariabilityDummy(Variability):
     """ Dummy class for avoiding InstanceCatalog inheritance """
