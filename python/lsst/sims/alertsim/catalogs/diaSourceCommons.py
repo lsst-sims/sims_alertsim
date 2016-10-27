@@ -3,6 +3,7 @@ import numpy as np
 import re
 from random_utils import *
 from lsst.sims.catalogs.definitions import InstanceCatalog
+from lsst.sims.catalogs.decorators import cached
 from lsst.sims.catUtils.mixins import CameraCoords
 from lsst.sims.photUtils import Sed  # for converting magnitudes into fluxes
 from lsst.obs.lsstSim import LsstSimMapper
@@ -183,19 +184,36 @@ class DiaSourceCommons(CameraCoords):
         cols = ['xVar', 'yVar', 'x_y_Cov']
         return array_to_dict(cols, vals)
 
+    @cached
+    def get_trueMag(self):
+        """
+        The total magnitude of the variable source
+        """
+        return self.column_by_name('lsst_%s' % self.obs_metadata.bandpass)
+
+    @cached
+    def get_meanMag(self):
+        """
+        The mean magnitude of the variable source
+        """
+        delta_mag = self.column_by_name('delta_lsst_%s' % self.obs_metadata.bandpass)
+        true_mag = self.column_by_name('trueMag')
+        return true_mag-delta_mag
+
+    @cached
     def get_trueFlux(self):
         """
         Getter for true flux of the source.  Note: this is the flux of the
         difference image: so it is observed flux-mean flux
         """
-        delta_mag = self.column_by_name('delta_lsst_%s' % self.obs_metadata.bandpass)
-        true_mag = self.column_by_name('lsst_%s' % self.obs_metadata.bandpass)
-        mean_mag = true_mag-delta_mag
+        mean_mag = self.column_by_name('meanMag')
+        true_mag = self.column_by_name('trueMag')
         ss = Sed()
         mean_flux = ss.fluxFromMag(mean_mag)
         true_flux = ss.fluxFromMag(true_mag)
         return true_flux-mean_flux
 
+    @cached
     def get_snr(self):
         """
         Get the SNR by finding the mangitude and assuming that
@@ -204,13 +222,12 @@ class DiaSourceCommons(CameraCoords):
         mag_error = self.column_by_name('sigma_lsst_%s' % self.obs_metadata.bandpass)
         return 1.0/(np.power(10, mag_error) - 1.0)
 
+    @cached
     def get_trueFluxError(self):
         """
         Just divide flux by SNR
         """
         return self.column_by_name('trueFlux')/self.column_by_name('snr')
-
-
 
     def get_apFlux(self):
         """
