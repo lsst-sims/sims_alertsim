@@ -125,8 +125,8 @@ class DiaSourceCommons(InstanceCatalog):
         return self.column_by_name('uniqueId')*10000000+self.obs_metadata.OpsimMetaData['obsHistID']
 
     def get_radec(self):
-        ra = self.column_by_name('raJ2000')
-        dec = self.column_by_name('decJ2000')
+        ra = self.column_by_name('raICRS')
+        dec = self.column_by_name('decICRS')
         vals = np.array([ra, dec]).T
         cols = ['ra', 'dec']
         return array_to_dict(cols, vals)
