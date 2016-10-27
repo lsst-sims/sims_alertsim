@@ -196,6 +196,22 @@ class DiaSourceCommons(CameraCoords):
         true_flux = ss.fluxFromMag(true_mag)
         return true_flux-mean_flux
 
+    def get_snr(self):
+        """
+        Get the SNR by finding the mangitude and assuming that
+        magnitude_error = 2.5*log10(1 + 1/SNR)
+        """
+        mag_error = self.column_by_name('sigma_lsst_%s' % self.obs_metadata.bandpass)
+        return 1.0/(np.power(10, mag_error) - 1.0)
+
+    def get_trueFluxError(self):
+        """
+        Just divide flux by SNR
+        """
+        return self.column_by_name('trueFlux')/self.column_by_name('snr')
+
+
+
     def get_apFlux(self):
         """
         apMeanSb01 will be the true flux of the source.
@@ -221,20 +237,6 @@ class DiaSourceCommons(CameraCoords):
                  'apMeanSb07', 'apMeanSb08', 'apMeanSb09', 
                  'apMeanSb10']
         return array_to_dict(cols, vals)
-
-    def get_snr(self):
-        """
-        Get the SNR by finding the mangitude and assuming that
-        magnitude_error = 2.5*log10(1 + 1/SNR)
-        """
-        mag_error = self.column_by_name('sigma_lsst_%s' % self.obs_metadata.bandpass)
-        return 1.0/(np.power(10, mag_error) - 1.0)
-
-    def get_trueFluxError(self):
-        """
-        Just divide flux by SNR
-        """
-        return self.column_by_name('trueFlux')/self.column_by_name('snr')
 
     def get_apFluxErr(self):
         """
