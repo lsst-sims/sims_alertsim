@@ -182,9 +182,9 @@ class DiaSourceCommons(CameraCoords):
         return array_to_dict(cols, vals)
 
     @cached
-    def get_trueMag(self):
+    def get_totMag(self):
         """
-        The total magnitude of the variable source
+        The total magnitude of the variable source (mean + delta)
         """
         return self.column_by_name('lsst_%s' % self.obs_metadata.bandpass)
 
@@ -194,8 +194,8 @@ class DiaSourceCommons(CameraCoords):
         The mean magnitude of the variable source
         """
         delta_mag = self.column_by_name('delta_lsst_%s' % self.obs_metadata.bandpass)
-        true_mag = self.column_by_name('trueMag')
-        return true_mag-delta_mag
+        tot_mag = self.column_by_name('totMag')
+        return tot_mag-delta_mag
 
     @cached
     def get_totFlux(self):
@@ -203,8 +203,8 @@ class DiaSourceCommons(CameraCoords):
         The total flux of the variable source
         """
         ss = Sed()
-        true_mag = self.column_by_name('trueMag')
-        return ss.fluxFromMag(true_mag)
+        tot_mag = self.column_by_name('totMag')
+        return ss.fluxFromMag(tot_mag)
 
     @cached
     def get_meanFlux(self):
@@ -235,7 +235,7 @@ class DiaSourceCommons(CameraCoords):
 
         to get from magnitude errors to SNR
         """
-        mag_error = self._magnitudeUncertaintyGetter(['meanMag', 'trueMag'],
+        mag_error = self._magnitudeUncertaintyGetter(['meanMag', 'totMag'],
                                                      [self.obs_metadata.bandpass]*2,
                                                      'lsstBandpassDict')
         mean_snr = 1.0/(np.power(10.0, mag_error[0]) - 1.0)
