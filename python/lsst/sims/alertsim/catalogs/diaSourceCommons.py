@@ -90,8 +90,7 @@ class DiaSourceCommons(CameraCoords):
     # DIASource attributes with randomly assigned values (for the time being)
 
     default_columns = [('parentSourceId', rbi(), int),
-          ('filterName', 0, (str, 8)),
-          ('snr', rf(), float), ('psFlux', rf(), float),
+          ('psFlux', rf(), float),
           ('psLnL', rf(), float), ('psChi2', rf(), float),
           ('psN', ri(), int), ('trailFlux', rf(), float),
           ('trailLength', rf(), float), ('trailAngle', rf(), float),
@@ -127,6 +126,9 @@ class DiaSourceCommons(CameraCoords):
         their position relative to the shutter motion.
         """
         return np.array([self.obs_metadata.mjd.TAI+17.0/86400.0]*len(self.column_by_name('uniqueId')))
+
+    def get_filterName(self):
+        return np.array([self.obs_metadata.bandpass]*len(self.column_by_name('uniqueId')))
 
     def get_chipNum(self):
         """
@@ -215,15 +217,19 @@ class DiaSourceCommons(CameraCoords):
                  'apMeanSb10']
         return array_to_dict(cols, vals)
 
-    def get_trueFluxError(self):
+    def get_snr(self):
         """
-        Get the true flux error by getting the magnitude error and assuming that
-
+        Get the SNR by finding the mangitude and assuming that
         magnitude_error = 2.5*log10(1 + 1/SNR)
         """
         mag_error = self.column_by_name('sigma_lsst_%s' % self.obs_metadata.bandpass)
-        true_snr = 1.0/(np.power(10, mag_error) - 1.0)
-        return self.column_by_name('trueFlux')/true_snr
+        return 1.0/(np.power(10, mag_error) - 1.0)
+
+    def get_trueFluxError(self):
+        """
+        Just divide flux by SNR
+        """
+        return self.column_by_name('trueFlux')/self.column_by_name('snr')
 
     def get_apFluxErr(self):
         """
