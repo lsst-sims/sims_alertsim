@@ -89,7 +89,7 @@ class DiaSourceCommons(CameraCoords):
 
     # DIASource attributes with randomly assigned values (for the time being)
 
-    default_columns = [('parentSourceId', rbi(), int), ('midPointTai', rf(), float),
+    default_columns = [('parentSourceId', rbi(), int),
           ('filterName', 0, (str, 8)),
           ('snr', rf(), float), ('psFlux', rf(), float),
           ('psLnL', rf(), float), ('psChi2', rf(), float),
@@ -117,6 +117,16 @@ class DiaSourceCommons(CameraCoords):
     camera = LsstSimMapper().camera  # the software representation of the LSST camera
 
     # getters for DIASource attributes which are generated from catsim
+
+    def get_midPointTai(self):
+        """
+        Return mid point of exposure by taking OpSim start-of-exposure time
+        and adding 17 seconds (15 seconds for first exposure; 1 second for
+        shutter close; one second for shutter open).  Ignore the fact that,
+        as DPDD states, midpoint will vary for different objects based on
+        their position relative to the shutter motion.
+        """
+        return np.array([self.obs_metadata.mjd.TAI+17.0/86400.0]*len(self.column_by_name('uniqueId')))
 
     def get_chipNum(self):
         """
