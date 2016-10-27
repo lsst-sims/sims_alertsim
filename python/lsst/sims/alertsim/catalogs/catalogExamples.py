@@ -63,6 +63,16 @@ class DiaSourceVarStars(DiaSourceCommons, BasicVarStars):
     datatypes = DiaSourceCommons.datatypes + BasicVarStars.datatypes
     units = DiaSourceCommons.units + BasicVarStars.units
 
+    def get_ssObjectId(self):
+        """
+        Stars should not have an ssObjectId; their unique identifier is
+        diaObjectId
+        """
+        return np.array([None]*len(self.column_by_name('uniqueId')))
+
+    def get_diaObjectId(self):
+        return self.column_by_name('uniqueId')
+
 
 class VariabilityDummy(Variability):
     """ Dummy class for avoiding InstanceCatalog inheritance """

@@ -89,8 +89,7 @@ class DiaSourceCommons(CameraCoords):
 
     # DIASource attributes with randomly assigned values (for the time being)
 
-    default_columns = [('ssObjectId', rbi(), int),
-          ('parentSourceId', rbi(), int), ('midPointTai', rf(), float),
+    default_columns = [('parentSourceId', rbi(), int), ('midPointTai', rf(), float),
           ('filterName', 0, (str, 8)),
           ('snr', rf(), float), ('psFlux', rf(), float),
           ('psLnL', rf(), float), ('psChi2', rf(), float),
@@ -141,9 +140,6 @@ class DiaSourceCommons(CameraCoords):
         (obsHistID should only go up to about 3 million)
         """
         return self.column_by_name('uniqueId')*10000000+self.obs_metadata.OpsimMetaData['obsHistID']
-
-    def get_diaObjectId(self):
-        return self.column_by_name('uniqueId')
 
     def get_radec(self):
         """
