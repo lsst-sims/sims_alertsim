@@ -253,7 +253,15 @@ class DiaSourceCommons(CameraCoords):
         return array_to_dict(cols, vals)
 
     def get_trailRadec(self):
-        vals = np.array(rflist(self, 2)).T
+        """
+        Return raICRS, decICRS with small epsilon, since CatSim
+        does not have methods to calculate trailing RA, Dec
+        """
+        ra = self.column_by_name('raICRS')
+        dec = self.column_by_name('decICRS')
+        vals = np.array([ra + 1.0e-6*np.random.random_sample(len(ra)),
+                         dec + 1.0e-6*np.random.random_sample(len(dec))]).T
+
         cols = ['trailRa', 'trailDec']
         return array_to_dict(cols, vals)
 
