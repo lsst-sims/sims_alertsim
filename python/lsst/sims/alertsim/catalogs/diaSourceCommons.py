@@ -239,8 +239,8 @@ class DiaSourceCommons(CameraCoords):
         """
         ra = self.column_by_name('raICRS')
         dec = self.column_by_name('decICRS')
-        vals = np.array([ra + 0.0001*np.random.random_sample(len(ra)),
-                         dec + 0.0001*np.random.random_sample(len(dec))]).T
+        vals = np.array([ra + 1.0e-6*np.random.random_sample(len(ra)),
+                         dec + 1.0e-6*np.random.random_sample(len(dec))]).T
 
         cols = ['psRa', 'psDec']
         return array_to_dict(cols, vals)
