@@ -2,10 +2,12 @@
 import numpy as np
 from random_utils import *
 from lsst.sims.catalogs.definitions import InstanceCatalog
+from lsst.sims.catUtils.mixins import CameraCoords
+from lsst.obs.lsstSim import LsstSimMapper
 from lsst.sims.catUtils.baseCatalogModels import *
 #from lsst.sims.catalogs.decorators import compound
 
-class DiaSourceCommons(InstanceCatalog):
+class DiaSourceCommons(CameraCoords):
 
     """ Common methods and attributes for all classes 
     which represent diasource.
@@ -112,6 +114,8 @@ class DiaSourceCommons(InstanceCatalog):
                                   "know how to deal with the nested structure "
                                   "of the DIASource schema")
 
+    camera = LsstSimMapper().camera  # the software representation of the LSST camera
+
     # getters for DIASource attributes which are generated from catsim
 
     def get_diaSourceId(self):
@@ -125,6 +129,10 @@ class DiaSourceCommons(InstanceCatalog):
         return self.column_by_name('uniqueId')*10000000+self.obs_metadata.OpsimMetaData['obsHistID']
 
     def get_radec(self):
+        """
+        raICRS, decICRS take raJ2000, decJ2000 and
+        add proper motion
+        """
         ra = self.column_by_name('raICRS')
         dec = self.column_by_name('decICRS')
         vals = np.array([ra, dec]).T
@@ -141,7 +149,7 @@ class DiaSourceCommons(InstanceCatalog):
 
 
     def get_xy(self):
-        vals = np.array(rflist(self, 2)).T
+        vals = np.array([self.column_by_name('xPix'), self.column_by_name('yPix')])
         cols = ['x', 'y']
         return array_to_dict(cols, vals)
 
