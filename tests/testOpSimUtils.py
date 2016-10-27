@@ -4,7 +4,7 @@ import copy
 import numpy as np
 import lsst.utils.tests
 from lsst.utils import getPackageDir
-from lsst.sims.alertsim import convert_obs_to_history
+from lsst.sims.alertsim.opsim_utils import _convert_obs_to_history
 from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
 
 
@@ -18,7 +18,7 @@ class ObsHistoryTestCase(unittest.TestCase):
 
     def test_history(self):
         """
-        Test that convert_obs_to_history really does sort the
+        Test that _convert_obs_to_history really does sort the
         ObservationMetaData appropriately.
         """
 
@@ -26,13 +26,13 @@ class ObsHistoryTestCase(unittest.TestCase):
                                "opsimblitz1_1133_sqlite.db")
 
         gen = ObservationMetaDataGenerator(opsimdb)
-        obs_list = gen.getObservationMetaDataFromConstraint("where night < 10 GROUP BY expMJD")
+        obs_list = gen.getObservationMetaData(night=(0,10))
         obs_control = copy.deepcopy(obs_list)
         control_fieldid = np.array([obs.OpsimMetaData['fieldID'] for obs in obs_control])
         control_mjd = np.array([obs.mjd.TAI for obs in obs_control])
         self.assertGreater(len(obs_list), 1)
 
-        history = convert_obs_to_history(obs_list)
+        history = _convert_obs_to_history(obs_list)
 
         for ix, entry in enumerate(history):
 

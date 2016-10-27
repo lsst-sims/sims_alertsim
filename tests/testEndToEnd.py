@@ -143,7 +143,7 @@ class AlertSimEndToEndTest(unittest.TestCase):
 
         alertsim.main(opsim_table = "",
 	    catsim_table = "test_allstars",
-            opsim_constraint = "", opsim_path = self.opsim_file_name,
+            opsim_mjd=(59579.0,64000.0), opsim_path = self.opsim_file_name,
             catsim_constraint = "varParamStr not like 'None'",
             radius = 1.75, protocol = "TcpIp", ipaddr=local_ip_address,
             port = 8080, header = False, history = False, dia = False)
