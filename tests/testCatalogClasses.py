@@ -5,6 +5,7 @@ import lsst.utils.tests
 from lsst.utils import getPackageDir
 from utils import createFakeCatSimDB
 from lsst.sims.utils import ObservationMetaData
+from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
 from lsst.sims.catalogs.db import CatalogDBObject
 from lsst.sims.alertsim.catalogs import BasicVarStars, DiaSourceVarStars
 
@@ -41,9 +42,10 @@ class AlertSimCatalogTestCase(unittest.TestCase):
         cls.db_file_name = os.path.join(getPackageDir("sims_alertsim"),
                                         "tests", "scratch", "catalog_test_obj.db")
 
-        cls.obs = ObservationMetaData(pointingRA=23.0, pointingDec=-17.0,
-                                      mjd=60000.0, rotSkyPos=19.0,
-                                      boundType='circle', boundLength=1.75)
+        opsim_db = os.path.join(getPackageDir("sims_data"), "OpSimData", "opsimblitz1_1133_sqlite.db")
+        gen = ObservationMetaDataGenerator(database=opsim_db, driver='sqlite')
+        obs_list = gen.getObservationMetaData(night=3)
+        cls.obs = obs_list[0]
 
         cls.control_stars = createFakeCatSimDB(cls.db_file_name,
                                                [(cls.obs.pointingRA, cls.obs.pointingDec)])

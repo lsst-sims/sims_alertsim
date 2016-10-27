@@ -118,8 +118,11 @@ class DiaSourceCommons(InstanceCatalog):
         """
         A unique identifier for each DIASource (this needs to be unique for
         each apparition of a given object)
+
+        Take uniqueID, multiply by 10^7 and add obsHistID from self.obs_metadata
+        (obsHistID should only go up to about 3 million)
         """
-        return self.column_by_name('simobjid')
+        return self.column_by_name('uniqueId')*10000000+self.obs_metadata.OpsimMetaData['obsHistID']
 
     def get_radec(self):
         ra = self.column_by_name('raJ2000')
