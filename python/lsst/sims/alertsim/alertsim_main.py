@@ -18,10 +18,11 @@ CATSIM_CONSTRAINT = "varParamStr not like 'None'"
 IPADDR = "147.91.240.29"
 
 def main(opsim_table=None, catsim_table='allstars', 
-         opsim_night=100, opsim_filter=None, opsim_mjd = None, 
+         opsim_night=None, opsim_filter=None, opsim_mjd = None, 
          opsim_path=None, catsim_constraint = CATSIM_CONSTRAINT, 
          radius=1.75, protocol=None, ipaddr=IPADDR, port=8089, 
          header=True, history=True, dia=True, serialize_json=False):
+
 
     """ Controls all of Alertsim functionalities
         
@@ -73,7 +74,7 @@ def main(opsim_table=None, catsim_table='allstars',
 
 
     """ matrix of all observations per field up to current mjd """
-    obs_all = opsim_utils.opsim_query(stack_version=STACK_VERSION, 
+    obs_history = opsim_utils.opsim_query(stack_version=STACK_VERSION, 
             opsim_path=opsim_path, objid=opsim_table, radius=radius, 
             opsim_night=opsim_night, opsim_filter=opsim_filter, 
             opsim_mjd=opsim_mjd, history=history)
