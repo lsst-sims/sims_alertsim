@@ -203,31 +203,57 @@ class DiaSourceCommons(CameraCoords):
     @cached
     def get_trueFlux(self):
         """
+        The total flux of the variable source
+        """
+        ss = Sed()
+        true_mag = self.column_by_name('trueMag')
+        return ss.fluxFromMag(true_mag)
+
+    @cached
+    def get_meanFlux(self):
+        """
+        The mean (quiescent) flux of the variable source
+        """
+        ss = Sed()
+        mean_mag = self.column_by_name('meanMag')
+        return ss.fluxFromMag(mean_mag)
+
+
+    @cached
+    def get_trueDiffFlux(self):
+        """
         Getter for true flux of the source.  Note: this is the flux of the
         difference image: so it is observed flux-mean flux
         """
-        mean_mag = self.column_by_name('meanMag')
-        true_mag = self.column_by_name('trueMag')
-        ss = Sed()
-        mean_flux = ss.fluxFromMag(mean_mag)
-        true_flux = ss.fluxFromMag(true_mag)
-        return true_flux-mean_flux
+        return self.column_by_name('trueFlux')-self.column_by_name('meanFlux')
+
+    @cached
+    def get_trueDiffFluxError(self):
+        """
+        The error in our measurement of the difference image flux.
+
+        Note, we have assumed that
+
+        magnitude_error = 2.5*log10(1 + 1/SNR)
+
+        to get from magnitude errors to SNR
+        """
+        mag_error = self._magnitudeUncertaintyGetter(['meanMag', 'trueMag'],
+                                                     [self.obs_metadata.bandpass]*2,
+                                                     'lsstBandpassDict')
+        mean_snr = 1.0/(np.power(10.0, mag_error[0]) - 1.0)
+        true_snr = 1.0/(np.power(10.0, mag_error[1]) - 1.0)
+        true_flux_err = self.column_by_name('trueFlux')/true_snr
+        mean_flux_err = self.column_by_name('meanFlux')/mean_snr
+        return np.sqrt(true_flux_err*true_flux_err + mean_flux_err*mean_flux_err)
+
 
     @cached
     def get_snr(self):
         """
-        Get the SNR by finding the mangitude and assuming that
-        magnitude_error = 2.5*log10(1 + 1/SNR)
+        Get the SNR by dividing flux by uncertainty
         """
-        mag_error = self.column_by_name('sigma_lsst_%s' % self.obs_metadata.bandpass)
-        return 1.0/(np.power(10, mag_error) - 1.0)
-
-    @cached
-    def get_trueFluxError(self):
-        """
-        Just divide flux by SNR
-        """
-        return self.column_by_name('trueFlux')/self.column_by_name('snr')
+        return self.column_by_name('trueDiffFlux')/self.column_by_name('trueDiffFluxError')
 
     def get_apFlux(self):
         """
@@ -237,7 +263,7 @@ class DiaSourceCommons(CameraCoords):
         since CatSim does not contain methods to calculate different
         types of flux.
         """
-        true_flux = self.column_by_name('trueFlux')
+        true_flux = self.column_by_name('trueDiffFlux')
         vals = np.array([true_flux,
                          true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
                          true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
@@ -265,7 +291,7 @@ class DiaSourceCommons(CameraCoords):
         multiplied by 1+epsilon because CatSim does not have methods to calculate different types
         of fluxes.
         """
-        true_fluxError = self.column_by_name('trueFluxError')
+        true_fluxError = self.column_by_name('trueDiffFluxError')
 
         vals = np.array([true_fluxError,
                          true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
