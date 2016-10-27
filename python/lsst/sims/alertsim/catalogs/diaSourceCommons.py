@@ -159,6 +159,14 @@ class DiaSourceCommons(CameraCoords):
         cols = ['xVar', 'yVar', 'x_y_Cov']
         return array_to_dict(cols, vals)
 
+    def get_trueFlux(self):
+        """
+        Getter for true flux of the source
+        """
+        true_mag = self.column_by_name('lsst_%s' % self.obs_metadata.bandpass)
+        ss = Sed()
+        return ss.fluxFromMag(true_mag)
+
     def get_apFlux(self):
         """
         apMeanSb01 will be the true flux of the source.
@@ -167,9 +175,7 @@ class DiaSourceCommons(CameraCoords):
         since CatSim does not contain methods to calculate different
         types of flux.
         """
-        true_mag = self.column_by_name('lsst_%s' % self.obs_metadata.bandpass)
-        ss = Sed()
-        true_flux = ss.fluxFromMag(true_mag)
+        true_flux = self.column_by_name('trueFlux')
         vals = np.array([true_flux,
                          true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
                          true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
