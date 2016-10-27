@@ -10,6 +10,7 @@ def rf():
     return np.random.ranf()
 
 def rflist(catalog, count):
+
     """ List of random floats 
 
     @param [in] catalog is needed for the number of rows
@@ -20,10 +21,7 @@ def rflist(catalog, count):
     of random floats
     """
 
-    rflist = []
-    for i in range(0, count):
-        rflist.append([rf()] * len(catalog.column_by_name('simobjid')))
-    return rflist
+    return np.random.random_sample((count, len(catalog.column_by_name('simobjid'))))
 
 def ri():
     """ Returns a random integer """
