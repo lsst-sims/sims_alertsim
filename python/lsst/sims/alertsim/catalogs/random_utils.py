@@ -9,7 +9,7 @@ def rf():
     """ Returns a random float """
     return np.random.ranf()
 
-def rfsample(catalog, count):
+def rflist(catalog, count):
 
     """ List of random floats 
 
