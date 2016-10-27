@@ -91,7 +91,6 @@ class DiaSourceCommons(CameraCoords):
     # DIASource attributes with randomly assigned values (for the time being)
 
     default_columns = [('parentSourceId', rbi(), int),
-          ('psFlux', rf(), float),
           ('psLnL', rf(), float), ('psChi2', rf(), float),
           ('psN', ri(), int), ('trailFlux', rf(), float),
           ('trailLength', rf(), float), ('trailAngle', rf(), float),
@@ -247,13 +246,20 @@ class DiaSourceCommons(CameraCoords):
         mean_flux_err = self.column_by_name('meanFlux')/mean_snr
         return np.sqrt(true_flux_err*true_flux_err + mean_flux_err*mean_flux_err)
 
-
     @cached
     def get_snr(self):
         """
         Get the SNR by dividing flux by uncertainty
         """
         return self.column_by_name('trueDiffFlux')/self.column_by_name('trueDiffFluxError')
+
+    def get_psFlux(self):
+        """
+        Return the true difference image flux plus a small epsilon, since CatSim
+        does not have methods to calculate different varieties of flux
+        """
+        return self.column_by_name('trueDiffFlux') + \
+               0.0001*np.random.random_sample(len(self.column_by_name('uniqueId')))
 
     def get_apFlux(self):
         """
