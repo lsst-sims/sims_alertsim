@@ -92,7 +92,7 @@ class DiaSourceCommons(CameraCoords):
 
     default_columns = [('parentSourceId', rbi(), int),
           ('psLnL', rf(), float), ('psChi2', rf(), float),
-          ('psN', ri(), int), ('trailFlux', rf(), float),
+          ('psN', ri(), int),
           ('trailLength', rf(), float), ('trailAngle', rf(), float),
           ('trailLnL', rf(), float), ('trailChi2', rf(), float),
           ('trailN', ri(), int), ('dipMeanFlux', rf(), float),
@@ -254,6 +254,14 @@ class DiaSourceCommons(CameraCoords):
         return self.column_by_name('trueDiffFlux')/self.column_by_name('trueDiffFluxError')
 
     def get_psFlux(self):
+        """
+        Return the true difference image flux plus a small epsilon, since CatSim
+        does not have methods to calculate different varieties of flux
+        """
+        return self.column_by_name('trueDiffFlux') + \
+               0.0001*np.random.random_sample(len(self.column_by_name('uniqueId')))
+
+    def get_trailFlux(self):
         """
         Return the true difference image flux plus a small epsilon, since CatSim
         does not have methods to calculate different varieties of flux
