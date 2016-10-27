@@ -217,14 +217,14 @@ class DiaSourceCommons(CameraCoords):
 
 
     @cached
-    def get_trueDiffFlux(self):
+    def get_diaFlux(self):
         """
         Getter for true flux of the source.  Note: this is the flux of the
         difference image: so it is observed flux-mean flux
         """
         return self.column_by_name('totFlux')-self.column_by_name('meanFlux')
 
-    @compound('trueDiffFluxError', 'totFluxErr', 'meanFluxErr')
+    @compound('diaFluxError', 'totFluxErr', 'meanFluxErr')
     def get_fluxError(self):
         """
         The error in our measurement of the difference image flux.
@@ -250,14 +250,14 @@ class DiaSourceCommons(CameraCoords):
         """
         Get the SNR by dividing flux by uncertainty
         """
-        return self.column_by_name('trueDiffFlux')/self.column_by_name('trueDiffFluxError')
+        return self.column_by_name('diaFlux')/self.column_by_name('diaFluxError')
 
     def get_psFlux(self):
         """
         Return the true difference image flux plus a small epsilon, since CatSim
         does not have methods to calculate different varieties of flux
         """
-        return self.column_by_name('trueDiffFlux') + \
+        return self.column_by_name('diaFlux') + \
                0.0001*np.random.random_sample(len(self.column_by_name('uniqueId')))
 
     def get_trailFlux(self):
@@ -265,7 +265,7 @@ class DiaSourceCommons(CameraCoords):
         Return the true difference image flux plus a small epsilon, since CatSim
         does not have methods to calculate different varieties of flux
         """
-        return self.column_by_name('trueDiffFlux') + \
+        return self.column_by_name('diaFlux') + \
                0.0001*np.random.random_sample(len(self.column_by_name('uniqueId')))
 
     def get_apFlux(self):
@@ -276,7 +276,7 @@ class DiaSourceCommons(CameraCoords):
         since CatSim does not contain methods to calculate different
         types of flux.
         """
-        true_flux = self.column_by_name('trueDiffFlux')
+        true_flux = self.column_by_name('diaFlux')
         vals = np.array([true_flux,
                          true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
                          true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
@@ -304,7 +304,7 @@ class DiaSourceCommons(CameraCoords):
         multiplied by 1+epsilon because CatSim does not have methods to calculate different types
         of fluxes.
         """
-        true_fluxError = self.column_by_name('trueDiffFluxError')
+        true_fluxError = self.column_by_name('diaFluxError')
 
         vals = np.array([true_fluxError,
                          true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
