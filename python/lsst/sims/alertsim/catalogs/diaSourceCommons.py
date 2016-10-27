@@ -278,7 +278,11 @@ class DiaSourceCommons(CameraCoords):
         return array_to_dict(cols, vals)
 
     def get_dipRadec(self):
-        vals = np.array(rflist(self, 2)).T
+        """
+        Return raICRS, decICRS with small epsilon, since CatSim
+        does not have methods to calculate trailing RA, Dec
+        """
+        vals = self._radec_epsilon()
         cols = ['dipRa', 'dipDec']
         return array_to_dict(cols, vals)
 
