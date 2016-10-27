@@ -98,7 +98,6 @@ class DiaSourceCommons(CameraCoords):
           ('dipFluxDiff', rf(), float), ('dipLength', rf(), float),
           ('dipAngle', rf(), float), ('dipLnL', rf(), float),
           ('dipChi2', rf(), float), ('dipN', ri(), int),
-          ('totFlux', rf(), float), ('totFluxErr', rf(), float),
           ('diffFlux', rf(), float), ('diffFluxErr', rf(), float),
           ('fpBkgd', rf(), float), ('fpBkgdErr', rf(), float),
           ('Ixx', rf(), float), ('Iyy', rf(), float), ('Ixy', rf(), float),
