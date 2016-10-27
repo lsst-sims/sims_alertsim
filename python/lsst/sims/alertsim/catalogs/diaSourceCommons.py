@@ -3,7 +3,7 @@ import numpy as np
 import re
 from random_utils import *
 from lsst.sims.catalogs.definitions import InstanceCatalog
-from lsst.sims.catalogs.decorators import cached
+from lsst.sims.catalogs.decorators import cached, compound
 from lsst.sims.catUtils.mixins import CameraCoords
 from lsst.sims.photUtils import Sed  # for converting magnitudes into fluxes
 from lsst.obs.lsstSim import LsstSimMapper
@@ -92,8 +92,7 @@ class DiaSourceCommons(CameraCoords):
 
     default_columns = [('parentSourceId', rbi(), int),
           ('psLnL', rf(), float), ('psChi2', rf(), float),
-          ('psN', ri(), int),
-          ('trailLength', rf(), float), ('trailAngle', rf(), float),
+          ('psN', ri(), int), ('trailLength', rf(), float), ('trailAngle', rf(), float),
           ('trailLnL', rf(), float), ('trailChi2', rf(), float),
           ('trailN', ri(), int), ('dipMeanFlux', rf(), float),
           ('dipFluxDiff', rf(), float), ('dipLength', rf(), float),
@@ -200,7 +199,7 @@ class DiaSourceCommons(CameraCoords):
         return true_mag-delta_mag
 
     @cached
-    def get_trueFlux(self):
+    def get_totFlux(self):
         """
         The total flux of the variable source
         """
@@ -224,10 +223,10 @@ class DiaSourceCommons(CameraCoords):
         Getter for true flux of the source.  Note: this is the flux of the
         difference image: so it is observed flux-mean flux
         """
-        return self.column_by_name('trueFlux')-self.column_by_name('meanFlux')
+        return self.column_by_name('totFlux')-self.column_by_name('meanFlux')
 
-    @cached
-    def get_trueDiffFluxError(self):
+    @compound('trueDiffFluxError', 'totFluxErr', 'meanFluxErr')
+    def get_fluxError(self):
         """
         The error in our measurement of the difference image flux.
 
@@ -241,10 +240,11 @@ class DiaSourceCommons(CameraCoords):
                                                      [self.obs_metadata.bandpass]*2,
                                                      'lsstBandpassDict')
         mean_snr = 1.0/(np.power(10.0, mag_error[0]) - 1.0)
-        true_snr = 1.0/(np.power(10.0, mag_error[1]) - 1.0)
-        true_flux_err = self.column_by_name('trueFlux')/true_snr
+        tot_snr = 1.0/(np.power(10.0, mag_error[1]) - 1.0)
+        tot_flux_err = self.column_by_name('totFlux')/tot_snr
         mean_flux_err = self.column_by_name('meanFlux')/mean_snr
-        return np.sqrt(true_flux_err*true_flux_err + mean_flux_err*mean_flux_err)
+        return np.array([np.sqrt(tot_flux_err*tot_flux_err + mean_flux_err*mean_flux_err),
+                         tot_flux_err, mean_flux_err])
 
     @cached
     def get_snr(self):
