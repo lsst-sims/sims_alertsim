@@ -185,11 +185,16 @@ class DiaSourceCommons(CameraCoords):
 
     def get_trueFlux(self):
         """
-        Getter for true flux of the source
+        Getter for true flux of the source.  Note: this is the flux of the
+        difference image: so it is observed flux-mean flux
         """
+        delta_mag = self.column_by_name('delta_lsst_%s' % self.obs_metadata.bandpass)
         true_mag = self.column_by_name('lsst_%s' % self.obs_metadata.bandpass)
+        mean_mag = true_mag-delta_mag
         ss = Sed()
-        return ss.fluxFromMag(true_mag)
+        mean_flux = ss.fluxFromMag(mean_mag)
+        true_flux = ss.fluxFromMag(true_mag)
+        return true_flux-mean_flux
 
     def get_apFlux(self):
         """
