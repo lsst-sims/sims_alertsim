@@ -193,8 +193,39 @@ class DiaSourceCommons(CameraCoords):
                  'apMeanSb10']
         return array_to_dict(cols, vals)
 
+    def get_trueFluxError(self):
+        """
+        Get the true flux error by getting the magnitude error and assuming that
+
+        magnitude_error = 2.5*log10(1 + 1/SNR)
+        """
+        mag_error = self.column_by_name('sigma_lsst_%s' % self.obs_metadata.bandpass)
+        true_snr = 1.0/(np.power(10, mag_error) - 1.0)
+        return self.column_by_name('trueFlux')/true_snr
+
     def get_apFluxErr(self):
-        vals = np.array(rflist(self, 10)).T
+        """
+        Calculate the true flux error by getting the magntidue error and assuming that
+
+        magnitude_error = 2.5*log10(1 + 1/SNR)
+
+        apMeanSb01Sigma will be the true flux error.  Everything else will be true flux error
+        multiplied by 1+epsilon because CatSim does not have methods to calculate different types
+        of fluxes.
+        """
+        true_fluxError = self.column_by_name('trueFluxError')
+
+        vals = np.array([true_fluxError,
+                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError)))]).T
+
         cols = ['apMeanSb01Sigma', 'apMeanSb02Sigma', 'apMeanSb03Sigma', 
                  'apMeanSb04Sigma', 'apMeanSb05Sigma', 'apMeanSb06Sigma', 
                  'apMeanSb07Sigma', 'apMeanSb08Sigma', 'apMeanSb09Sigma', 
