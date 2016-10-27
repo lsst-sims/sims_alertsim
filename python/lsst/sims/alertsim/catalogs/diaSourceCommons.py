@@ -1,5 +1,6 @@
 """ DiaSourceCommons """
 import numpy as np
+import re
 from random_utils import *
 from lsst.sims.catalogs.definitions import InstanceCatalog
 from lsst.sims.catUtils.mixins import CameraCoords
@@ -88,8 +89,7 @@ class DiaSourceCommons(CameraCoords):
 
     # DIASource attributes with randomly assigned values (for the time being)
 
-    default_columns = [('ccdVisitId', rbi(), int),
-          ('ssObjectId', rbi(), int),
+    default_columns = [('ssObjectId', rbi(), int),
           ('parentSourceId', rbi(), int), ('midPointTai', rf(), float),
           ('filterName', 0, (str, 8)),
           ('snr', rf(), float), ('psFlux', rf(), float),
@@ -118,6 +118,19 @@ class DiaSourceCommons(CameraCoords):
     camera = LsstSimMapper().camera  # the software representation of the LSST camera
 
     # getters for DIASource attributes which are generated from catsim
+
+    def get_chipNum(self):
+        """
+        Concatenate the digits in 'R:i,j S:m,n' to make the chip number ijmn
+        """
+        chip_name = self.column_by_name('chipName')
+        return np.array([int(''.join(re.findall(r'\d+', name))) for name in chip_name])
+
+    def get_ccdVisitId(self):
+        """
+        Return chipNum*10^7 + obsHistID (obsHistID should never be more than 3 million)
+        """
+        return self.column_by_name('chipNum')*10000000+self.obs_metadata.OpsimMetaData['obsHistID']
 
     def get_diaSourceId(self):
         """
