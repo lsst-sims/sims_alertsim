@@ -44,7 +44,7 @@ class ObsHistoryTestCase(unittest.TestCase):
                 self.assertGreater(entry[0].mjd.TAI, history[ix-1][0].mjd.TAI, msg=msg)
 
             # Make sure that the ObservationMetaData in each entry are in
-            # reverse cosmologicalorder
+            # reverse chronological order
             for iy, past_obs in enumerate(entry):
                 self.assertEqual(past_obs.OpsimMetaData['fieldID'],
                                  entry[0].OpsimMetaData['fieldID'])
