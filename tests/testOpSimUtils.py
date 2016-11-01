@@ -44,8 +44,12 @@ class ObsHistoryTestCase(unittest.TestCase):
                 self.assertGreater(entry[0].mjd.TAI, history[ix-1][0].mjd.TAI, msg=msg)
 
             # Make sure that the ObservationMetaData in each entry are in
-            # reverse chronological order
+            # reverse chronological order and unique
+            obshistid_list = []
             for iy, past_obs in enumerate(entry):
+                self.assertNotIn(past_obs.OpsimMetaData['obsHistID'], obshistid_list)
+                obshistid_list.append(past_obs.OpsimMetaData['obsHistID'])
+
                 self.assertEqual(past_obs.OpsimMetaData['fieldID'],
                                  entry[0].OpsimMetaData['fieldID'])
                 if iy > 0:
