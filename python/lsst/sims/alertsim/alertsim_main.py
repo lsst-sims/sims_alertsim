@@ -103,7 +103,7 @@ def main(opsim_table=None, catsim_table='allstars',
 
     else:
 
-        for obs_per_field in obs_all:
+        for obs_per_field in obs_history:
 
             """ current observation - largest mjd from a sorted list  """
             obs_metadata = obs_per_field[0]
