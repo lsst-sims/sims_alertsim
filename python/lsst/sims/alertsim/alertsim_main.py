@@ -78,15 +78,6 @@ def main(opsim_table=None, catsim_table='allstars',
             opsim_path=opsim_path, objid=opsim_table, radius=radius, 
             opsim_night=opsim_night, opsim_filter=opsim_filter, 
             opsim_mjd=opsim_mjd, history=history)
-    """
-    if history:
-        obs_history = convert_obs_to_history(obs_all)
-    else:
-        # we do not need the historical information; construct a dummy history
-        mjd_arr = np.array([obs.mjd.TAI for obs in obs_all])
-        obs_history = np.array(obs_all)[np.argsort(mjd_arr)]
-        obs_history = [[obs, None] for obs in obs_history]
-    """
 
     print "opsim result fetched and transformed to ObservationMetaData objects"
 
