@@ -14,7 +14,7 @@ from lsst.sims.catalogs.definitions import InstanceCatalog
 from lsst.sims.utils import ObservationMetaData, haversine
 from utils import createFakeOpSimDB, createFakeCatSimDB
 
-from receiver_parser import read_and_divide, parse_parameters
+from utils import read_and_divide, parse_parameters
 
 from astropy.time import Time
 
