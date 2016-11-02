@@ -384,7 +384,7 @@ class DiaSourceCommons(CameraCoords):
         does not have methods to calculate different varieties of flux
         """
         return self.column_by_name('diaFlux') + \
-               0.0001*np.random.random_sample(len(self.column_by_name('uniqueId')))
+               0.0001*self.rng.random_sample(len(self.column_by_name('uniqueId')))
 
     def get_trailFlux(self):
         """
@@ -392,7 +392,7 @@ class DiaSourceCommons(CameraCoords):
         does not have methods to calculate different varieties of flux
         """
         return self.column_by_name('diaFlux') + \
-               0.0001*np.random.random_sample(len(self.column_by_name('uniqueId')))
+               0.0001*self.rng.random_sample(len(self.column_by_name('uniqueId')))
 
     def get_apFlux(self):
         """
@@ -404,15 +404,15 @@ class DiaSourceCommons(CameraCoords):
         """
         true_flux = self.column_by_name('diaFlux')
         vals = np.array([true_flux,
-                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*np.random.random_sample(len(true_flux)))]).T
+                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
+                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux)))]).T
 
         cols = ['apMeanSb01', 'apMeanSb02', 'apMeanSb03', 
                  'apMeanSb04', 'apMeanSb05', 'apMeanSb06', 
@@ -433,15 +433,15 @@ class DiaSourceCommons(CameraCoords):
         true_fluxError = self.column_by_name('diaFluxError')
 
         vals = np.array([true_fluxError,
-                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*np.random.random_sample(len(true_fluxError)))]).T
+                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
+                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError)))]).T
 
         cols = ['apMeanSb01Sigma', 'apMeanSb02Sigma', 'apMeanSb03Sigma', 
                  'apMeanSb04Sigma', 'apMeanSb05Sigma', 'apMeanSb06Sigma', 
@@ -455,8 +455,8 @@ class DiaSourceCommons(CameraCoords):
         """
         ra = self.column_by_name('raICRS')
         dec = self.column_by_name('decICRS')
-        return np.array([ra + 1.0e-6*np.random.random_sample(len(ra)),
-                         dec + 1.0e-6*np.random.random_sample(len(dec))]).T
+        return np.array([ra + 1.0e-6*self.rng.random_sample(len(ra)),
+                         dec + 1.0e-6*self.rng.random_sample(len(dec))]).T
 
     def get_psRadec(self):
         """
