@@ -83,7 +83,7 @@ class JsonTestCase(unittest.TestCase):
         contents of the resulting text files agree with the contents
         of the catalogs.
         """
-        obs_list = self.gen.getObservationMetaData(night=(0,2))
+        obs_list = self.gen.getObservationMetaData(obsHistID=(0,50))
 
         json_dir = os.path.join(getPackageDir('sims_alertsim'),
                                 'tests', 'scratch', 'jsonTest')
