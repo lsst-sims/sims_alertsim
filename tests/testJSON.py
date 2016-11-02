@@ -117,11 +117,17 @@ class JsonTestCase(unittest.TestCase):
                 diaSourceId = source['diaSourceId']
                 dia_dict[chipNum][diaSourceId] = source
 
+        non_random_cols = ['midPointTai', 'filterName', 'ccdVisitId', 'diaSourceId',
+                           'radec', 'xy', 'totFlux', 'snr']
+
         for ix, obs in enumerate(obs_list):
             cat = DiaSourceVarStars(self.db, obs_metadata=obs, column_outputs=['chipNum'])
             cat._seed = 44
             chipNumDex = cat._column_outputs.index('chipNum')
             diaSourceIdDex = cat._column_outputs.index('diaSourceId')
+
+            for col in non_random_cols:
+                self.assertIn(col, cat._column_outputs)
 
             for source in cat.iter_catalog():
                 chipNum = source[chipNumDex]
@@ -131,7 +137,7 @@ class JsonTestCase(unittest.TestCase):
                 comparisons = 0
                 for ix, (col, val) in enumerate(zip(cat._column_outputs, source)):
                     msg = 'failed on %s' % col
-                    if col != 'chipNum':
+                    if col in non_random_cols:
                         comparisons += 1
                         if isinstance(val, numbers.Number):
                             self.assertAlmostEqual(val, control[col], 10, msg=msg)
