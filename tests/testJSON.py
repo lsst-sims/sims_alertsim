@@ -58,7 +58,7 @@ class JsonTestCase(unittest.TestCase):
         cls.gen = ObservationMetaDataGenerator(database=cls.opsim_db,
                                                driver='sqlite')
 
-        obs_list = cls.gen.getObservationMetaData(night=(0,2))
+        obs_list = cls.gen.getObservationMetaData(obsHistID=(0,50))
         pointing_list = []
         field_id_list = []
         for obs in obs_list:
