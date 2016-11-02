@@ -66,7 +66,8 @@ class JsonTestCase(unittest.TestCase):
                 field_id_list.append(obs.OpsimMetaData['fieldID'])
                 pointing_list.append((obs.pointingRA, obs.pointingDec))
 
-        createFakeCatSimDB(cls.catsim_db_name, pointing_list)
+        createFakeCatSimDB(cls.catsim_db_name, pointing_list, n_obj=100,
+                           radius=1.75)
         cls.db = LocalStarDB(database=cls.catsim_db_name,
                              host=None, port=None, driver='sqlite')
 
@@ -121,36 +122,42 @@ class JsonTestCase(unittest.TestCase):
                            'radec', 'xy', 'totFlux', 'snr']
 
         for ix, obs in enumerate(obs_list):
-            cat = DiaSourceVarStars(self.db, obs_metadata=obs, column_outputs=['chipNum'])
+            cat = DiaSourceVarStars(self.db, obs_metadata=obs, column_outputs=['chipNum', 'chipName'])
             cat._seed = 44
             chipNumDex = cat._column_outputs.index('chipNum')
+            chipNameDex = cat._column_outputs.index('chipName')
             diaSourceIdDex = cat._column_outputs.index('diaSourceId')
 
             for col in non_random_cols:
                 self.assertIn(col, cat._column_outputs)
 
+            unique_chipnum = []
+            comparisons = 0
             for source in cat.iter_catalog():
                 chipNum = source[chipNumDex]
+                chipName = source[chipNameDex]
                 diaSourceId = source[diaSourceIdDex]
+                if chipName is not None:
+                    if chipNum not in unique_chipnum:
+                        unique_chipnum.append(chipNum)
+                    control = dia_dict[chipNum][diaSourceId]
+                    for ix, (col, val) in enumerate(zip(cat._column_outputs, source)):
+                        msg = 'failed on %s' % col
+                        if col in non_random_cols:
+                            comparisons += 1
+                            if isinstance(val, numbers.Number):
+                                self.assertAlmostEqual(val, control[col], 10, msg=msg)
+                            elif isinstance(val, list):
+                                for ix in len(val):
+                                    if isinstance(val[ix], numbers.Number):
+                                        self.assertAlmostEqual(val[ix], control[col][ix], msg=msg)
+                                    else:
+                                        self.assertEqual(val[ix], control[col][ix], msg=msg)
+                            else:
+                                self.assertEqual(val, control[col], msg=msg)
 
-                control = dia_dict[chipNum][diaSourceId]
-                comparisons = 0
-                for ix, (col, val) in enumerate(zip(cat._column_outputs, source)):
-                    msg = 'failed on %s' % col
-                    if col in non_random_cols:
-                        comparisons += 1
-                        if isinstance(val, numbers.Number):
-                            self.assertAlmostEqual(val, control[col], 10, msg=msg)
-                        elif isinstance(val, list):
-                            for ix in len(val):
-                                if isinstance(val[ix], numbers.Number):
-                                    self.assertAlmostEqual(val[ix], control[col][ix], msg=msg)
-                                else:
-                                    self.assertEqual(val[ix], control[col][ix], msg=msg)
-                        else:
-                            self.assertEqual(val, control[col], msg=msg)
-
-                self.assertGreater(comparisons, 0)
+            self.assertGreater(comparisons, 0)
+            self.assertGreater(unique_chipnum, 1)
 
         for file_name in list_of_json_files:
             full_name = os.path.join(json_dir, file_name)
