@@ -124,8 +124,12 @@ class DiaSourceCommons(CameraCoords):
         If n_obj<0, get n_obj from the length of another
         column in the catalog
         """
-        if n_obj<0:
+        if n_obj < 0:
             n_obj = len(self.column_by_name('chipNum'))
+
+        if n_obj == 0:
+            return np.array([])
+
         return self.rng.random_sample(n_obj)
 
     def randomFloatArr(self, n_rows, n_cols):
@@ -135,10 +139,16 @@ class DiaSourceCommons(CameraCoords):
         If one of the dimensin is less than 0, it will be set
         to the number of rows in the catalog.
         """
-        if n_rows<0:
+        if n_rows < 0:
             n_rows = len(self.column_by_name('chipNum'))
-        if n_cols<0:
+        if n_cols < 0:
             n_cols = len(self.column_by_name('chipNum'))
+
+        if n_cols == 0:
+            return np.array([[]]*n_cols)
+        if n_rows == 0:
+            return np.array([])
+
         return self.rng.random_sample((n_rows, n_cols))
 
     def randomInts(self, n_obj, i_max=1000):
@@ -149,8 +159,11 @@ class DiaSourceCommons(CameraCoords):
         If n_obj<0, get n_obj from the length of another
         column in the catalog
         """
-        if n_obj<0:
+        if n_obj < 0:
             n_obj = len(self.column_by_name('chipNum'))
+
+        if n_obj == 0:
+            return np.array([])
         return self.rng.randint(0,i_max,n_obj)
 
     def get_parentSourceId(self):
@@ -389,7 +402,7 @@ class DiaSourceCommons(CameraCoords):
         does not have methods to calculate different varieties of flux
         """
         return self.column_by_name('diaFlux') + \
-               0.0001*self.rng.random_sample(len(self.column_by_name('uniqueId')))
+               0.0001*self.randomFloats(-1)
 
     def get_trailFlux(self):
         """
@@ -397,7 +410,7 @@ class DiaSourceCommons(CameraCoords):
         does not have methods to calculate different varieties of flux
         """
         return self.column_by_name('diaFlux') + \
-               0.0001*self.rng.random_sample(len(self.column_by_name('uniqueId')))
+               0.0001*self.randomFloats(-1)
 
     def get_apFlux(self):
         """
@@ -409,15 +422,15 @@ class DiaSourceCommons(CameraCoords):
         """
         true_flux = self.column_by_name('diaFlux')
         vals = np.array([true_flux,
-                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux))),
-                         true_flux*(1.0+0.0001*self.rng.random_sample(len(true_flux)))]).T
+                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
+                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
+                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
+                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
+                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
+                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
+                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
+                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
+                         true_flux*(1.0+0.0001*self.randomFloats(-1))]).T
 
         cols = ['apMeanSb01', 'apMeanSb02', 'apMeanSb03', 
                  'apMeanSb04', 'apMeanSb05', 'apMeanSb06', 
@@ -438,15 +451,15 @@ class DiaSourceCommons(CameraCoords):
         true_fluxError = self.column_by_name('diaFluxError')
 
         vals = np.array([true_fluxError,
-                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError))),
-                         true_fluxError*(1.0+0.0001*self.rng.random_sample(len(true_fluxError)))]).T
+                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
+                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
+                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
+                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
+                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
+                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
+                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
+                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
+                         true_fluxError*(1.0+0.0001*self.randomFloats(-1))]).T
 
         cols = ['apMeanSb01Sigma', 'apMeanSb02Sigma', 'apMeanSb03Sigma', 
                  'apMeanSb04Sigma', 'apMeanSb05Sigma', 'apMeanSb06Sigma', 
@@ -460,8 +473,8 @@ class DiaSourceCommons(CameraCoords):
         """
         ra = self.column_by_name('raICRS')
         dec = self.column_by_name('decICRS')
-        return np.array([ra + 1.0e-6*self.rng.random_sample(len(ra)),
-                         dec + 1.0e-6*self.rng.random_sample(len(dec))]).T
+        return np.array([ra + 1.0e-6*self.randomFloats(-1),
+                         dec + 1.0e-6*self.randomFloats(-1)]).T
 
     def get_psRadec(self):
         """
