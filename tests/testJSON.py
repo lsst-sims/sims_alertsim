@@ -117,23 +117,22 @@ class JsonTestCase(unittest.TestCase):
                 diaSourceId = source['diaSourceId']
                 dia_dict[chipNum][diaSourceId] = source
 
-        non_random_cols = ['midPointTai', 'filterName', 'ccdVisitId', 'diaSourceId',
-                           'radec', 'xy', 'totFlux', 'totFluxErr', 'snr']
         for ix, obs in enumerate(obs_list):
             cat = DiaSourceVarStars(self.db, obs_metadata=obs, column_outputs=['chipNum'])
             cat._seed = 44
             chipNumDex = cat._column_outputs.index('chipNum')
             diaSourceIdDex = cat._column_outputs.index('diaSourceId')
-            for col in non_random_cols:
-                self.assertIn(col, cat._column_outputs)
+
             for source in cat.iter_catalog():
                 chipNum = source[chipNumDex]
                 diaSourceId = source[diaSourceIdDex]
 
                 control = dia_dict[chipNum][diaSourceId]
+                comparisons = 0
                 for ix, (col, val) in enumerate(zip(cat._column_outputs, source)):
                     msg = 'failed on %s' % col
-                    if col in non_random_cols:
+                    if col != 'chipNum':
+                        comparisons += 1
                         if isinstance(val, numbers.Number):
                             self.assertAlmostEqual(val, control[col], 10, msg=msg)
                         elif isinstance(val, list):
@@ -145,6 +144,13 @@ class JsonTestCase(unittest.TestCase):
                         else:
                             self.assertEqual(val, control[col], msg=msg)
 
+                self.assertGreater(comparisons, 0)
+
+        for file_name in list_of_json_files:
+            full_name = os.path.join(json_dir, file_name)
+            if os.path.exists(full_name):
+                os.unlink(full_name)
+        os.rmdir(json_dir)
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
