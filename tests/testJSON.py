@@ -39,6 +39,8 @@ def setup_module(module):
 
 class JsonTestCase(unittest.TestCase):
 
+    longMessage = True
+
     @classmethod
     def setUpClass(cls):
         cls.scratch_dir = os.path.join(getPackageDir('sims_alertsim'),
@@ -92,7 +94,10 @@ class JsonTestCase(unittest.TestCase):
             for file_name in list_of_files:
                 os.unlink(os.path.join(json_dir, file_name))
 
-        jsonFromCatalog(obs_list, DiaSourceVarStars, self.db, json_dir)
+        class testDiaSourceVarStars(DiaSourceVarStars):
+            _seed = 44
+
+        jsonFromCatalog(obs_list, testDiaSourceVarStars, self.db, json_dir)
 
         # read in all of the simulated DIASources written to our json_dir
         list_of_json_files = os.listdir(json_dir)
@@ -112,27 +117,33 @@ class JsonTestCase(unittest.TestCase):
                 diaSourceId = source['diaSourceId']
                 dia_dict[chipNum][diaSourceId] = source
 
-        for obs in obs_list:
+        non_random_cols = ['midPointTai', 'filterName', 'ccdVisitId', 'diaSourceId',
+                           'radec', 'xy', 'totFlux', 'totFluxErr', 'snr']
+        for ix, obs in enumerate(obs_list):
             cat = DiaSourceVarStars(self.db, obs_metadata=obs, column_outputs=['chipNum'])
+            cat._seed = 44
             chipNumDex = cat._column_outputs.index('chipNum')
             diaSourceIdDex = cat._column_outputs.index('diaSourceId')
+            for col in non_random_cols:
+                self.assertIn(col, cat._column_outputs)
             for source in cat.iter_catalog():
                 chipNum = source[chipNumDex]
                 diaSourceId = source[diaSourceIdDex]
 
                 control = dia_dict[chipNum][diaSourceId]
                 for ix, (col, val) in enumerate(zip(cat._column_outputs, source)):
-                    if col != 'chipNum':
+                    msg = 'failed on %s' % col
+                    if col in non_random_cols:
                         if isinstance(val, numbers.Number):
-                            self.assertAlmostEqual(val, control[col], 10)
+                            self.assertAlmostEqual(val, control[col], 10, msg=msg)
                         elif isinstance(val, list):
                             for ix in len(val):
                                 if isinstance(val[ix], numbers.Number):
-                                    self.assertAlmostEqual(val[ix], control[col][ix])
+                                    self.assertAlmostEqual(val[ix], control[col][ix], msg=msg)
                                 else:
-                                    self.assertEqual(val[ix], control[col][ix])
+                                    self.assertEqual(val[ix], control[col][ix], msg=msg)
                         else:
-                            self.assertEqual(val, control[col])
+                            self.assertEqual(val, control[col], msg=msg)
 
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
