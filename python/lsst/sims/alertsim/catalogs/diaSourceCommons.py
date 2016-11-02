@@ -1,7 +1,7 @@
 """ DiaSourceCommons """
 import numpy as np
 import re
-from random_utils import *
+from random_utils import array_to_dict
 from lsst.sims.catalogs.definitions import InstanceCatalog
 from lsst.sims.catalogs.decorators import cached, compound
 from lsst.sims.catUtils.mixins import CameraCoords
@@ -127,6 +127,19 @@ class DiaSourceCommons(CameraCoords):
         if n_obj<0:
             n_obj = len(self.column_by_name('chipNum'))
         return self.rng.random_sample(n_obj)
+
+    def randomFloatArr(self, n_rows, n_cols):
+        """
+        Return a 2-D array of random floats between 0 and 1.0.
+        The array will be n_rows by n_cols.
+        If one of the dimensin is less than 0, it will be set
+        to the number of rows in the catalog.
+        """
+        if n_rows<0:
+            n_rows = len(self.column_by_name('chipNum'))
+        if n_cols<0:
+            n_cols = len(self.column_by_name('chipNum'))
+        return self.rng.random_sample((n_rows, n_cols))
 
     def randomInts(self, n_obj, i_max=1000):
         """
@@ -279,7 +292,7 @@ class DiaSourceCommons(CameraCoords):
     # with randomly assigned values (for the time being)
 
     def get_radecCov(self):
-        vals = np.array(rflist(self, 3)).T
+        vals = self.randomFloatArr(3, -1)
         cols = ['raVar', 'decVar', 'ra_dec_Cov']
         return array_to_dict(cols, vals)
 
@@ -290,7 +303,7 @@ class DiaSourceCommons(CameraCoords):
         return array_to_dict(cols, vals)
 
     def get_xyCov(self):
-        vals = np.array(rflist(self, 3)).T
+        vals = self.randomFloatArr(3, -1)
         cols = ['xVar', 'yVar', 'x_y_Cov']
         return array_to_dict(cols, vals)
 
@@ -455,7 +468,7 @@ class DiaSourceCommons(CameraCoords):
         return array_to_dict(cols, vals)
 
     def get_psCov(self):
-        vals = np.array(rflist(self, 6)).T
+        vals = self.randomFloatArr(6, -1)
         cols = ['psFluxVar', 'psRaVar', 'psDecVar', 
                 'psFlux_psRa_Cov', 'psFlux_psDec_Cov', 
                 'psRa_psDec_Cov']
@@ -471,7 +484,7 @@ class DiaSourceCommons(CameraCoords):
         return array_to_dict(cols, vals)
 
     def get_trailCov(self):
-        vals = np.array(rflist(self, 15)).T
+        vals = self.randomFloatArr(15, -1)
         cols = ['trailFluxVar', 'trailRaVar', 'trailDecVar', 
                 'trailLengthVar', 'trailAngleVar', 'trailFlux_trailRa_Cov', 
                 'trailFlux_trailDec_Cov', 'trailFlux_trailLength_Cov', 
@@ -491,7 +504,7 @@ class DiaSourceCommons(CameraCoords):
         return array_to_dict(cols, vals)
 
     def get_dipCov(self):
-        vals = np.array(rflist(self, 21)).T
+        vals = self.randomFloatArr(21, -1)
         cols = ['dipMeanFluxVar', 'dipFluxDiffVar', 'dipRaVar', 
                 'dipDecVar', 'dipLengthVar', 'dipAngleVar', 
                 'dipMeanFlux_dipFluxDiff_Cov', 'dipMeanFlux_dipRa_Cov', 
@@ -504,7 +517,7 @@ class DiaSourceCommons(CameraCoords):
         return array_to_dict(cols, vals)
 
     def get_Icov(self):
-        vals = np.array(rflist(self, 6)).T
+        vals = self.randomFloatArr(6, -1)
         cols = ["IxxVar", "IyyVar", "IxyVar", 
                 "Ixx_Iyy_Cov", "Ixx_Ixy_Cov", "Iyy_Ixy_Cov"]
         return array_to_dict(cols, vals)
