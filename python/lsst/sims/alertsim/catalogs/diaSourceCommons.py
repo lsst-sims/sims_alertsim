@@ -311,7 +311,7 @@ class DiaSourceCommons(CameraCoords):
 
 
     def get_xy(self):
-        vals = np.array([self.column_by_name('xPix'), self.column_by_name('yPix')])
+        vals = np.array([self.column_by_name('xPix'), self.column_by_name('yPix')]).transpose()
         cols = ['x', 'y']
         return array_to_dict(cols, vals)
 
