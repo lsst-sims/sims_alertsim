@@ -27,6 +27,9 @@ class DiaSourceCommons(CameraCoords):
     N = Ndata
     """
 
+    _seed = None
+    _rng =None
+
     column_outputs = ['diaSourceId', 'ccdVisitId',
           'diaObjectId', 'ssObjectId', 'parentSourceId', 'midPointTai',
           'filterName', 'radec', 'radecCov', 'xy', 'xyCov', 'apFlux', 
@@ -90,22 +93,7 @@ class DiaSourceCommons(CameraCoords):
 
     # DIASource attributes with randomly assigned values (for the time being)
 
-    default_columns = [('parentSourceId', rbi(), int),
-          ('psLnL', rf(), float), ('psChi2', rf(), float),
-          ('psN', ri(), int), ('trailLength', rf(), float), ('trailAngle', rf(), float),
-          ('trailLnL', rf(), float), ('trailChi2', rf(), float),
-          ('trailN', ri(), int), ('dipMeanFlux', rf(), float),
-          ('dipFluxDiff', rf(), float), ('dipLength', rf(), float),
-          ('dipAngle', rf(), float), ('dipLnL', rf(), float),
-          ('dipChi2', rf(), float), ('dipN', ri(), int),
-          ('diffFlux', rf(), float), ('diffFluxErr', rf(), float),
-          ('fpBkgd', rf(), float), ('fpBkgdErr', rf(), float),
-          ('Ixx', rf(), float), ('Iyy', rf(), float), ('Ixy', rf(), float),
-          ('IxxPSF', rf(), float), ('IyyPSF', rf(), float),
-          ('IxyPSF', rf(), float), ('extendedness', rf(), float),
-          ('spuriousness', rf(), float), ('flags', ri(), int)]
-
-    def write_catalog(self, *arks, **kwargs):
+    def write_catalog(self, *args, **kwargs):
         raise NotImplementedError("You cannot call write_catalog() on "
                                   "VariableStarsDia; write_catalog() does not "
                                   "know how to deal with the nested structure "
@@ -114,6 +102,130 @@ class DiaSourceCommons(CameraCoords):
     camera = LsstSimMapper().camera  # the software representation of the LSST camera
 
     # getters for DIASource attributes which are generated from catsim
+
+    @property
+    def rng(self):
+        """
+        A random number generator for the catalog.
+        It is seeded by the self._seed parameter.
+        If self._seed is None (default), then rng
+        is seeded from the system clock as per numpy's
+        default.
+        """
+        if self._rng is None:
+            self._rng = np.random.RandomState(self._seed)
+        return self._rng
+
+    def randomFloats(self, n_obj):
+        """
+        Return a list of random floats between 0 and 1.0
+        that is n_obj long.
+
+        If n_obj<0, get n_obj from the length of another
+        column in the catalog
+        """
+        if n_obj<0:
+            n_obj = len(self.column_by_name('chipNum'))
+        return self.rng.random_sample(n_obj)
+
+    def randomInts(self, n_obj, i_max=1000):
+        """
+        Return a list of n_obj random integers between
+        zero and i_max (inclusive)
+
+        If n_obj<0, get n_obj from the length of another
+        column in the catalog
+        """
+        if n_obj<0:
+            n_obj = len(self.column_by_name('chipNum'))
+        return self.rng.randint(0,i_max,n_obj)
+
+    def get_parentSourceId(self):
+        return self.randomInts(-1, 9223372036854775807)
+
+    def get_psLnL(self):
+        return self.randomFloats(-1)
+
+    def get_psChi2(self):
+        return self.randomFloats(-1)
+
+    def get_psN(self):
+        return self.randomInts(-1)
+
+    def get_trailLength(self):
+        return self.randomFloats(-1)
+
+    def get_trailAngle(self):
+        return self.randomFloats(-1)
+
+    def get_trailLnL(self):
+        return self.randomFloats(-1)
+
+    def get_trailChi2(self):
+        return self.randomFloats(-1)
+
+    def get_trailN(self):
+        return self.randomInts(-1)
+
+    def get_dipMeanFlux(self):
+        return self.randomFloats(-1)
+
+    def get_dipFluxDiff(self):
+        return self.randomFloats(-1)
+
+    def get_dipLength(self):
+        return self.randomFloats(-1)
+
+    def get_dipAngle(self):
+        return self.randomFloats(-1)
+
+    def get_dipLnL(self):
+        return self.randomFloats(-1)
+
+    def get_dipChi2(self):
+        return self.randomFloats(-1)
+
+    def get_dipN(self):
+        return self.randomInts(-1)
+
+    def get_diffFlux(self):
+        return self.randomFloats(-1)
+
+    def get_diffFluxErr(self):
+        return self.randomFloats(-1)
+
+    def get_fpBkgd(self):
+        return self.randomFloats(-1)
+
+    def get_fpBkgdErr(self):
+        return self.randomFloats(-1)
+
+    def get_Ixx(self):
+        return self.randomFloats(-1)
+
+    def get_Iyy(self):
+        return self.randomFloats(-1)
+
+    def get_Ixy(self):
+        return self.randomFloats(-1)
+
+    def get_IxxPSF(self):
+        return self.randomFloats(-1)
+
+    def get_IyyPSF(self):
+        return self.randomFloats(-1)
+
+    def get_IxyPSF(self):
+        return self.randomFloats(-1)
+
+    def get_extendedness(self):
+        return self.randomFloats(-1)
+
+    def get_spuriousness(self):
+        return self.randomFloats(-1)
+
+    def get_flags(self):
+        return self.randomInts(-1)
 
     def get_midPointTai(self):
         """
@@ -128,6 +240,7 @@ class DiaSourceCommons(CameraCoords):
     def get_filterName(self):
         return np.array([self.obs_metadata.bandpass]*len(self.column_by_name('uniqueId')))
 
+    @cached
     def get_chipNum(self):
         """
         Concatenate the digits in 'R:i,j S:m,n' to make the chip number ijmn
