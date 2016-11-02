@@ -5,6 +5,9 @@ import numpy as np
 Random number generation, data structure manipulation etc
 """
 
+__all__ = ["rf", "rflist", "ri", "rbi", "array_to_dict"]
+
+
 def rf():
     """ Returns a random float """
     return np.random.ranf()
