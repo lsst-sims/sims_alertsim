@@ -350,6 +350,12 @@ class DiaSourceCommons(CameraCoords):
         """
         return self.column_by_name('totFlux')-self.column_by_name('meanFlux')
 
+    @compound('sigma_meanMag', 'sigma_totMag')
+    def get_magUncertainties(self):
+        return self._magnitudeUncertaintyGetter(['meanMag', 'totMag'],
+                                                [self.obs_metadata.bandpass]*2,
+                                                'lsstBandpassDict')
+
     @compound('diaFluxError', 'totFluxErr', 'meanFluxErr')
     def get_fluxError(self):
         """
@@ -361,11 +367,10 @@ class DiaSourceCommons(CameraCoords):
 
         to get from magnitude errors to SNR
         """
-        mag_error = self._magnitudeUncertaintyGetter(['meanMag', 'totMag'],
-                                                     [self.obs_metadata.bandpass]*2,
-                                                     'lsstBandpassDict')
-        mean_snr = 1.0/(np.power(10.0, 0.4*mag_error[0]) - 1.0)
-        tot_snr = 1.0/(np.power(10.0, 0.4*mag_error[1]) - 1.0)
+        mean_mag_error = self.column_by_name('sigma_meanMag')
+        tot_mag_error = self.column_by_name('sigma_totMag')
+        mean_snr = 1.0/(np.power(10.0, 0.4*mean_mag_error) - 1.0)
+        tot_snr = 1.0/(np.power(10.0, 0.4*tot_mag_error) - 1.0)
         tot_flux_err = self.column_by_name('totFlux')/tot_snr
         mean_flux_err = self.column_by_name('meanFlux')/mean_snr
         return np.array([np.sqrt(tot_flux_err*tot_flux_err + mean_flux_err*mean_flux_err),
