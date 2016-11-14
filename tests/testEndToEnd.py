@@ -14,7 +14,7 @@ from lsst.sims.catalogs.definitions import InstanceCatalog
 from lsst.sims.utils import ObservationMetaData, haversine
 from utils import createFakeOpSimDB, createFakeCatSimDB
 
-from receiver_parser import read_and_divide, parse_parameters
+from utils import read_and_divide, parse_parameters
 
 from astropy.time import Time
 
@@ -49,6 +49,31 @@ class AlertSimEndToEndTest(unittest.TestCase):
 
         if os.path.exists(cls.catsim_file_name):
             os.unlink(cls.catsim_file_name)
+
+    def setUp(self):
+
+        #current path
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+
+        #combine parent path with receiver path
+        receiver_path = os.path.dirname(dir_path) + \
+                       "/python/lsst/sims/alertsim/broadcast/receivers/rec_tcp_python.py"
+
+        self.voev_filename = os.path.join(self.scratch_dir, "end2end_VOEvents.txt")
+        if os.path.exists(self.voev_filename):
+            os.unlink(self.voev_filename)
+
+        #shell command for a receiver to be executed in a different process
+        command = "python " + receiver_path + " -p 8080 -f %s " % self.voev_filename
+        self.receiver_process = subprocess.Popen([command], shell=True)
+
+        #wait a bit till receiver warms up
+        time.sleep(5)
+
+    def tearDown(self):
+        os.kill(self.receiver_process.pid, 3)
+        if os.path.exists(self.voev_filename):
+            os.unlink(self.voev_filename)
 
     def test_alert_sim_end_to_end(self):
 
@@ -104,19 +129,6 @@ class AlertSimEndToEndTest(unittest.TestCase):
         # read the control catalog back in
         # compare them
 
-        #current path
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-
-        #combine parent path with receiver path
-        receiver_path = os.path.dirname(dir_path) + "/python/lsst/sims/alertsim/broadcast/receivers/rec_tcp.py"
-
-        #shell command for a receiver to be executed in a different process
-        command = "python " + receiver_path + " -p 8080"
-        subprocess.Popen([command], shell=True)
-
-        #wait a bit till receiver warms up
-        time.sleep(5)
-
         #retreive local ipaddress
         local_ip_adress = "127.0.0.1"
 
@@ -131,13 +143,12 @@ class AlertSimEndToEndTest(unittest.TestCase):
 
         alertsim.main(opsim_table = "",
 	    catsim_table = "test_allstars",
-            opsim_constraint = "", opsim_path = self.opsim_file_name,
+            opsim_mjd=(59579.0,64000.0), opsim_path = self.opsim_file_name,
             catsim_constraint = "varParamStr not like 'None'",
             radius = 1.75, protocol = "TcpIp", ipaddr=local_ip_address,
             port = 8080, header = False, history = False, dia = False)
 
-        filename = "VOEvents.txt"
-        voevent_list = read_and_divide(filename)
+        voevent_list = read_and_divide(self.voev_filename)
 
         ucds = ["pos.eq.ra", "pos.eq.dec", "phot.mag"]
         voevent_data_tuples = parse_parameters(ucds, voevent_list)

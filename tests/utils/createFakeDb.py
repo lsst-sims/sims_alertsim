@@ -67,15 +67,17 @@ def createFakeOpSimDB(file_name, pointing_list):
     return output_list
 
 
-def createFakeCatSimDB(file_name, pointing_list):
+def createFakeCatSimDB(file_name, pointing_list, n_obj=3, radius=0.1):
     """
     Creates a sqlite database with a CatSim-like schema.
     The database will be populated with a handful of RRLyrae for alertsim testing.
 
     file_name is the name of the file to be created
     pointing_list is a list of (ra, dec) tuples corresponding to the pointings to be populated
+    n_obj is the number of objects to put in each pointing
+    radius is the radius (in degrees) over which to scatter the objects
 
-    will return a listof (RA, Dec, sed, magNorm, EBV, varParamStr)
+    will return a numpy recarray containing all of the fields for all of the simulated objects
     """
 
     scratch_dir = os.path.join(getPackageDir('sims_alertsim'), 'tests', 'scratch')
@@ -88,8 +90,6 @@ def createFakeCatSimDB(file_name, pointing_list):
 
     if os.path.exists(file_name):
         os.unlink(file_name)
-
-    n_obj = 3
 
     rng = np.random.RandomState(771)
 
@@ -108,7 +108,7 @@ def createFakeCatSimDB(file_name, pointing_list):
     with open(scratch_file_name, 'w') as output_file:
         output_file.write("# a header\n")
         for pointing in pointing_list:
-            rr = rng.random_sample(n_obj)*0.1
+            rr = rng.random_sample(n_obj)*radius
             theta = rng.random_sample(n_obj)*2.0*np.pi
             ra_list = pointing[0] + rr*np.cos(theta)
             dec_list = pointing[1] + rr*np.sin(theta)
@@ -131,10 +131,16 @@ def createFakeCatSimDB(file_name, pointing_list):
 
                 output_file.write("%d;%.6f;%.6f;%s;%.6f;%.6f;%s;0.0;0.0;0.0;0.0;0.1;%.6f;%.6f\n" %
                                   (ct, ra, dec, sed, magnorm, ebv, varParamStr, gal_l, gal_b))
+
                 ct += 1
 
     fileDBObject(scratch_file_name, runtable='test', database=file_name,
                  dtype=dtype, delimiter=';', idColKey='id')
 
+    output = np.genfromtxt(scratch_file_name, dtype=dtype, delimiter=';')
+    assert len(output) == ct-1
+
     if os.path.exists(scratch_file_name):
         os.unlink(scratch_file_name)
+
+    return output

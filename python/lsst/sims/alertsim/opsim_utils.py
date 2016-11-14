@@ -1,19 +1,36 @@
 """ Query opsim """
 
 #from lsst.sims.catUtils.baseCatalogModels import *
-from math import pi
-from operator import itemgetter, attrgetter
+import numpy as np
 from lsst.sims.utils import ObservationMetaData
+from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
 
 def opsim_query(stack_version, **kwargs):
-    """ for different stack versions """
+
+    """ Pass arguments to a function which handles 
+        specifics of the stack version """
+
     if stack_version < 10:
         return opsim_query_stack8(**kwargs)
     else:
         return opsim_query_stack10(**kwargs)
 
-def opsim_query_stack8(path, objid, radius, constraint):
-    """ for stack 8. obsolete at the moment """
+def opsim_query_stack8(opsim_path, objid, radius, opsim_night, 
+        opsim_filter, opsim_mjd, history):
+
+    """ Query opsim and make a catalog for stack 8
+    Obsolete at the moment
+
+    @param [in] opsim_path is the path of the local db
+
+    @param [in] objid of the opsim table
+
+    @param [in] radius is the radius of the field of view for a visit
+
+    @param [in] constraint is sql constraint for the opsim table
+    """
+
+
     from lsst.sims.catalogs.generation.db import DBObject
 
     dbobj = DBObject.from_objid(objid)
@@ -26,68 +43,70 @@ def opsim_query_stack8(path, objid, radius, constraint):
     print result
     return result
 
-def opsim_query_stack10 (opsim_path, objid, radius, constraint):
-    """ for stack 10+ """
+def opsim_query_stack10(opsim_path, objid, radius, opsim_night, 
+        opsim_filter, opsim_mjd, history):
+
+    """ Query opsim and make a catalog for stack 10
+
+    @param [in] opsim_path is the path of the local db
+
+    @param [in] objid of the opsim table
+
+    @param [in] radius is the radius of the field of view for a visit
+
+    @param [in] constraint is sql constraint for the opsim table
+
+    Returns a list of ObservationMetaData
+    """
+
     import lsst.sims.maf.db as db
 
-    """ old approach before the tunnel was introduced """
-    #from lsst.sims.catalogs.db import CatalogDBObject
-    #dbobj = CatalogDBObject.from_objid(objid)
-    #table = db.Table(tableName=objid, idColKey='obshistid',
-    #         database='LSSTCATSIM', driver='mssql+pymssql',
-    #         host='localhost', port='51433' )
+    if not opsim_path:
+        """ access to fatboy """
+        raise NotImplementedError("Not yet sure how to do the OpSim queries from fatboy")
+        table = db.Table(tableName=objid, idColKey='obshistid', database='LSSTCATSIM', 
+                driver='mssql+pymssql', host='localhost', port='51433' )
+    else:
+        """ local access """
+        dbaddress = opsim_path
+        obs_gen = ObservationMetaDataGenerator(database=opsim_path, driver='sqlite')
+        #return obs_gen.getObservationMetaDataFromConstraint(constraint)
+        obs_all = obs_gen.getObservationMetaData(night=opsim_night, 
+                    telescopeFilter=opsim_filter, expMJD=opsim_mjd)
+        
+        obs_history = []
 
-    """ access to fatboy """
-    #table = db.Table(tableName=objid, idColKey='obshistid', database='LSSTCATSIM',
-    #                    driver='mssql+pymssql', host='localhost', port='51433' )
+        if history:
+            obs_history = _convert_obs_to_history(obs_all)
+        else:
+            # we do not need the historical information; construct a dummy history
+            mjd_arr = np.array([obs.mjd.TAI for obs in obs_all])
+            obs_history = np.array(obs_all)[np.argsort(mjd_arr)]
+            obs_history = [[obs, None] for obs in obs_history]
 
-    """ local access """
-    dbaddress = opsim_path
-    table = db.Table('Summary', 'obsHistID', dbaddress)
+        return obs_history
 
-    obs_all = []
-    night_obs_query = _query_opsim(table, constraint)
+def _convert_obs_to_history(obs_list):
+    """
+    Take a list of ObservationMetaData and rearrange it into a 2-d list in which each row
+    corresponds to the current ObservationMetaData but also contains all of the prior
+    observations of the same field up to that date in sorted order
+    """
+    # sort the ObservationMetaData in chronological order
+    mjd_array = np.array([obs.mjd.TAI for obs in obs_list])
+    sorted_dex = np.argsort(mjd_array)
+    if not isinstance(obs_list, np.ndarray):
+        obs_list = np.array(obs_list)
 
-    for arr in night_obs_query:
-        field_obs = []
+    obs_list = obs_list[sorted_dex]
 
-        _append_to_file(str(arr[6])+" "+str(arr[1])+"\n")
-        constraint = "expMJD < %s and fieldID = %s" % (arr[6], arr[1])
+    field_arr = np.array([obs.OpsimMetaData['fieldID'] for obs in obs_list])
 
-        field_obs.append(_array_to_metadata_object(arr, radius))
-        field_obs_hist_query = sorted(_query_opsim(table, constraint),
-                key=itemgetter(6), reverse=True)
+    output_history = []
+    for ix, obs in enumerate(obs_list):
+        # find all of the other observations of the same field
+        other_obs = np.where(field_arr[:ix] == obs.OpsimMetaData['fieldID'])[0]
+        current_obs = [obs] + [obs_list[other_obs[ix]] for ix in range(len(other_obs)-1,-1,-1)]
+        output_history.append(current_obs)
 
-        for arr in field_obs_hist_query:
-            field_obs.append(_array_to_metadata_object(arr, radius))
-        _append_to_file("\n"+str(len(field_obs)))
-        obs_all.append(field_obs)
-        _append_to_file("-----\n")
-
-    return obs_all
-
-def _append_to_file(text):
-    with open("opsim_stats.txt", "a") as myfile:
-        myfile.write(text)
-
-def _query_opsim(table, constraint):
-
-    """ opsim query """
-    result = table.query_columns_Array(colnames=['fieldID',
-        'fieldRA', 'fieldDec', 'rawSeeing', 'filter', 'expMJD',
-        'fiveSigmaDepth', 'night'], constraint=constraint)
-
-    """ differences between local and remote db column names """
-    #result = table.query_columns_Array(colnames=['fieldid',
-    #    'fieldra', 'fielddec', 'rawseeing', 'filter', 'expmjd',
-    #    'm5sigma', 'night'], constraint=constraint)
-    return result
-
-def _array_to_metadata_object(arr, radius):
-    metadata_object = ObservationMetaData(boundType='circle',
-                pointingRA=arr[2]*180/pi,
-                pointingDec=arr[3]*180/pi,
-                boundLength=radius, mjd=arr[6],
-                bandpassName=arr[5], m5=arr[7],
-                seeing=arr[4])
-    return metadata_object
+    return output_history
