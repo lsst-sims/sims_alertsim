@@ -272,6 +272,10 @@ class DiaSourceCommons(CameraCoords):
         Concatenate the digits in 'R:i,j S:m,n' to make the chip number ijmn
         """
         chip_name = self.column_by_name('chipName')
+        for idx, val in enumerate(chip_name):
+            if val is None: chip_name[idx] = '0'
+            
+        print chip_name
         return np.array([int(''.join(re.findall(r'\d+', name))) for name in chip_name])
 
     def get_ccdVisitId(self):
