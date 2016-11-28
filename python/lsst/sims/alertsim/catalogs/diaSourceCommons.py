@@ -20,7 +20,6 @@ class DiaSourceCommons(CameraCoords):
 
     # DIASource columns as of DPDD from May 6th 2016
 
-    #column_outputs = VariableStars.column_outputs + ['diaSourceId', 'ccdVisitId',
     
     """
     differences between DPDD and L1 schema
@@ -44,7 +43,6 @@ class DiaSourceCommons(CameraCoords):
 
     # UCD's - Veljko's best guesses. Check this one day please
 
-    #ucds = VariableStars.ucds + ['meta.id;meta.main', 'meta.id;instr.param',
     ucds = ['meta.id;meta.main', 'meta.id;instr.param',
                 'meta.id.assoc', 'meta.id.assoc', 'meta.id.parent',
                 'time.epoch', 'instr.filter', 'pos.eq.ra;pos.eq.dec;meta.main',
@@ -68,7 +66,6 @@ class DiaSourceCommons(CameraCoords):
 
     # Datatypes as stated in DPDD
 
-    #datatypes = VariableStars.datatypes + ['uint64', 'uint64', 'uint64',
     datatypes = ['uint64', 'uint64', 'uint64',
                 'uint64', 'uint64', 'double', 'bit[8]', 'double[2]', 'float[3]',
                 'float[2]', 'float[3]', 'float', 'float', 'float', 'float',
@@ -149,7 +146,7 @@ class DiaSourceCommons(CameraCoords):
         if n_rows == 0:
             return np.array([])
 
-        return self.rng.random_sample((n_rows, n_cols))
+        return self.rng.random_sample((n_rows, n_cols)).transpose()
 
     def randomInts(self, n_obj, i_max=1000):
         """
@@ -527,6 +524,7 @@ class DiaSourceCommons(CameraCoords):
 
     def get_dipCov(self):
         vals = self.randomFloatArr(21, -1)
+        #print len(vals)
         cols = ['dipMeanFluxVar', 'dipFluxDiffVar', 'dipRaVar', 
                 'dipDecVar', 'dipLengthVar', 'dipAngleVar', 
                 'dipMeanFlux_dipFluxDiff_Cov', 'dipMeanFlux_dipRa_Cov', 
