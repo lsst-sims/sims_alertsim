@@ -1,6 +1,7 @@
 """ Main module """
 
 import subprocess
+import os
 import sys
 import time
 import functools
@@ -102,6 +103,13 @@ def main(opsim_table=None, catsim_table='allstars',
         sender.close()
 
     else:
+        
+        session_dir = str(int(time.time()))
+
+        try:
+            os.makedirs("json_output/"+session_dir)
+        except OSError:
+            pass
 
         for obs_per_field in obs_history:
 
@@ -113,7 +121,7 @@ def main(opsim_table=None, catsim_table='allstars',
                     obs_metadata=obs_metadata, dia=dia)
 
             """ query catsim and serialize to json  """
-            iter_and_serialize(obs_data, obs_metadata, obs_per_field, history)
+            iter_and_serialize(obs_data, obs_metadata, obs_per_field, history, session_dir)
 
 
 def get_sender(protocol, ipaddr, port, header):
@@ -133,7 +141,7 @@ def get_sender(protocol, ipaddr, port, header):
     """
     return vars(broadcast)[protocol](ipaddr, port, header)
 
-def iter_and_serialize(obs_data, obs_metadata, observations_field, history):
+def iter_and_serialize(obs_data, obs_metadata, observations_field, history, session_dir):
 
     """ Iterate over catalog and serialize data as JSON, divided
     into files by CCD number
@@ -157,7 +165,8 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field, history):
         query_dict = dict(zip(obs_data.iter_column_names(), line))
         list_of_query_dicts.append(query_dict)
 
-    avro_utils.catsim_to_avro(list_of_query_dicts = list_of_query_dicts)
+    avro_utils.catsim_to_avro(list_of_query_dicts=list_of_query_dicts, 
+            session_dir=session_dir)
 
 def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
 
