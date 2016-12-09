@@ -9,7 +9,7 @@ from utils import createFakeCatSimDB
 from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
 from lsst.sims.catalogs.db import CatalogDBObject
 from lsst.sims.alertsim.catalogs import DiaSourceVarStars
-from lsst.sims.alertsim.json import jsonFromCatalog
+from lsst.sims.alertsim.json_utils import jsonFromCatalog
 
 
 class LocalStarDB(CatalogDBObject):
