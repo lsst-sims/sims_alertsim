@@ -272,7 +272,8 @@ class DiaSourceCommons(CameraCoords):
         for idx, val in enumerate(chip_name):
             if val is None: chip_name[idx] = '0'
             
-        return np.array([int(''.join(re.findall(r'\d+', name))) for name in chip_name])
+        chip_arr = np.array([int(''.join(re.findall(r'\d+', name))) for name in chip_name])
+        return chip_arr
 
     def get_ccdVisitId(self):
         """
@@ -283,6 +284,7 @@ class DiaSourceCommons(CameraCoords):
         Return obsHistID*10^4 + chipNum
         """
 
+        print self.obs_metadata.OpsimMetaData['obsHistID']*10000+self.column_by_name('chipNum')
         return self.obs_metadata.OpsimMetaData['obsHistID']*10000+self.column_by_name('chipNum')
 
     def get_diaSourceId(self):
@@ -316,7 +318,7 @@ class DiaSourceCommons(CameraCoords):
 
 
     def get_xy(self):
-        vals = np.array([self.column_by_name('xPix'), self.column_by_name('yPix')])
+        vals = np.array([self.column_by_name('xPix'), self.column_by_name('yPix')]).T
         cols = ['x', 'y']
         return array_to_dict(cols, vals)
 
