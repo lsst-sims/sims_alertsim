@@ -272,14 +272,18 @@ class DiaSourceCommons(CameraCoords):
         for idx, val in enumerate(chip_name):
             if val is None: chip_name[idx] = '0'
             
-        print chip_name
         return np.array([int(''.join(re.findall(r'\d+', name))) for name in chip_name])
 
     def get_ccdVisitId(self):
         """
+        Previous solution:
         Return chipNum*10^7 + obsHistID (obsHistID should never be more than 3 million)
+        This was no good as 0220 was same as 2200
+        Now:
+        Return obsHistID*10^4 + chipNum
         """
-        return self.column_by_name('chipNum')*10000000+self.obs_metadata.OpsimMetaData['obsHistID']
+
+        return self.obs_metadata.OpsimMetaData['obsHistID']*10000+self.column_by_name('chipNum')
 
     def get_diaSourceId(self):
         """
