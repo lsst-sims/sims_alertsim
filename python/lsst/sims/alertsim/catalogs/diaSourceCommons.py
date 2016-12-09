@@ -269,11 +269,15 @@ class DiaSourceCommons(CameraCoords):
         Concatenate the digits in 'R:i,j S:m,n' to make the chip number ijmn
         """
         chip_name = self.column_by_name('chipName')
+        """
         for idx, val in enumerate(chip_name):
             if val is None: chip_name[idx] = '0'
             
         chip_arr = np.array([int(''.join(re.findall(r'\d+', name))) for name in chip_name])
         return chip_arr
+        """
+        return np.array([int(''.join(re.findall(r'\d+', name))) if name is not None else 0
+                         for name in chip_name])
 
     def get_ccdVisitId(self):
         """
@@ -284,7 +288,6 @@ class DiaSourceCommons(CameraCoords):
         Return obsHistID*10^4 + chipNum
         """
 
-        print self.obs_metadata.OpsimMetaData['obsHistID']*10000+self.column_by_name('chipNum')
         return self.obs_metadata.OpsimMetaData['obsHistID']*10000+self.column_by_name('chipNum')
 
     def get_diaSourceId(self):
@@ -530,7 +533,6 @@ class DiaSourceCommons(CameraCoords):
 
     def get_dipCov(self):
         vals = self.randomFloatArr(21, -1)
-        #print len(vals)
         cols = ['dipMeanFluxVar', 'dipFluxDiffVar', 'dipRaVar', 
                 'dipDecVar', 'dipLengthVar', 'dipAngleVar', 
                 'dipMeanFlux_dipFluxDiff_Cov', 'dipMeanFlux_dipRa_Cov', 

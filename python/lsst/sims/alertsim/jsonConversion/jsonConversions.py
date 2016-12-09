@@ -26,11 +26,12 @@ def jsonFromCatalog(obs_list, cat_class, db, json_dir):
         for data in cat.iter_catalog():
             source = dict(zip(cat._column_outputs, data))
             chipNum = source['ccdVisitId']/10000000
-            tag = '%d_%d' % (chipNum, obshistid)
-            if tag not in source_dict:
-                source_dict[tag] = []
-            source_json = json.dumps(source)
-            source_dict[tag].append(source_json)
+            if chipNum>0:
+                tag = '%d_%d' % (chipNum, obshistid)
+                if tag not in source_dict:
+                    source_dict[tag] = []
+                source_json = json.dumps(source)
+                source_dict[tag].append(source_json)
 
         for tag in source_dict:
             file_name = os.path.join(json_dir, 'diaSources_%s.txt' % tag)

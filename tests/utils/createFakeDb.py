@@ -67,13 +67,15 @@ def createFakeOpSimDB(file_name, pointing_list):
     return output_list
 
 
-def createFakeCatSimDB(file_name, pointing_list):
+def createFakeCatSimDB(file_name, pointing_list, n_obj=3, radius=0.1):
     """
     Creates a sqlite database with a CatSim-like schema.
     The database will be populated with a handful of RRLyrae for alertsim testing.
 
     file_name is the name of the file to be created
     pointing_list is a list of (ra, dec) tuples corresponding to the pointings to be populated
+    n_obj is the number of objects to put in each pointing
+    radius is the radius (in degrees) over which to scatter the objects
 
     will return a numpy recarray containing all of the fields for all of the simulated objects
     """
@@ -88,8 +90,6 @@ def createFakeCatSimDB(file_name, pointing_list):
 
     if os.path.exists(file_name):
         os.unlink(file_name)
-
-    n_obj = 3
 
     rng = np.random.RandomState(771)
 
@@ -108,7 +108,7 @@ def createFakeCatSimDB(file_name, pointing_list):
     with open(scratch_file_name, 'w') as output_file:
         output_file.write("# a header\n")
         for pointing in pointing_list:
-            rr = rng.random_sample(n_obj)*0.1
+            rr = rng.random_sample(n_obj)*radius
             theta = rng.random_sample(n_obj)*2.0*np.pi
             ra_list = pointing[0] + rr*np.cos(theta)
             dec_list = pointing[1] + rr*np.sin(theta)
