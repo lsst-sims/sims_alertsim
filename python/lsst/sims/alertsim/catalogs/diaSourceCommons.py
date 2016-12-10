@@ -30,32 +30,32 @@ class DiaSourceCommons(CameraCoords):
     _rng =None
 
     column_outputs = ['diaSourceId', 'ccdVisitId',
-          'diaObjectId', 'ssObjectId', 'parentSourceId', 'midPointTai',
-          'filterName', 'radec', 'radecCov', 'xy', 'xyCov', 'apFlux', 
-          'apFluxErr', 'snr', 'psFlux', 'psRadec', 'psCov', 'psLnL', 
-          'psChi2', 'psN', 'trailFlux', 'trailRadec', 'trailLength', 
-          'trailAngle', 'trailCov', 'trailLnL', 'trailChi2', 'trailN', 
-          'dipMeanFlux', 'dipFluxDiff', 'dipRadec', 'dipLength', 'dipAngle', 
-          'dipCov', 'dipLnL', 'dipChi2', 'dipN', 'totFlux', 'totFluxErr', 
-          'diffFlux', 'diffFluxErr', 'fpBkgd', 'fpBkgdErr', 'Ixx', 'Iyy', 
-          'Ixy', 'Icov', 'IxxPSF', 'IyyPSF', 'IxyPSF', 'extendedness',
+          'diaObjectId', 'ssObjectId', 'parentDiaSourceId', 'midPointTai',
+          'filterName', 'ra', 'decl', 'ra_decl_Cov', 'x','y', 'x_y_Cov', 'apFlux', 
+          'apFluxErr', 'snr', 'psFlux', 'psRa','psDecl', 'ps_Cov', 'psLnL', 
+          'psChi2', 'psNdata', 'trailFlux', 'trailRa','trailDecl', 'trailLength', 
+          'trailAngle', 'trail_Cov', 'trailLnL', 'trailChi2', 'trailNdata', 
+          'dipMeanFlux', 'dipFluxDiff', 'dipRa','dipDecl', 'dipLength', 'dipAngle', 
+          'dip_Cov', 'dipLnL', 'dipChi2', 'dipNdata', 'totFlux', 'totFluxErr', 
+          'diffFlux', 'diffFluxErr', 'fpBkgd', 'fpBkgdErr', 'ixx', 'iyy', 
+          'ixy', 'i_cov', 'ixxPSF', 'iyyPSF', 'ixyPSF', 'extendedness',
           'spuriousness', 'flags',]
 
     # UCD's - Veljko's best guesses. Check this one day please
 
     ucds = ['meta.id;meta.main', 'meta.id;instr.param',
                 'meta.id.assoc', 'meta.id.assoc', 'meta.id.parent',
-                'time.epoch', 'instr.filter', 'pos.eq.ra;pos.eq.dec;meta.main',
-                'stat.covariance;pos.eq','instr.pixel', 'stat.covariance',
+                'time.epoch', 'instr.filter', 'pos.eq.ra', 'pos.eq.dec',
+                'stat.covariance;pos.eq','instr.pixel', 'instr.pixel', 'stat.covariance',
                 'phot.flux;arith.diff;phot.calib', 'stat.error;phot.flux', 
-                'stat.snr', 'phot.flux;arith.diff', 'pos.eq.ra;pos.eq.dec', 
+                'stat.snr', 'phot.flux;arith.diff', 'pos.eq.ra','pos.eq.dec', 
                 'stat.covariance;pos.eq',
                 'stat.likelihood;', 'stat.fit.chi2', 'stat.value',
-                'phot.flux;arith.diff;phot.calib', 'pos.?',
+                'phot.flux;arith.diff;phot.calib', 'pos.?','pos.?',
                 'stat.likelihood;stat.max', 'stat.likelihood;stat.max',
                 'stat.covariance', 'stat.likelihood', 'stat.fit.chi2',
                 'stat.value', 'stat.likelihood;stat.max',
-                'stat.likelihood;stat.max', 'pos.?',
+                'stat.likelihood;stat.max', 'pos.?','pos.?',
                 'stat.likelihood;stat.max', 'stat.likelihood;stat.max',
                 'stat.covariance', 'stat.likelihood', 'stat.fit.chi2',
                 'stat.value', 'phot.flux;arith.diff;phot.calib',
@@ -67,26 +67,26 @@ class DiaSourceCommons(CameraCoords):
     # Datatypes as stated in DPDD
 
     datatypes = ['uint64', 'uint64', 'uint64',
-                'uint64', 'uint64', 'double', 'bit[8]', 'double[2]', 'float[3]',
-                'float[2]', 'float[3]', 'float', 'float', 'float', 'float',
-                'double[2]', 'float[6]', 'float', 'float', 'int', 'float',
-                'double[2]', 'float', 'float', 'float[15]', 'float', 'float',
-                'int', 'float', 'float', 'double[2]', 'float', 'float',
+                'uint64', 'uint64', 'double', 'bit[8]', 'double', 'double', 'float[3]',
+                'float', 'float', 'float[3]', 'float', 'float', 'float', 'float',
+                'double','double', 'float[6]', 'float', 'float', 'int', 'float',
+                'double','double', 'float', 'float', 'float[15]', 'float', 'float',
+                'int', 'float', 'float', 'double','double', 'float', 'float',
                 'float[15]', 'float', 'float', 'int',  'float', 'float',
                 'float', 'float', 'float', 'float', 'float', 'float', 'float',
                 'float[6]', 'float', 'float', 'float', 'float', 'float',
-                'bit[64]',]
+                'bit[64]']
 
     # Units as stated in DPDD
 
-    units = ['', '', '', '', '', 'time', '', 'degrees',
-             'various', 'pixels', 'various', 'nmgy', 'nmgy', '', 'nmgy',
-             'degrees', 'various', '', '', '', 'nmgy', 'degrees', 'arcsec',
-             'degrees', 'various', '', '', '', 'nmgy', 'nmgy', 'degrees',
+    units = ['', '', '', '', '', 'time', '', 'degrees','degrees',
+             'various', 'pixels','pixels', 'various', 'nmgy', 'nmgy', '', 'nmgy',
+             'degrees','degrees', 'various', '', '', '', 'nmgy', 'degrees','degrees', 'arcsec',
+             'degrees', 'various', '', '', '', 'nmgy', 'nmgy', 'degrees','degrees',
              'arcsec', 'degrees', 'various', '', '', '', 'nmgy', 'nmgy',
              'nmgy', 'nmgy', 'nmgy/asec^2', 'nmgy/asec^2', 'nmgy asec^2',
              'nmgy asec^2', 'nmgy asec^2', 'nmgy^2 asec^4', 'nmgy asec^2',
-             'nmgy asec^2', 'nmgy asec^2', '', '', 'bit',]
+             'nmgy asec^2', 'nmgy asec^2', '', '', 'bit']
 
     # DIASource attributes with randomly assigned values (for the time being)
 
@@ -163,7 +163,7 @@ class DiaSourceCommons(CameraCoords):
             return np.array([])
         return self.rng.randint(0,i_max,n_obj)
 
-    def get_parentSourceId(self):
+    def get_parentDiaSourceId(self):
         return self.randomInts(-1, 9223372036854775807)
 
     def get_psLnL(self):
@@ -172,7 +172,7 @@ class DiaSourceCommons(CameraCoords):
     def get_psChi2(self):
         return self.randomFloats(-1)
 
-    def get_psN(self):
+    def get_psNdata(self):
         return self.randomInts(-1)
 
     def get_trailLength(self):
@@ -187,7 +187,7 @@ class DiaSourceCommons(CameraCoords):
     def get_trailChi2(self):
         return self.randomFloats(-1)
 
-    def get_trailN(self):
+    def get_trailNdata(self):
         return self.randomInts(-1)
 
     def get_dipMeanFlux(self):
@@ -208,7 +208,7 @@ class DiaSourceCommons(CameraCoords):
     def get_dipChi2(self):
         return self.randomFloats(-1)
 
-    def get_dipN(self):
+    def get_dipNdata(self):
         return self.randomInts(-1)
 
     def get_diffFlux(self):
@@ -223,22 +223,22 @@ class DiaSourceCommons(CameraCoords):
     def get_fpBkgdErr(self):
         return self.randomFloats(-1)
 
-    def get_Ixx(self):
+    def get_ixx(self):
         return self.randomFloats(-1)
 
-    def get_Iyy(self):
+    def get_iyy(self):
         return self.randomFloats(-1)
 
-    def get_Ixy(self):
+    def get_ixy(self):
         return self.randomFloats(-1)
 
-    def get_IxxPSF(self):
+    def get_ixxPSF(self):
         return self.randomFloats(-1)
 
-    def get_IyyPSF(self):
+    def get_iyyPSF(self):
         return self.randomFloats(-1)
 
-    def get_IxyPSF(self):
+    def get_ixyPSF(self):
         return self.randomFloats(-1)
 
     def get_extendedness(self):
@@ -300,34 +300,37 @@ class DiaSourceCommons(CameraCoords):
         """
         return self.column_by_name('uniqueId')*10000000+self.obs_metadata.OpsimMetaData['obsHistID']
 
-    def get_radec(self):
+    def get_ra(self):
         """
-        raICRS, decICRS take raJ2000, decJ2000 and
-        add proper motion
+        raICRS takes raJ2000 and add proper motion
         """
-        ra = self.column_by_name('raICRS')
-        dec = self.column_by_name('decICRS')
-        vals = np.array([ra, dec]).T
-        cols = ['ra', 'dec']
-        return array_to_dict(cols, vals)
+        return self.column_by_name('raICRS')
+
+
+    def get_decl(self):
+        """
+        decICRS take decJ2000 and add proper motion
+        """
+        return self.column_by_name('decICRS')
 
     # DIASource attributes in a form of a list
     # with randomly assigned values (for the time being)
 
-    def get_radecCov(self):
+    def get_ra_decl_Cov(self):
         vals = self.randomFloatArr(3, -1)
-        cols = ['raVar', 'decVar', 'ra_dec_Cov']
+        cols = ['raSigma', 'declSigma', 'ra_decl_Cov']
         return array_to_dict(cols, vals)
 
 
-    def get_xy(self):
-        vals = np.array([self.column_by_name('xPix'), self.column_by_name('yPix')]).T
-        cols = ['x', 'y']
-        return array_to_dict(cols, vals)
+    def get_x(self):
+        return self.column_by_name('xPix')
 
-    def get_xyCov(self):
+    def get_y(self):
+        return self.column_by_name('yPix')
+      
+    def get_x_y_Cov(self):
         vals = self.randomFloatArr(3, -1)
-        cols = ['xVar', 'yVar', 'x_y_Cov']
+        cols = ['xSigma', 'ySigma', 'x_y_Cov']
         return array_to_dict(cols, vals)
 
     @cached
@@ -471,83 +474,84 @@ class DiaSourceCommons(CameraCoords):
                          true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
                          true_fluxError*(1.0+0.0001*self.randomFloats(-1))]).T
 
-        cols = ['apMeanSb01Sigma', 'apMeanSb02Sigma', 'apMeanSb03Sigma', 
-                 'apMeanSb04Sigma', 'apMeanSb05Sigma', 'apMeanSb06Sigma', 
-                 'apMeanSb07Sigma', 'apMeanSb08Sigma', 'apMeanSb09Sigma', 
-                 'apMeanSb10Sigma']
+        cols = ['apMeanSb01Err', 'apMeanSb02Err', 'apMeanSb03Err', 
+                 'apMeanSb04Err', 'apMeanSb05Err', 'apMeanSb06Err', 
+                 'apMeanSb07Err', 'apMeanSb08Err', 'apMeanSb09Err', 
+                 'apMeanSb10Err']
         return array_to_dict(cols, vals)
     
-    def _radec_epsilon(self):
-        """
-        Return a numpy array of [raICRS+epsilon, decICRS+epsilon].transpose()
-        """
-        ra = self.column_by_name('raICRS')
-        dec = self.column_by_name('decICRS')
-        return np.array([ra + 1.0e-6*self.randomFloats(-1),
-                         dec + 1.0e-6*self.randomFloats(-1)]).T
 
-    def get_psRadec(self):
+    def get_psRa(self):
         """
-        Just return raICRS, decICRS with a small epsilon added,
-        since CatSim does not have methods to calculate psf RA, Dec
+        Just return raICRS with a small epsilon added, since CatSim does not have methods to calculate psf RA
         """
-        vals = self._radec_epsilon()
-        cols = ['psRa', 'psDec']
-        return array_to_dict(cols, vals)
+        return self.column_by_name('raICRS') + 1.0e-6*self.randomFloats(-1)
 
-    def get_psCov(self):
+    def get_psDecl(self):
+        """
+        Just return decICRS with a small epsilon added, since CatSim does not have methods to calculate psf DEC
+        """
+        return self.column_by_name('decICRS') + 1.0e-6*self.randomFloats(-1)
+      
+    def get_ps_Cov(self):
         vals = self.randomFloatArr(6, -1)
-        cols = ['psFluxVar', 'psRaVar', 'psDecVar', 
-                'psFlux_psRa_Cov', 'psFlux_psDec_Cov', 
-                'psRa_psDec_Cov']
+        cols = ['psFluxSigma', 'psRaSigma', 'psDeclSigma', 
+                'psFlux_psRa_Cov', 'psFlux_psDecl_Cov', 
+                'psRa_psDecl_Cov']
         return array_to_dict(cols, vals)
 
-    def get_trailRadec(self):
+    def get_trailRa(self):
         """
-        Return raICRS, decICRS with small epsilon, since CatSim
-        does not have methods to calculate trailing RA, Dec
+        Just return raICRS with a small epsilon added, since CatSim does not have methods to calculate psf RA
         """
-        vals = self._radec_epsilon()
-        cols = ['trailRa', 'trailDec']
-        return array_to_dict(cols, vals)
+        return self.column_by_name('raICRS') + 1.0e-6*self.randomFloats(-1)
 
-    def get_trailCov(self):
+    def get_trailDecl(self):
+        """
+        Just return decICRS with a small epsilon added, since CatSim does not have methods to calculate psf DEC
+        """
+        return self.column_by_name('decICRS') + 1.0e-6*self.randomFloats(-1)
+
+    def get_trail_Cov(self):
         vals = self.randomFloatArr(15, -1)
-        cols = ['trailFluxVar', 'trailRaVar', 'trailDecVar', 
-                'trailLengthVar', 'trailAngleVar', 'trailFlux_trailRa_Cov', 
-                'trailFlux_trailDec_Cov', 'trailFlux_trailLength_Cov', 
-                'trailFlux_trailAngle_Cov', 'trailRa_trailDec_Cov', 
+        cols = ['trailFluxSigma', 'trailRaSigma', 'trailDeclSigma', 
+                'trailLengthSigma', 'trailAngleSigma', 'trailFlux_trailRa_Cov', 
+                'trailFlux_trailDecl_Cov', 'trailFlux_trailLength_Cov', 
+                'trailFlux_trailAngle_Cov', 'trailRa_trailDecl_Cov', 
                 'trailRa_trailLength_Cov', 'trailRa_trailAngle_Cov', 
-                'trailDec_trailLength_Cov', 'trailDec_trailAngle_Cov', 
+                'trailDecl_trailLength_Cov', 'trailDecl_trailAngle_Cov', 
                 'trailLength_trailAngle_Cov']
         return array_to_dict(cols, vals)
 
-    def get_dipRadec(self):
+    def get_dipRa(self):
         """
-        Return raICRS, decICRS with small epsilon, since CatSim
-        does not have methods to calculate trailing RA, Dec
+        Just return raICRS with a small epsilon added, since CatSim does not have methods to calculate psf RA
         """
-        vals = self._radec_epsilon()
-        cols = ['dipRa', 'dipDec']
-        return array_to_dict(cols, vals)
+        return self.column_by_name('raICRS') + 1.0e-6*self.randomFloats(-1)
 
-    def get_dipCov(self):
+    def get_dipDecl(self):
+        """
+        Just return decICRS with a small epsilon added, since CatSim does not have methods to calculate psf DEC
+        """
+        return self.column_by_name('decICRS') + 1.0e-6*self.randomFloats(-1)
+
+    def get_dip_Cov(self):
         vals = self.randomFloatArr(21, -1)
-        cols = ['dipMeanFluxVar', 'dipFluxDiffVar', 'dipRaVar', 
-                'dipDecVar', 'dipLengthVar', 'dipAngleVar', 
+        cols = ['dipMeanFluxSigma', 'dipFluxDiffSigma', 'dipRaSigma', 
+                'dipDeclSigma', 'dipLengthSigma', 'dipAngleSigma', 
                 'dipMeanFlux_dipFluxDiff_Cov', 'dipMeanFlux_dipRa_Cov', 
-                'dipMeanFlux_dipDec_Cov', 'dipMeanFlux_dipLength_Cov', 
+                'dipMeanFlux_dipDecl_Cov', 'dipMeanFlux_dipLength_Cov', 
                 'dipMeanFlux_dipAngle_Cov', 'dipFluxDiff_dipRa_Cov', 
-                'dipFluxDiff_dipDec_Cov', 'dipFluxDiff_dipLength_Cov', 
-                'dipFluxDiff_dipAngle_Cov', 'dipRa_dipDec_Cov', 
-                'dipRa_dipLength_Cov', 'dipRa_dipAngle_Cov', 'dipDec_dipLength_Cov', 
-                'dipDec_dipAngle_Cov', 'dipLength_dipAngle_Cov']
+                'dipFluxDiff_dipDecl_Cov', 'dipFluxDiff_dipLength_Cov', 
+                'dipFluxDiff_dipAngle_Cov', 'dipRa_dipDecl_Cov', 
+                'dipRa_dipLength_Cov', 'dipRa_dipAngle_Cov', 'dipDecl_dipLength_Cov', 
+                'dipDecl_dipAngle_Cov', 'dipLength_dipAngle_Cov']
         return array_to_dict(cols, vals)
 
-    def get_Icov(self):
+    def get_i_cov(self):
         vals = self.randomFloatArr(6, -1)
-        cols = ["IxxVar", "IyyVar", "IxyVar", 
-                "Ixx_Iyy_Cov", "Ixx_Ixy_Cov", "Iyy_Ixy_Cov"]
+        cols = ["ixxSigma", "iyySigma", "ixySigma", 
+                "ixx_iyy_Cov", "ixx_ixy_Cov", "iyy_ixy_Cov"]
         return array_to_dict(cols, vals)
 
     # resolve db column case-sensitivness

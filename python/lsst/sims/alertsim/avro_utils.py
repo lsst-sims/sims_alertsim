@@ -14,7 +14,7 @@ def _raise_no_avro(method_name):
     raise RuntimeError(msg)
 
 
-def catsim_to_avro(list_of_query_dicts, session_dir, schemaURI='avsc/diasource.avsc'):
+def catsim_to_avro(list_of_alert_dicts, session_dir, schemaURI='avsc/diasource.avsc'):
 
     """
     Input: list of dictionaries for a catsim visit which consists
@@ -37,31 +37,24 @@ def catsim_to_avro(list_of_query_dicts, session_dir, schemaURI='avsc/diasource.a
     writing_time = timer()
     writer = DataFileWriter(open("avsc/alert.avro", "wb"), DatumWriter(), alert_schema)
 
-    print "number of events %d" % (len(list_of_query_dicts))
+    print "number of events %d" % (len(list_of_alert_dicts))
 
-    for qd in list_of_query_dicts:
-        print "Ccd and visit id %d" % (qd['ccdVisitId'])
+    for alert_dict in list_of_alert_dicts:
+        print "Ccd and visit id %d" % (alert_dict['diaSource']['ccdVisitId'])
         
         #last 4 digits of ccdVisitId are chip number
-        chipNum = str(qd['ccdVisitId'])[-4:]
+        chipNum = str(alert_dict['diaSource']['ccdVisitId'])[-4:]
         #open file with a name of a chipNum in append mode
         file_obj = open("json_output/"+session_dir+"/"+chipNum, 'a')
 
-        alert_dict = qd
-        #alert_dict.pop("ssObjectId", None)
-        alert_dict = {'alertID':45135, 'l1dbID':12545, 'diaSource':qd, 'prevDiaSources':[qd]*30}
-        #alert_dict = {'alertID':45135, 'l1dbID':12545, 'diaSource':qd}
         json_qd = json.loads(json.dumps(alert_dict))
-        #file_obj.write(json_qd)
         json.dump(json_qd, file_obj)
-        #print alert_dict
 
         writer.append(json_qd)
         file_obj.close()
 
-
     writer.close()
-    #file_obj.close()
+
     """
     print "writing time %s" % (timer() - writing_time)
 
