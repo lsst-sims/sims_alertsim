@@ -162,9 +162,10 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field, history, sess
     list_of_alert_dicts = []
 
     for line in obs_data.iter_catalog():
+        print obs_data.get_totFlux()
         diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
         if not history:
-            alert_dict = {'alertID':45135, 'l1dbID':12545, 
+            alert_dict = {'alertId':45135, 'l1dbId':12545, 
                     'diaSource':diaSource_dict}
             list_of_alert_dicts.append(alert_dict)
         else:
