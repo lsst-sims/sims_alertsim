@@ -358,7 +358,8 @@ class DIAObjectCommons(CameraCoords):
 	cols = ['yLcNonPeriodic01', 'yLcNonPeriodic02', 'yLcNonPeriodic03', 'yLcNonPeriodic04', 'yLcNonPeriodic05', 'yLcNonPeriodic06', 'yLcNonPeriodic07', 'yLcNonPeriodic08', 'yLcNonPeriodic09', 'yLcNonPeriodic10', 'yLcNonPeriodic11', 'yLcNonPeriodic12', 'yLcNonPeriodic13', 'yLcNonPeriodic14', 'yLcNonPeriodic15', 'yLcNonPeriodic16', 'yLcNonPeriodic17', 'yLcNonPeriodic18', 'yLcNonPeriodic19', 'yLcNonPeriodic20']
 	return array_to_dict(cols, vals)
     
-    # nearbyObj1
+    def get_nearbyObj1(self):
+	return self.randomInts(-1, 9223372036854775807)
     
     def get_nearbyObj1Dist(self):
 	return self.randomFloats(-1)
@@ -366,7 +367,8 @@ class DIAObjectCommons(CameraCoords):
     def get_nearbyObj1LnP(self):
 	return self.randomFloats(-1)
     
-    # nearbyObj2
+    def get_nearbyObj2(self):
+	return self.randomInts(-1, 9223372036854775807)
     
     def get_nearbyObj2Dist(self):
 	return self.randomFloats(-1)
@@ -374,7 +376,8 @@ class DIAObjectCommons(CameraCoords):
     def get_nearbyObj2LnP(self):
 	return self.randomFloats(-1)
     
-    # nearbyObj3
+    def get_nearbyObj3(self):
+	return self.randomInts(-1, 9223372036854775807)
     
     def get_nearbyObj3Dist(self):
 	return self.randomFloats(-1)
