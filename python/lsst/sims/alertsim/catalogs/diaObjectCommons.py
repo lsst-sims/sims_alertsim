@@ -31,15 +31,15 @@ class DIAObjectCommons(CameraCoords):
 
     column_outputs = ['diaObjectId', 'ra', 'decl', 'ra_decl_Cov', 'radecTai', 'pmRa', 'pmDecl', 'parallax', 'pm_parallax_Cov', 'pmParallaxLnL', 'pmParallaxChi2', 'pmParallaxNdata', 'uPSFluxMean', 'uPSFluxMeanErr', 'uPSFluxSigma', 'uPSFluxChi2', 'uPSFluxNdata', 'gPSFluxMean', 'gPSFluxMeanErr', 'gPSFluxSigma', 'gPSFluxChi2', 'gPSFluxNdata', 'rPSFluxMean', 'rPSFluxMeanErr', 'rPSFluxSigma', 'rPSFluxChi2', 'rPSFluxNdata', 'iPSFluxMean', 'iPSFluxMeanErr', 'iPSFluxSigma', 'iPSFluxChi2', 'iPSFluxNdata', 'zPSFluxMean', 'zPSFluxMeanErr', 'zPSFluxSigma', 'zPSFluxChi2', 'zPSFluxNdata', 'yPSFluxMean', 'yPSFluxMeanErr', 'yPSFluxSigma', 'yPSFluxChi2', 'yPSFluxNdata', 'uFPFluxMean', 'uFPFluxMeanErr', 'uFPFluxSigma', 'gFPFluxMean', 'gFPFluxMeanErr', 'gFPFluxSigma', 'rFPFluxMean', 'rFPFluxMeanErr', 'rFPFluxSigma', 'iFPFluxMean', 'iFPFluxMeanErr', 'iFPFluxSigma', 'zFPFluxMean', 'zFPFluxMeanErr', 'zFPFluxSigma', 'yFPFluxMean', 'yFPFluxMeanErr', 'yFPFluxSigma', 'uLcPeriodic', 'gLcPeriodic', 'rLcPeriodic', 'iLcPeriodic', 'zLcPeriodic', 'yLcPeriodic', 'uLcNonPeriodic', 'gLcNonPeriodic', 'rLcNonPeriodic', 'iLcNonPeriodic', 'zLcNonPeriodic', 'yLcNonPeriodic', 'nearbyObj1', 'nearbyObj1Dist', 'nearbyObj1LnP', 'nearbyObj2', 'nearbyObj2Dist', 'nearbyObj2LnP', 'nearbyObj3', 'nearbyObj3Dist', 'nearbyObj3LnP', 'flags']
 
-    # UCD's - Veljko's best guesses. Check this one day please
+    # UCD's - TODO
 
     ucds = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
 
-    # Datatypes as stated in DPDD
+    # Datatypes as stated in DPDD TODO
 
     datatypes = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
 
-    # Units as stated in DPDD
+    # Units as stated in DPDD TODO
 
     units = ['', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '']
 
