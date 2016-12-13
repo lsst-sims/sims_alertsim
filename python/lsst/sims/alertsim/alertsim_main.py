@@ -80,6 +80,11 @@ def main(opsim_table=None, catsim_table='allstars',
             opsim_night=opsim_night, opsim_filter=opsim_filter, 
             opsim_mjd=opsim_mjd, history=history)
 
+    from itertools import islice
+    iterator = islice(obs_history, 100, 130)
+    for item in iterator:
+        print item
+
     print "opsim result fetched and transformed to ObservationMetaData objects"
 
     if not serialize_json:
@@ -161,14 +166,46 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field, history, sess
 
     list_of_alert_dicts = []
 
-    for line in obs_data.iter_catalog():
-        print obs_data.get_totFlux()
-        diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
-        if not history:
+
+    if not history:
+        for line in obs_data.iter_catalog():
+            diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
             alert_dict = {'alertId':45135, 'l1dbId':12545, 
-                    'diaSource':diaSource_dict}
+                'diaSource':diaSource_dict}
             list_of_alert_dicts.append(alert_dict)
-        else:
+    else:
+        from lsst.sims.catUtils.utils import StellarLightCurveGenerator
+        
+        ra1=obs_metadata.pointingRA - 1.75
+        ra2=obs_metadata.pointingRA + 1.75
+        dec1=obs_metadata.pointingDec - 1.75
+        dec2=obs_metadata.pointingDec + 1.75
+        
+        lc_gen = StellarLightCurveGenerator(obs_data.db_obj, '/scratch/veljko/opsim/minion_1016_sqlite.db')
+        pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), expMJD=(0, obs_metadata.mjd.TAI))
+            
+        #print len(pointings)
+        lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings)
+        print lc_dict
+       
+        print "observations_field len %d" %len(observations_field)
+        
+        """
+        for field in observations_field:
+            obs_data.obs_metadata = field
+
+            query_result = obs_data.get_query_result()
+            
+            for chunk in query_result:
+                print chunk
+        """
+
+
+        for line in obs_data.iter_catalog():
+
+            diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
+            #print diaSource_dict
+            diaSource_history = []
             alert_dict = {'alertId':45135, 'l1dbId':12545, 
                 'diaSource':diaSource_dict, 'prv_diaSources':[diaSource_dict]*30}
             list_of_alert_dicts.append(alert_dict)
