@@ -5,6 +5,7 @@ import os
 import numbers
 from lsst.utils import getPackageDir
 import lsst.utils.tests
+from lsst.sims.utils.CodeUtilities import sims_clean_up
 from utils import createFakeCatSimDB
 from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
 from lsst.sims.catalogs.db import CatalogDBObject
@@ -73,6 +74,7 @@ class JsonTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        sims_clean_up()
         del cls.db
         del cls.gen
         if os.path.exists(cls.catsim_db_name):

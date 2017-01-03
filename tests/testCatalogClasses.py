@@ -4,6 +4,7 @@ import os
 import lsst.utils.tests
 from lsst.utils import getPackageDir
 from utils import createFakeCatSimDB
+from lsst.sims.utils.CodeUtilities import sims_clean_up
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
 from lsst.sims.catalogs.db import CatalogDBObject
@@ -55,6 +56,7 @@ class AlertSimCatalogTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        sims_clean_up()
         del cls.db
         if os.path.exists(cls.db_file_name):
             os.unlink(cls.db_file_name)

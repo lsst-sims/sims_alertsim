@@ -8,6 +8,7 @@ import numpy as np
 import lsst.utils.tests
 import lsst.sims.alertsim.alertsim_main as alertsim
 from lsst.utils import getPackageDir
+from lsst.sims.utils.CodeUtilities import sims_clean_up
 from lsst.sims.catalogs.db import CatalogDBObject
 from lsst.sims.catUtils.mixins import VariabilityStars, PhotometryStars
 from lsst.sims.catalogs.definitions import InstanceCatalog
@@ -44,6 +45,7 @@ class AlertSimEndToEndTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        sims_clean_up()
         if os.path.exists(cls.opsim_file_name):
             os.unlink(cls.opsim_file_name)
 
