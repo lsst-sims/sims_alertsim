@@ -11,17 +11,20 @@ from lsst.sims.alertsim.dataModel import DataMetadata, CelestialObject
 from lsst.sims.alertsim.generateVOEvent import VOEventGenerator
 from lsst.sims.alertsim.broadcast import *
 from lsst.sims.alertsim.catalogs import *
+from lsst.log import Log
 
 BANDNAMES = ['u', 'g', 'r', 'i', 'z', 'y']
 STACK_VERSION = 10
 CATSIM_CONSTRAINT = "varParamStr not like 'None'"
 IPADDR = "147.91.240.29"
 
+alerterLog = Log.getLogger("sims.alertsim.alertsim_mainLogger")
+
 def main(opsim_table=None, catsim_table='allstars', 
          opsim_night=None, opsim_filter=None, opsim_mjd = None, 
          opsim_path=None, catsim_constraint = CATSIM_CONSTRAINT, 
          radius=1.75, protocol=None, ipaddr=IPADDR, port=8089, 
-         header=True, history=True, dia=True, serialize_json=False):
+         header=True, history=True, dia=True, serialize_json=False, log=None):
 
 
     """ Controls all of Alertsim functionalities
@@ -69,7 +72,6 @@ def main(opsim_table=None, catsim_table='allstars',
     number
     """
 
-
     print "fetching opsim results..."
 
 
@@ -79,7 +81,9 @@ def main(opsim_table=None, catsim_table='allstars',
             opsim_night=opsim_night, opsim_filter=opsim_filter, 
             opsim_mjd=opsim_mjd, history=history)
 
-    print "opsim result fetched and transformed to ObservationMetaData objects"
+    # print "opsim result fetched and transformed to ObservationMetaData objects"
+    alerterLog.info("Opsim result fetched and transformed to ObservationMetaData objects.")
+
 
     if not serialize_json:
 
@@ -91,15 +95,22 @@ def main(opsim_table=None, catsim_table='allstars',
             """ current observation - largest mjd from a sorted list  """
             obs_metadata = obs_per_field[0]
 
-            obs_data = catsim_utils.catsim_query(stack_version=STACK_VERSION,
-                    objid=catsim_table, constraint=catsim_constraint,
-                    obs_metadata=obs_metadata, dia=dia)
+            try:
+                obs_data = catsim_utils.catsim_query(stack_version=STACK_VERSION,
+                        objid=catsim_table, constraint=catsim_constraint,
+                        obs_metadata=obs_metadata, dia=dia)
 
-            """ query catsim, pack voevents and send """
-            iter_and_send(sender, obs_data, obs_metadata, obs_per_field, history)
+                """ query catsim, pack voevents and send """
+                iter_and_send(sender, obs_data, obs_metadata, obs_per_field, history)
+
+            except Exception as e:
+                alerterLog.error("Not connected to database")
+                #raise
+
 
         """ close connection """
         sender.close()
+        alerterLog.info("Connection closed")
 
     else:
 
@@ -108,12 +119,18 @@ def main(opsim_table=None, catsim_table='allstars',
             """ current observation - largest mjd from a sorted list  """
             obs_metadata = obs_per_field[0]
 
-            obs_data = catsim_utils.catsim_query(stack_version=STACK_VERSION,
-                    objid=catsim_table, constraint=catsim_constraint,
-                    obs_metadata=obs_metadata, dia=dia)
+            try:
+                obs_data = catsim_utils.catsim_query(stack_version=STACK_VERSION,
+                        objid=catsim_table, constraint=catsim_constraint,
+                        obs_metadata=obs_metadata, dia=dia)
 
-            """ query catsim and serialize to json  """
-            iter_and_serialize(obs_data, obs_metadata, obs_per_field, history)
+                """ query catsim and serialize to json  """
+                iter_and_serialize(obs_data, obs_metadata, obs_per_field, history)
+
+            except Exception as e:
+                alerterLog.error("Not connected to database")
+                #raise
+
 
 
 def get_sender(protocol, ipaddr, port, header):
@@ -243,10 +260,14 @@ def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
         # generate and send
         gen = VOEventGenerator(eventid = event_count)
         xml = gen.generateFromObjects(cel_objects, obs_metadata)
-        print xml
-        sender.send(xml)
-        event_count += 1
-        sending_times.append(time.time())
+        #print xml
+        try:
+            sender.send(xml)
+            alerterLog.info("Alert %s sent", event_count)
+            event_count += 1
+            sending_times.append(time.time())
+        except:
+            alerterLog.error("Alert %s not sent", event_count)
 
     # add exception for index out of range
     try:

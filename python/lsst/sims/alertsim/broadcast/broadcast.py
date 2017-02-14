@@ -3,6 +3,9 @@ import struct
 import sys
 import errno
 import zlib
+from lsst.log import Log
+
+broadcastLog = Log.getLogger("sims.alerisim.broadcast.broadcastLogger")
 
 class Broadcast(object):
 
@@ -23,7 +26,8 @@ class Broadcast(object):
     def close(self):
         """ close socket """
         self.sock.close()
-        print >>sys.stderr, 'closing socket'
+        # print >>sys.stderr, 'closing socket'
+        broadcastLog.info("Socket closed.")
 
     def close_and_exit(self):
         """ close socket and exit with code 1 (there was an issue) """
@@ -58,8 +62,10 @@ class TcpIp(Broadcast):
         self.port = port
         try:
             self._connect_socket()
+            broadcastLog.debug("Socket connected.")
         except socket.error as e:
             print(e)
+            broadcastLog.error("Socket not connected.")
             self.close_and_exit()
 
     def send(self, message):
@@ -87,7 +93,8 @@ class TcpIp(Broadcast):
         """ Connects to a socket """
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((self.ip, self.port))
-        print "Connected to %s at port %d" % (self.ip, self.port)
+        # print "Connected to %s at port %d" % (self.ip, self.port)
+        broadcastLog.info("Connected to %s at port %d" % (self.ip, self.port))
 
     def _send_and_receive(self, message):
         
@@ -98,8 +105,13 @@ class TcpIp(Broadcast):
         """
         
         self.sock.send(self._add_voevent_header(message)) if self.header else self.sock.send(message)
+        broadcastLog.debug("Message sent")
         data = self.sock.recv(self.BUFFER_SIZE)
         print "received data:", data
+        if data == "":
+            broadcastLog.warn("Message sent, but echo not received")
+        else:
+            broadcastLog.debug("Echo received")
 
 class Multicast(Broadcast):
 
