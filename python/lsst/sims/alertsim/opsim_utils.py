@@ -77,7 +77,7 @@ def opsim_query_stack10(opsim_path, objid, radius, opsim_night,
         obs_history = []
 
         if history:
-            obs_history = _convert_obs_to_history(obs_all)
+            obs_history = _convert_obs_to_history(obs_all, obs_gen)
         else:
             # we do not need the historical information; construct a dummy history
             mjd_arr = np.array([obs.mjd.TAI for obs in obs_all])
@@ -86,27 +86,26 @@ def opsim_query_stack10(opsim_path, objid, radius, opsim_night,
 
         return obs_history
 
-def _convert_obs_to_history(obs_list):
+def _convert_obs_to_history(obs_list, obs_gen):
     """
     Take a list of ObservationMetaData and rearrange it into a 2-d list in which each row
     corresponds to the current ObservationMetaData but also contains all of the prior
     observations of the same field up to that date in sorted order
     """
+
     # sort the ObservationMetaData in chronological order
-    mjd_array = np.array([obs.mjd.TAI for obs in obs_list])
-    sorted_dex = np.argsort(mjd_array)
-    if not isinstance(obs_list, np.ndarray):
-        obs_list = np.array(obs_list)
+    # note: lambda sort is ~3 times quicker than numpy methods that were used previously
+    obs_list.sort(key=lambda x: x.mjd.TAI)
+    
+    history_matrix = []
+    
+    for obs in obs_list:
+        
+        # note: expMJD=(a,b) will include a,b
+        history_per_field = obs_gen.getObservationMetaData(fieldRA=obs.pointingRA, 
+                fieldDec=obs.pointingDec, expMJD=(0, obs.mjd.TAI))
+        # sort reverse so that the first element is the newest 
+        history_per_field.sort(key=lambda x: x.mjd.TAI, reverse=True)
+        history_matrix.append(history_per_field)
 
-    obs_list = obs_list[sorted_dex]
-
-    field_arr = np.array([obs.OpsimMetaData['fieldID'] for obs in obs_list])
-
-    output_history = []
-    for ix, obs in enumerate(obs_list):
-        # find all of the other observations of the same field
-        other_obs = np.where(field_arr[:ix] == obs.OpsimMetaData['fieldID'])[0]
-        current_obs = [obs] + [obs_list[other_obs[ix]] for ix in range(len(other_obs)-1,-1,-1)]
-        output_history.append(current_obs)
-
-    return output_history
+    return history_matrix
