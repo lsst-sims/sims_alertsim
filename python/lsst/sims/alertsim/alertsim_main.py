@@ -80,10 +80,12 @@ def main(opsim_table=None, catsim_table='allstars',
             opsim_night=opsim_night, opsim_filter=opsim_filter, 
             opsim_mjd=opsim_mjd, history=history)
 
+    """
     from itertools import islice
     iterator = islice(obs_history, 100, 130)
     for item in iterator:
         print item
+    """
 
     print "opsim result fetched and transformed to ObservationMetaData objects"
 
@@ -189,25 +191,17 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field, history, sess
         print lc_dict
        
         print "observations_field len %d" %len(observations_field)
-        
-        """
-        for field in observations_field:
-            obs_data.obs_metadata = field
-
-            query_result = obs_data.get_query_result()
-            
-            for chunk in query_result:
-                print chunk
-        """
-
+       
+        #TODO prv_diaSources is still fake (it has realistic size). All the pieces are here,
+        # we have to find the best way of putting them together 
 
         for line in obs_data.iter_catalog():
 
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
-            #print diaSource_dict
+            print diaSource_dict
             diaSource_history = []
             alert_dict = {'alertId':45135, 'l1dbId':12545, 
-                'diaSource':diaSource_dict, 'prv_diaSources':[diaSource_dict]*30}
+                'diaSource':diaSource_dict, 'prv_diaSources':[diaSource_dict]*len(observations_field)}
             list_of_alert_dicts.append(alert_dict)
 
     avro_utils.catsim_to_avro(list_of_alert_dicts=list_of_alert_dicts, 
