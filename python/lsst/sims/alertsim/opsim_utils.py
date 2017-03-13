@@ -59,12 +59,12 @@ def opsim_query_stack10(opsim_path, objid, radius, opsim_night,
     Returns a list of ObservationMetaData
     """
 
-    import lsst.sims.maf.db as db
+    import lsst.sims.catalogs.db as db
 
     if not opsim_path:
         """ access to fatboy """
         raise NotImplementedError("Not yet sure how to do the OpSim queries from fatboy")
-        table = db.Table(tableName=objid, idColKey='obshistid', database='LSSTCATSIM', 
+        table = db.CatalogDBObject(table=objid, idColKey='obshistid', database='LSSTCATSIM',
                 driver='mssql+pymssql', host='localhost', port='51433' )
     else:
         """ local access """
