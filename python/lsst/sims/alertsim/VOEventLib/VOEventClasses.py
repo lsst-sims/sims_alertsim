@@ -3337,7 +3337,7 @@ class Citations(DataRepBase, GeneratedsSuper):
 # end class Citations
 
 
-class EventIVORN(GeneratedsSuper):
+class EventIVORN(DataRepBase, GeneratedsSuper):
     """Citations/EventIVORN. The value is the IVORN of the cited event, the
     'cite' attribute is the nature of that relationship, choosing
     from 'followup', 'supersedes', or 'retraction'."""
@@ -3346,6 +3346,7 @@ class EventIVORN(GeneratedsSuper):
     def __init__(self, cite=None, valueOf_=None):
         self.cite = _cast(None, cite)
         self.valueOf_ = valueOf_
+        self.export_name = 'EventIVORN'
     def factory(*args_, **kwargs_):
         if EventIVORN.subclass:
             return EventIVORN.subclass(*args_, **kwargs_)
@@ -3359,17 +3360,7 @@ class EventIVORN(GeneratedsSuper):
         pass
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='EventIVORN', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='EventIVORN')
-        if self.hasContent_():
-            outfile.write('>')
-            outfile.write(self.valueOf_)
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='EventIVORN'):
         if self.cite is not None:
             outfile.write(' cite=%s' % (quote_attrib(self.cite), ))
