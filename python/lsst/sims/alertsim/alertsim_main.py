@@ -9,7 +9,8 @@ from . import catsim_utils, opsim_utils, avro_utils
 from copy import deepcopy
 from lsst.sims.alertsim.dataModel import DataMetadata, CelestialObject
 from lsst.sims.alertsim.generateVOEvent import VOEventGenerator
-from lsst.sims.alertsim.broadcast import *
+from . import broadcast
+
 from lsst.sims.alertsim.catalogs import *
 
 BANDNAMES = ['u', 'g', 'r', 'i', 'z', 'y']
@@ -131,7 +132,7 @@ def get_sender(protocol, ipaddr, port, header):
     @param [out] is object of the broadcast child class
     
     """
-    return vars(broadcast)[protocol](ipaddr, port, header)
+    return vars(broadcast.broadcast)[protocol](ipaddr, port, header)
 
 def iter_and_serialize(obs_data, obs_metadata, observations_field, history):
 
