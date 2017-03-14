@@ -2288,12 +2288,13 @@ class Time(DataRepBase, GeneratedsSuper):
 # end class Time
 
 
-class TimeInstant(GeneratedsSuper):
+class TimeInstant(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
     def __init__(self, ISOTime=None):
         self.ISOTime = ISOTime
+        self.export_name = 'TimeInstant'
     def factory(*args_, **kwargs_):
         if TimeInstant.subclass:
             return TimeInstant.subclass(*args_, **kwargs_)
@@ -2302,17 +2303,7 @@ class TimeInstant(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_ISOTime(self): return self.ISOTime
     def set_ISOTime(self, ISOTime): self.ISOTime = ISOTime
-    def export(self, outfile, level, namespace_='', name_='TimeInstant', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='TimeInstant')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='TimeInstant'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='TimeInstant'):
