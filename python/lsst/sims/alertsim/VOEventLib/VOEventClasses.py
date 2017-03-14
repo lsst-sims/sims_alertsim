@@ -1777,7 +1777,7 @@ class TR(DataRepBase, GeneratedsSuper):
 # end class TR
 
 
-class WhereWhen(GeneratedsSuper):
+class WhereWhen(DataRepBase, GeneratedsSuper):
     """WhereWhen: Space-Time Coordinates. Lots and lots of elements here,
     but the import is that each event has these: observatory,
     coord_system, time, timeError, longitude, latitude, posError."""
@@ -1794,6 +1794,8 @@ class WhereWhen(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+        self.export_name = 'WhereWhen'
+
     def factory(*args_, **kwargs_):
         if WhereWhen.subclass:
             return WhereWhen.subclass(*args_, **kwargs_)
@@ -1812,17 +1814,7 @@ class WhereWhen(GeneratedsSuper):
     def insert_Reference(self, index, value): self.Reference[index] = value
     def get_id(self): return self.id
     def set_id(self, id): self.id = id
-    def export(self, outfile, level, namespace_='', name_='WhereWhen', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='WhereWhen')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='WhereWhen'):
         if self.id is not None:
             outfile.write(' id=%s' % (self.format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
