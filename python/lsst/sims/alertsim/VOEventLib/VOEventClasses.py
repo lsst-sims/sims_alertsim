@@ -1970,13 +1970,14 @@ class ObsDataLocation(DataRepBase, GeneratedsSuper):
 # end class ObsDataLocation
 
 
-class ObservationLocation(GeneratedsSuper):
+class ObservationLocation(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
     def __init__(self, AstroCoordSystem=None, AstroCoords=None):
         self.AstroCoordSystem = AstroCoordSystem
         self.AstroCoords = AstroCoords
+        self.export_name = 'ObservationLocation'
     def factory(*args_, **kwargs_):
         if ObservationLocation.subclass:
             return ObservationLocation.subclass(*args_, **kwargs_)
@@ -1987,17 +1988,7 @@ class ObservationLocation(GeneratedsSuper):
     def set_AstroCoordSystem(self, AstroCoordSystem): self.AstroCoordSystem = AstroCoordSystem
     def get_AstroCoords(self): return self.AstroCoords
     def set_AstroCoords(self, AstroCoords): self.AstroCoords = AstroCoords
-    def export(self, outfile, level, namespace_='', name_='ObservationLocation', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='ObservationLocation')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='ObservationLocation'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='ObservationLocation'):
