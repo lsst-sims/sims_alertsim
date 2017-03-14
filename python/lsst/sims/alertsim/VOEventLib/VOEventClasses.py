@@ -2043,13 +2043,14 @@ class ObservationLocation(DataRepBase, GeneratedsSuper):
 # end class ObservationLocation
 
 
-class AstroCoordSystem(GeneratedsSuper):
+class AstroCoordSystem(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
     def __init__(self, id=None, valueOf_=None):
         self.id = _cast(None, id)
         self.valueOf_ = valueOf_
+        self.export_name = 'AstroCoordSystem'
     def factory(*args_, **kwargs_):
         if AstroCoordSystem.subclass:
             return AstroCoordSystem.subclass(*args_, **kwargs_)
@@ -2063,17 +2064,7 @@ class AstroCoordSystem(GeneratedsSuper):
         pass
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AstroCoordSystem', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='AstroCoordSystem')
-        if self.hasContent_():
-            outfile.write('>')
-            outfile.write(self.valueOf_)
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='AstroCoordSystem'):
         if self.id is not None:
             outfile.write(' id=%s' % (quote_attrib(self.id), ))
