@@ -278,7 +278,23 @@ def _cast(typ, value):
 # Data representation classes.
 #
 
-class VOEvent(GeneratedsSuper):
+class DataRepBase(object):
+
+    def export(self, outfile, level, namespace_='', name_=None, namespacedef_=''):
+        if name_ is None:
+            name_ = self.export_name
+        showIndent(outfile, level)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        self.exportAttributes(outfile, level, namespace_, name_=name_)
+        if self.hasContent_():
+            outfile.write('>\n')
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            showIndent(outfile, level)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
+
+class VOEvent(DataRepBase, GeneratedsSuper):
     """VOEvent is the root element for describing observations of immediate
     astronomical events. For more information, see
     http://www.ivoa.net/twiki/bin/view/IVOA/IvoaVOEvent. The event
@@ -298,6 +314,7 @@ class VOEvent(GeneratedsSuper):
         self.Citations = Citations
         self.Description = Description
         self.Reference = Reference
+        self.export_name = 'VOEvent'
     def factory(*args_, **kwargs_):
         if VOEvent.subclass:
             return VOEvent.subclass(*args_, **kwargs_)
@@ -329,17 +346,7 @@ class VOEvent(GeneratedsSuper):
         pass
     def get_ivorn(self): return self.ivorn
     def set_ivorn(self, ivorn): self.ivorn = ivorn
-    def export(self, outfile, level, namespace_='', name_='VOEvent', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='VOEvent')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='VOEvent'):
         outfile.write(' version=%s' % (self.format_string(quote_attrib(self.version).encode(ExternalEncoding), input_name='version'), ))
         if self.role is not None:
@@ -490,7 +497,7 @@ class VOEvent(GeneratedsSuper):
 # end class VOEvent
 
 
-class Who(GeneratedsSuper):
+class Who(DataRepBase, GeneratedsSuper):
     """Who: Curation Metadata"""
     subclass = None
     superclass = None
@@ -500,6 +507,7 @@ class Who(GeneratedsSuper):
         self.Description = Description
         self.Reference = Reference
         self.Author = Author
+        self.export_name = 'Who'
     def factory(*args_, **kwargs_):
         if Who.subclass:
             return Who.subclass(*args_, **kwargs_)
@@ -516,17 +524,7 @@ class Who(GeneratedsSuper):
     def set_Reference(self, Reference): self.Reference = Reference
     def get_Author(self): return self.Author
     def set_Author(self, Author): self.Author = Author
-    def export(self, outfile, level, namespace_='', name_='Who', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Who')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Who'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='Who'):
@@ -611,7 +609,7 @@ class Who(GeneratedsSuper):
 # end class Who
 
 
-class Author(GeneratedsSuper):
+class Author(DataRepBase, GeneratedsSuper):
     """Author information follows the IVOA curation information schema: the
     organization responsible for the packet can have a title, short
     name or acronym, and a logo. A contact person has a name, email,
@@ -647,6 +645,9 @@ class Author(GeneratedsSuper):
             self.contributor = []
         else:
             self.contributor = contributor
+
+        self.export_name = 'Author'
+
     def factory(*args_, **kwargs_):
         if Author.subclass:
             return Author.subclass(*args_, **kwargs_)
@@ -681,17 +682,7 @@ class Author(GeneratedsSuper):
     def set_contributor(self, contributor): self.contributor = contributor
     def add_contributor(self, value): self.contributor.append(value)
     def insert_contributor(self, index, value): self.contributor[index] = value
-    def export(self, outfile, level, namespace_='', name_='Author', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Author')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Author'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='Author'):
@@ -832,7 +823,7 @@ class Author(GeneratedsSuper):
 # end class Author
 
 
-class What(GeneratedsSuper):
+class What(DataRepBase, GeneratedsSuper):
     """What: Event Characterization. This is the part of the data model
     that is chosen by the Authoer of the event rather than the IVOA.
     There can be Params, that may be in Groups, and Tables, and
@@ -861,6 +852,9 @@ class What(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+
+        self.export_name = 'What'
+
     def factory(*args_, **kwargs_):
         if What.subclass:
             return What.subclass(*args_, **kwargs_)
@@ -887,17 +881,7 @@ class What(GeneratedsSuper):
     def set_Reference(self, Reference): self.Reference = Reference
     def add_Reference(self, value): self.Reference.append(value)
     def insert_Reference(self, index, value): self.Reference[index] = value
-    def export(self, outfile, level, namespace_='', name_='What', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='What')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='What'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='What'):
