@@ -2342,7 +2342,7 @@ class TimeInstant(DataRepBase, GeneratedsSuper):
 # end class TimeInstant
 
 
-class Position2D(GeneratedsSuper):
+class Position2D(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
@@ -2352,6 +2352,7 @@ class Position2D(GeneratedsSuper):
         self.Name2 = Name2
         self.Value2 = Value2
         self.Error2Radius = Error2Radius
+        self.export_name = 'Position2D'
     def factory(*args_, **kwargs_):
         if Position2D.subclass:
             return Position2D.subclass(*args_, **kwargs_)
@@ -2368,17 +2369,7 @@ class Position2D(GeneratedsSuper):
     def set_Error2Radius(self, Error2Radius): self.Error2Radius = Error2Radius
     def get_unit(self): return self.unit
     def set_unit(self, unit): self.unit = unit
-    def export(self, outfile, level, namespace_='', name_='Position2D', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Position2D')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Position2D'):
         if self.unit is not None:
             outfile.write(' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'), ))
