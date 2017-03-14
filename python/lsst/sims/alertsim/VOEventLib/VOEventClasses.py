@@ -2105,7 +2105,7 @@ class AstroCoordSystem(DataRepBase, GeneratedsSuper):
 # end class AstroCoordSystem
 
 
-class AstroCoords(GeneratedsSuper):
+class AstroCoords(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
@@ -2114,6 +2114,7 @@ class AstroCoords(GeneratedsSuper):
         self.Time = Time
         self.Position2D = Position2D
         self.Position3D = Position3D
+        self.export_name = 'AstroCoords'
     def factory(*args_, **kwargs_):
         if AstroCoords.subclass:
             return AstroCoords.subclass(*args_, **kwargs_)
@@ -2131,17 +2132,7 @@ class AstroCoords(GeneratedsSuper):
     def validate_idValues(self, value):
         # Validate type idValues, a restriction on xs:string.
         pass
-    def export(self, outfile, level, namespace_='', name_='AstroCoords', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='AstroCoords')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='AstroCoords'):
         if self.coord_system_id is not None:
             outfile.write(' coord_system_id=%s' % (quote_attrib(self.coord_system_id), ))
