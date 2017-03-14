@@ -3401,7 +3401,7 @@ class EventIVORN(DataRepBase, GeneratedsSuper):
 # end class EventIVORN
 
 
-class Reference(GeneratedsSuper):
+class Reference(DataRepBase, GeneratedsSuper):
     """Reference: External Content. The payload is the uri, and the 'type'
     describes the nature of the data under that uri. The Reference
     can also be named."""
@@ -3412,6 +3412,7 @@ class Reference(GeneratedsSuper):
         self.uri = _cast(None, uri)
         self.name = _cast(None, name)
         self.valueOf_ = valueOf_
+        self.export_name = 'Reference'
     def factory(*args_, **kwargs_):
         if Reference.subclass:
             return Reference.subclass(*args_, **kwargs_)
@@ -3426,17 +3427,7 @@ class Reference(GeneratedsSuper):
     def set_name(self, name): self.name = name
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='Reference', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Reference')
-        if self.hasContent_():
-            outfile.write('>')
-            outfile.write(self.valueOf_)
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Reference'):
         if self.type_ is not None:
             outfile.write(' type=%s' % (self.format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
