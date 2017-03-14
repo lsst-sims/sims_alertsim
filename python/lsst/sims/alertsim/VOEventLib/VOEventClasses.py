@@ -1713,7 +1713,7 @@ class Data(DataRepBase, GeneratedsSuper):
 # end class Data
 
 
-class TR(GeneratedsSuper):
+class TR(DataRepBase, GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, TD=None):
@@ -1721,6 +1721,7 @@ class TR(GeneratedsSuper):
             self.TD = []
         else:
             self.TD = TD
+        self.export_name = 'TR'
     def factory(*args_, **kwargs_):
         if TR.subclass:
             return TR.subclass(*args_, **kwargs_)
@@ -1731,17 +1732,7 @@ class TR(GeneratedsSuper):
     def set_TD(self, TD): self.TD = TD
     def add_TD(self, value): self.TD.append(value)
     def insert_TD(self, index, value): self.TD[index] = value
-    def export(self, outfile, level, namespace_='', name_='TR', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='TR')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='TR'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='TR'):
