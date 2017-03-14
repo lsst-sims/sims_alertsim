@@ -1,5 +1,5 @@
 import sys
-import VOEventClasses
+from lsst.sims.alertsim.VOEventLib import VOEventClasses
 
 __all__ = ["makeWhereWhen", "stringVOEvent"]
 

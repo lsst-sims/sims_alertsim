@@ -10,7 +10,12 @@ from string import lower as str_lower
 import re as re_
 
 __all__ = ["VOEvent", "Who", "What", "Author", "Citations",
-           "EventIVORN", "Group", "Param"]
+           "EventIVORN", "Group", "Param", "showIndent",
+           "parsexml_", "get_root_tag", "AstroCoords", "Time",
+           "TimeInstant", "Position2D", "Value2",
+           "AstroCoordSystem", "ObservationLocation",
+           "ObservatoryLocation", "ObsDataLocation",
+           "WhereWhen", "Table", "Data", "TR"]
 
 etree_ = None
 Verbose_import_ = False
