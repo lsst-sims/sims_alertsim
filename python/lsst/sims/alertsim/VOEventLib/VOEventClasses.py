@@ -2554,13 +2554,14 @@ class Position3D(DataRepBase, GeneratedsSuper):
 # end class Position3D
 
 
-class Value2(GeneratedsSuper):
+class Value2(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
     def __init__(self, C1=None, C2=None):
         self.C1 = C1
         self.C2 = C2
+        self.export_name = "Value2"
     def factory(*args_, **kwargs_):
         if Value2.subclass:
             return Value2.subclass(*args_, **kwargs_)
@@ -2571,17 +2572,7 @@ class Value2(GeneratedsSuper):
     def set_C1(self, C1): self.C1 = C1
     def get_C2(self): return self.C2
     def set_C2(self, C2): self.C2 = C2
-    def export(self, outfile, level, namespace_='', name_='Value2', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Value2')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Value2'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='Value2'):
