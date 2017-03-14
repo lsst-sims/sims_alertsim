@@ -1,7 +1,6 @@
 import numpy as np
 from lsst.sims.catalogs.definitions import InstanceCatalog
 from lsst.sims.catUtils.mixins import AstrometryStars, PhotometryStars, Variability, VariabilityStars
-from lsst.sims.catUtils.baseCatalogModels import *
 from .diaSourceCommons import DiaSourceCommons
 
 __all__ = ["BasicVarStars", "DiaSourceVarStars", "VariabilityDummy",
