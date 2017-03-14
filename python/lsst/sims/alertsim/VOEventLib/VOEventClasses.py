@@ -1175,7 +1175,7 @@ class Param(DataRepBase, GeneratedsSuper):
 # end class Param
 
 
-class Group(GeneratedsSuper):
+class Group(DataRepBase, GeneratedsSuper):
     """What/Group definition: A group is a collection of Params, with name
     and type attributes."""
     subclass = None
@@ -1195,6 +1195,8 @@ class Group(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+        self.export_name = 'Group'
+
     def factory(*args_, **kwargs_):
         if Group.subclass:
             return Group.subclass(*args_, **kwargs_)
@@ -1217,17 +1219,7 @@ class Group(GeneratedsSuper):
     def set_type(self, type_): self.type_ = type_
     def get_name(self): return self.name
     def set_name(self, name): self.name = name
-    def export(self, outfile, level, namespace_='', name_='Group', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Group')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Group'):
         if self.type_ is not None:
             outfile.write(' type=%s' % (self.format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
