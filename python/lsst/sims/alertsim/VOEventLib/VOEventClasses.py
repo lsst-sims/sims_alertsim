@@ -2802,7 +2802,7 @@ class ObservatoryLocation(DataRepBase, GeneratedsSuper):
 # end class ObservatoryLocation
 
 
-class How(GeneratedsSuper):
+class How(DataRepBase, GeneratedsSuper):
     """How: Instrument Configuration. Built with some Description and
     Reference elements."""
     subclass = None
@@ -2816,6 +2816,8 @@ class How(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+        self.export_name = 'How'
+
     def factory(*args_, **kwargs_):
         if How.subclass:
             return How.subclass(*args_, **kwargs_)
@@ -2830,17 +2832,7 @@ class How(GeneratedsSuper):
     def set_Reference(self, Reference): self.Reference = Reference
     def add_Reference(self, value): self.Reference.append(value)
     def insert_Reference(self, index, value): self.Reference[index] = value
-    def export(self, outfile, level, namespace_='', name_='How', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='How')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='How'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='How'):
