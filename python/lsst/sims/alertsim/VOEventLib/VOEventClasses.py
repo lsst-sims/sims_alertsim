@@ -9,6 +9,9 @@ import getopt
 from string import lower as str_lower
 import re as re_
 
+__all__ = ["VOEvent", "Who", "What", "Author", "Citations",
+           "EventIVORN", "Group", "Param"]
+
 etree_ = None
 Verbose_import_ = False
 (   XMLParser_import_none, XMLParser_import_lxml,

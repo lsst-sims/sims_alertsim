@@ -1,6 +1,7 @@
 import sys
 import VOEventClasses
 
+__all__ = ["makeWhereWhen", "stringVOEvent"]
 
 class VOEventExportClass(VOEventClasses.VOEvent):
     def __init__(self, event, schemaURL):
