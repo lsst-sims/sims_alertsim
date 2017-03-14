@@ -1315,7 +1315,7 @@ class Group(DataRepBase, GeneratedsSuper):
 # end class Group
 
 
-class Table(GeneratedsSuper):
+class Table(DataRepBase, GeneratedsSuper):
     """What/Table definition. This small Table has Fields for the column
     definitions, and Data to hold the table data, with TR for row
     and TD for value of a table cell."""
@@ -1341,6 +1341,7 @@ class Table(GeneratedsSuper):
         else:
             self.Field = Field
         self.Data = Data
+        self.export_name = 'Table'
     def factory(*args_, **kwargs_):
         if Table.subclass:
             return Table.subclass(*args_, **kwargs_)
@@ -1369,17 +1370,7 @@ class Table(GeneratedsSuper):
     def set_type(self, type_): self.type_ = type_
     def get_name(self): return self.name
     def set_name(self, name): self.name = name
-    def export(self, outfile, level, namespace_='', name_='Table', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Table')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Table'):
         if self.type_ is not None:
             outfile.write(' type=%s' % (self.format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
