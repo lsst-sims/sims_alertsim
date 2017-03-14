@@ -9,9 +9,9 @@ from . import catsim_utils, opsim_utils, avro_utils
 from copy import deepcopy
 from lsst.sims.alertsim.dataModel import DataMetadata, CelestialObject
 from lsst.sims.alertsim.generateVOEvent import VOEventGenerator
+from .catalogs import BasicVarStars, VariabilityDummy
 from . import broadcast
 
-from lsst.sims.alertsim.catalogs import *
 
 BANDNAMES = ['u', 'g', 'r', 'i', 'z', 'y']
 STACK_VERSION = 10
