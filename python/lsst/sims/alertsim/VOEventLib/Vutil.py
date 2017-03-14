@@ -1,14 +1,14 @@
 import sys
-import VOEvent
+import VOEventClasses
 
 
-class VOEventExportClass(VOEvent.VOEvent):
+class VOEventExportClass(VOEventClasses.VOEvent):
     def __init__(self, event, schemaURL):
         self.event = event
         self.schemaURL = schemaURL
 
     def export(self, outfile, level, namespace_='', name_='VOEvent', namespacedef_=''):
-        VOEvent.showIndent(outfile, level)
+        VOEventClasses.showIndent(outfile, level)
         added_stuff = 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \n'
         added_stuff += 'xmlns:voe="http://www.ivoa.net/xml/VOEvent/v2.0" \n'
         added_stuff += 'xsi:schemaLocation="http://www.ivoa.net/xml/VOEvent/v2.0 %s"\n' % self.schemaURL
@@ -23,7 +23,7 @@ class VOEventExportClass(VOEvent.VOEvent):
             outfile.write('>\n')
 #            self.event.exportChildren(outfile, level + 1, namespace_='', name_)
             self.event.exportChildren(outfile, level + 1, '', name_)
-            VOEvent.showIndent(outfile, level)
+            VOEventClasses.showIndent(outfile, level)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
@@ -86,9 +86,9 @@ def parse(file):
     '''
     Parses a file and builds the VOEvent DOM.
     '''
-    doc = VOEvent.parsexml_(file)
+    doc = VOEventClasses.parsexml_(file)
     rootNode = doc.getroot()
-    rootTag, rootClass = VOEvent.get_root_tag(rootNode)
+    rootTag, rootClass = VOEventClasses.get_root_tag(rootNode)
     v = rootClass.factory()
     v.build(rootNode)
     return v
@@ -98,9 +98,9 @@ def parseString(inString):
     Parses a string and builds the VOEvent DOM.
     '''
     from StringIO import StringIO
-    doc = VOEvent.parsexml_(StringIO(inString))
+    doc = VOEventClasses.parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    rootTag, rootClass = VOEvent.get_root_tag(rootNode)
+    rootTag, rootClass = VOEventClasses.get_root_tag(rootNode)
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     return rootObj
@@ -151,7 +151,7 @@ def getWhereWhen(v):
 def makeWhereWhen(wwd):
     '''
     Expects a dictionary of the information in the WhereWhen section, and makes a 
-    VOEvent.WhereWhen object suitable for set_WhereWhen().
+    VOEventClasses.WhereWhen object suitable for set_WhereWhen().
     observatory: location of observatory (string);
     coord_system: coordinate system ID, for example UTC-FK5-GEO;
     time: ISO8601 representation of time, for example 1918-11-11T11:11:11;
@@ -176,23 +176,23 @@ def makeWhereWhen(wwd):
         print "Cannot make WhereWhen without latitude"
         return None
 
-    ac = VOEvent.AstroCoords(coord_system_id=wwd['coord_system'])
+    ac = VOEventClasses.AstroCoords(coord_system_id=wwd['coord_system'])
 
     ac.set_Time(
-        VOEvent.Time(
-            TimeInstant = VOEvent.TimeInstant(wwd['time'])))
+        VOEventClasses.Time(
+            TimeInstant = VOEventClasses.TimeInstant(wwd['time'])))
 
     ac.set_Position2D(
-        VOEvent.Position2D(
-            Value2 = VOEvent.Value2(wwd['longitude'], wwd['latitude']),
+        VOEventClasses.Position2D(
+            Value2 = VOEventClasses.Value2(wwd['longitude'], wwd['latitude']),
             Error2Radius = wwd['positionalError']))
 
-    acs = VOEvent.AstroCoordSystem(id=wwd['coord_system'])
+    acs = VOEventClasses.AstroCoordSystem(id=wwd['coord_system'])
 
-    onl = VOEvent.ObservationLocation(acs, ac)
-    oyl = VOEvent.ObservatoryLocation(id=wwd['observatory'])
-    odl = VOEvent.ObsDataLocation(oyl, onl)
-    ww = VOEvent.WhereWhen()
+    onl = VOEventClasses.ObservationLocation(acs, ac)
+    oyl = VOEventClasses.ObservatoryLocation(id=wwd['observatory'])
+    odl = VOEventClasses.ObsDataLocation(oyl, onl)
+    ww = VOEventClasses.WhereWhen()
     ww.set_ObsDataLocation(odl)
     return ww
 
@@ -234,7 +234,7 @@ def findParam(event, groupName, paramName):
     return None
 
 ######## utilityTable ########################
-class utilityTable(VOEvent.Table):
+class utilityTable(VOEventClasses.Table):
     '''
     Class to represent a simple Table from VOEvent
     '''
@@ -258,11 +258,11 @@ class utilityTable(VOEvent.Table):
         '''
         From a table template, replaces the Data section with nrows of empty TR and TD
         '''
-        data = VOEvent.Data()
+        data = VOEventClasses.Data()
         ncol = len(self.colNames)
 
         for i in range(nrows):
-            tr = VOEvent.TR()
+            tr = VOEventClasses.TR()
             for col in range(ncol):
                 tr.add_TD(self.default[col])
             data.add_TR(tr)
