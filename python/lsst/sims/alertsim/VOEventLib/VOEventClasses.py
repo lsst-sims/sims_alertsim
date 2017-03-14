@@ -3253,7 +3253,7 @@ class Inference(DataRepBase, GeneratedsSuper):
 # end class Inference
 
 
-class Citations(GeneratedsSuper):
+class Citations(DataRepBase, GeneratedsSuper):
     """Citations: Follow-up Observations. This section is a sequence of
     EventIVORN elements, each of which has the IVORN of a cited
     event."""
@@ -3265,6 +3265,8 @@ class Citations(GeneratedsSuper):
         else:
             self.EventIVORN = EventIVORN
         self.Description = Description
+        self.export_name = 'Citations'
+
     def factory(*args_, **kwargs_):
         if Citations.subclass:
             return Citations.subclass(*args_, **kwargs_)
@@ -3277,17 +3279,7 @@ class Citations(GeneratedsSuper):
     def insert_EventIVORN(self, index, value): self.EventIVORN[index] = value
     def get_Description(self): return self.Description
     def set_Description(self, Description): self.Description = Description
-    def export(self, outfile, level, namespace_='', name_='Citations', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Citations')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Citations'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='Citations'):
