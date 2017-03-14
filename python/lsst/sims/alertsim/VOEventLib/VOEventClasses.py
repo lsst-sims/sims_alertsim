@@ -2896,7 +2896,7 @@ class How(DataRepBase, GeneratedsSuper):
 # end class How
 
 
-class Why(GeneratedsSuper):
+class Why(DataRepBase, GeneratedsSuper):
     """Why: Initial Scientific Assessment. Can make simple
     Concept/Name/Desc/Ref for the inference or use multiple
     Inference containers for more semantic sophistication."""
@@ -2925,6 +2925,8 @@ class Why(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+        self.export_name = 'Why'
+
     def factory(*args_, **kwargs_):
         if Why.subclass:
             return Why.subclass(*args_, **kwargs_)
@@ -2955,17 +2957,7 @@ class Why(GeneratedsSuper):
     def set_importance(self, importance): self.importance = importance
     def get_expires(self): return self.expires
     def set_expires(self, expires): self.expires = expires
-    def export(self, outfile, level, namespace_='', name_='Why', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Why')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Why'):
         if self.importance is not None:
             outfile.write(' importance="%s"' % self.format_float(self.importance, input_name='importance'))
