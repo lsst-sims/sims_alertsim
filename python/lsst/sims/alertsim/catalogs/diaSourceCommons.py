@@ -10,6 +10,10 @@ from lsst.obs.lsstSim import LsstSimMapper
 from lsst.sims.catUtils.baseCatalogModels import *
 #from lsst.sims.catalogs.decorators import compound
 
+
+__all__ = ["DiaSourceCommons"]
+
+
 class DiaSourceCommons(CameraCoords):
 
     """ Common methods and attributes for all classes 

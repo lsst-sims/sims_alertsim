@@ -6,6 +6,10 @@ from lsst.sims.catUtils.baseCatalogModels import *
 from lsst.sims.catalogs.decorators import compound
 from lsst.sims.alertsim.catalogs import DiaSourceCommons
 
+__all__ = ["BasicVarStars", "DiaSourceVarStars", "VariabilityDummy",
+           "VanillaStars"]
+
+
 class BasicVarStars(InstanceCatalog, 
         PhotometryStars, VariabilityStars, AstrometryStars):
 
