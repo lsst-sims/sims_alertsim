@@ -11,8 +11,6 @@ from builtins import range
 from past.builtins import basestring
 from builtins import object
 import sys
-import getopt
-from string import lower as str_lower
 import re as re_
 
 if sys.version_info.major == 2:

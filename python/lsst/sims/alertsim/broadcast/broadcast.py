@@ -4,7 +4,10 @@ import socket
 import struct
 import sys
 import errno
-import zlib
+
+# the only lines using zlib
+# are currently commented-out
+#import zlib
 
 __all__ = ["Broadcast", "TcpIp", "Multicast"]
 

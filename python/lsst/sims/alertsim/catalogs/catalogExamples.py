@@ -1,9 +1,7 @@
 import numpy as np
-from collections import OrderedDict
 from lsst.sims.catalogs.definitions import InstanceCatalog
-from lsst.sims.catUtils.mixins import AstrometryStars, CameraCoords, PhotometryStars, Variability, VariabilityStars
+from lsst.sims.catUtils.mixins import AstrometryStars, PhotometryStars, Variability, VariabilityStars
 from lsst.sims.catUtils.baseCatalogModels import *
-from lsst.sims.catalogs.decorators import compound
 from .diaSourceCommons import DiaSourceCommons
 
 __all__ = ["BasicVarStars", "DiaSourceVarStars", "VariabilityDummy",

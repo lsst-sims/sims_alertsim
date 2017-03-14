@@ -1,6 +1,4 @@
 from builtins import object
-import sys, os
-
 from lsst.sims.alertsim.VOEventLib import (VOEvent, Who, Author, Citations,
                                            EventIVORN, What, Group, Param,
                                            makeWhereWhen, stringVOEvent)

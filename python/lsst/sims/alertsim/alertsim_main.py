@@ -3,12 +3,9 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 from builtins import zip
-import subprocess
-import sys
 import time
 import functools
 from . import catsim_utils, opsim_utils, avro_utils
-import numpy as np
 from copy import deepcopy
 from lsst.sims.alertsim.dataModel import DataMetadata, CelestialObject
 from lsst.sims.alertsim.generateVOEvent import VOEventGenerator

@@ -3,13 +3,11 @@ from __future__ import absolute_import
 import numpy as np
 import re
 from .random_utils import array_to_dict
-from lsst.sims.catalogs.definitions import InstanceCatalog
 from lsst.sims.catalogs.decorators import cached, compound
 from lsst.sims.catUtils.mixins import CameraCoords
 from lsst.sims.photUtils import Sed  # for converting magnitudes into fluxes
 from lsst.obs.lsstSim import LsstSimMapper
 from lsst.sims.catUtils.baseCatalogModels import *
-#from lsst.sims.catalogs.decorators import compound
 
 
 __all__ = ["DiaSourceCommons"]
