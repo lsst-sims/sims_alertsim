@@ -7,7 +7,6 @@ from lsst.sims.catalogs.decorators import cached, compound
 from lsst.sims.catUtils.mixins import CameraCoords
 from lsst.sims.photUtils import Sed  # for converting magnitudes into fluxes
 from lsst.obs.lsstSim import LsstSimMapper
-from lsst.sims.catUtils.baseCatalogModels import *
 
 
 __all__ = ["DiaSourceCommons"]
