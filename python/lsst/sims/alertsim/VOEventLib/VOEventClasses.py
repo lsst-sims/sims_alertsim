@@ -4,6 +4,7 @@
 # Generated Fri Mar  4 13:10:52 2011 by generateDS.py version 2.1a.
 #
 
+from __future__ import print_function
 import sys
 import getopt
 from string import lower as str_lower
@@ -78,7 +79,7 @@ def parsexml_(*args, **kwargs):
 
 try:
     from generatedssuper import GeneratedsSuper
-except ImportError, exp:
+except ImportError as exp:
 
     class GeneratedsSuper(object):
         def format_string(self, input_data, input_name=''):
@@ -2401,7 +2402,7 @@ class Time(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.Error = fval_
 # end class Time
@@ -2581,7 +2582,7 @@ class Position2D(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.Error2Radius = fval_
 # end class Position2D
@@ -2771,14 +2772,14 @@ class Value2(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.C1 = fval_
         elif nodeName_ == 'C2':
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.C2 = fval_
 # end class Value2
@@ -2865,21 +2866,21 @@ class Value3(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.C1 = fval_
         elif nodeName_ == 'C2':
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.C2 = fval_
         elif nodeName_ == 'C3':
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.C3 = fval_
 # end class Value3
@@ -3251,7 +3252,7 @@ class Why(GeneratedsSuper):
         if value is not None:
             try:
                 self.importance = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (importance): %s' % exp)
         value = attrs.get('expires')
         if value is not None:
@@ -3710,7 +3711,7 @@ Usage: python <Parser>.py [ -s ] <in_xml_file>
 """
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 

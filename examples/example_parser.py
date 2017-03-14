@@ -1,4 +1,5 @@
 """ Parse input args and broadcast VOEvents """
+from __future__ import print_function
 
 import sys
 import argparse
@@ -107,20 +108,20 @@ def validate_ip(ipaddr, protocol):
     #check if ip is valid
         socket.inet_aton(ipaddr)
     except socket.error:
-        print "illegal ip '%s'" % ipaddr
+        print("illegal ip '%s'" % ipaddr)
         return False
     else:
     #check if multicast is assigned to right ip and vice versa
         ipbase = ipaddr[:3].split(".")[0]
         if (224 <= int(ipbase) <= 239):
             if protocol != "Multicast":
-                print "illegal protocol/ip pair for " \
-                "'%s' and '%s'" % (protocol, ipaddr)
+                print("illegal protocol/ip pair for " \
+                "'%s' and '%s'" % (protocol, ipaddr))
                 return False
         else:
             if protocol == "Multicast":
-                print "illegal protocol/ip pair for " \
-                "'%s' and '%s'" % (protocol, ipaddr)
+                print("illegal protocol/ip pair for " \
+                "'%s' and '%s'" % (protocol, ipaddr))
                 return False
         return True
 

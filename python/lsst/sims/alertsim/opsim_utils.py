@@ -1,4 +1,5 @@
 """ Query opsim """
+from __future__ import print_function
 
 #from lsst.sims.catUtils.baseCatalogModels import *
 import numpy as np
@@ -40,7 +41,7 @@ def opsim_query_stack8(opsim_path, objid, radius, opsim_night,
             constraint=constraint )
     result = query.exec_query.fetchall()
 
-    print result
+    print(result)
     return result
 
 def opsim_query_stack10(opsim_path, objid, radius, opsim_night, 

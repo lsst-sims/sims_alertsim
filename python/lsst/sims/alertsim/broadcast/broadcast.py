@@ -1,3 +1,4 @@
+from __future__ import print_function
 import socket
 import struct
 import sys
@@ -25,7 +26,7 @@ class Broadcast(object):
     def close(self):
         """ close socket """
         self.sock.close()
-        print >>sys.stderr, 'closing socket'
+        print('closing socket', file=sys.stderr)
 
     def close_and_exit(self):
         """ close socket and exit with code 1 (there was an issue) """
@@ -89,7 +90,7 @@ class TcpIp(Broadcast):
         """ Connects to a socket """
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((self.ip, self.port))
-        print "Connected to %s at port %d" % (self.ip, self.port)
+        print("Connected to %s at port %d" % (self.ip, self.port))
 
     def _send_and_receive(self, message):
         
@@ -101,7 +102,7 @@ class TcpIp(Broadcast):
         
         self.sock.send(self._add_voevent_header(message)) if self.header else self.sock.send(message)
         data = self.sock.recv(self.BUFFER_SIZE)
-        print "received data:", data
+        print("received data:", data)
 
 class Multicast(Broadcast):
 
@@ -130,21 +131,21 @@ class Multicast(Broadcast):
         try:
 
             # Send data to the multicast group
-            print >>sys.stderr, 'sending "%s"' % message
+            print('sending "%s"' % message, file=sys.stderr)
             sent = self.sock.sendto(message, multicast_group)
 
             # Look for responses from all recipients
             while True:
-                print >>sys.stderr, 'waiting to receive'
+                print('waiting to receive', file=sys.stderr)
                 try:
                     data, server = self.sock.recvfrom(16)
                 except socket.timeout:
-                    print >>sys.stderr, 'timed out, no more responses'
+                    print('timed out, no more responses', file=sys.stderr)
                     break
                 else:
-                    print >>sys.stderr, 'received "%s" from %s' % (data, server)
+                    print('received "%s" from %s' % (data, server), file=sys.stderr)
 
         finally:
-            print >>sys.stderr, 'closing socket'
+            print('closing socket', file=sys.stderr)
             self.close_and_exit()
 

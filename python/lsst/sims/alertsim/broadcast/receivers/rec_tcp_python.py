@@ -1,4 +1,5 @@
 from __future__ import with_statement
+from __future__ import print_function
 import sys
 import socket
 import subprocess
@@ -43,10 +44,10 @@ class TCPReceiver(object):
         s.bind((TCP_IP, TCP_PORT))
         s.listen(1)
 
-        print 'My address:', TCP_IP
+        print('My address:', TCP_IP)
 
         self._connection, addr = s.accept()
-        print 'Connection address:', addr
+        print('Connection address:', addr)
 
     def output_to_file(self, file_name):
         """
@@ -75,8 +76,8 @@ class TCPReceiver(object):
             header = data[0:4]
             if file_handle is not None:
                 file_handle.write(data)
-            print "header:", header
-            print "received data:", data[4:]
+            print("header:", header)
+            print("received data:", data[4:])
             self._connection.send(header)  # echo
 
 
