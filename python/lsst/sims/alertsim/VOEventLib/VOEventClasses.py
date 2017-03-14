@@ -1896,13 +1896,15 @@ class WhereWhen(DataRepBase, GeneratedsSuper):
 # end class WhereWhen
 
 
-class ObsDataLocation(GeneratedsSuper):
+class ObsDataLocation(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
     def __init__(self, ObservatoryLocation=None, ObservationLocation=None):
         self.ObservatoryLocation = ObservatoryLocation
         self.ObservationLocation = ObservationLocation
+        self.export_name = 'ObsDataLocation'
+
     def factory(*args_, **kwargs_):
         if ObsDataLocation.subclass:
             return ObsDataLocation.subclass(*args_, **kwargs_)
@@ -1913,17 +1915,7 @@ class ObsDataLocation(GeneratedsSuper):
     def set_ObservatoryLocation(self, ObservatoryLocation): self.ObservatoryLocation = ObservatoryLocation
     def get_ObservationLocation(self): return self.ObservationLocation
     def set_ObservationLocation(self, ObservationLocation): self.ObservationLocation = ObservationLocation
-    def export(self, outfile, level, namespace_='', name_='ObsDataLocation', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='ObsDataLocation')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='ObsDataLocation'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='ObsDataLocation'):
