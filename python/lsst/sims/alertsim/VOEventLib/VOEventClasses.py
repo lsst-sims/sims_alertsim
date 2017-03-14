@@ -2206,7 +2206,7 @@ class AstroCoords(DataRepBase, GeneratedsSuper):
 # end class AstroCoords
 
 
-class Time(GeneratedsSuper):
+class Time(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
@@ -2214,6 +2214,7 @@ class Time(GeneratedsSuper):
         self.unit = _cast(None, unit)
         self.TimeInstant = TimeInstant
         self.Error = Error
+        self.export_name = 'Time'
     def factory(*args_, **kwargs_):
         if Time.subclass:
             return Time.subclass(*args_, **kwargs_)
@@ -2226,17 +2227,7 @@ class Time(GeneratedsSuper):
     def set_Error(self, Error): self.Error = Error
     def get_unit(self): return self.unit
     def set_unit(self, unit): self.unit = unit
-    def export(self, outfile, level, namespace_='', name_='Time', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Time')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Time'):
         if self.unit is not None:
             outfile.write(' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'), ))
