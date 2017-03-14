@@ -285,7 +285,7 @@ class DataRepBase(object):
             name_ = self.export_name
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_=name_)
+        self.exportAttributes(outfile, level, namespace_, name_=self.export_name)
         if self.hasContent_():
             outfile.write('>\n')
             self.exportChildren(outfile, level + 1, namespace_, name_)
@@ -1498,7 +1498,7 @@ class Table(DataRepBase, GeneratedsSuper):
 # end class Table
 
 
-class Field(GeneratedsSuper):
+class Field(DataRepBase, GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, dataType='string', utype=None, ucd=None, name=None, unit=None, Description=None, Reference=None):
@@ -1515,6 +1515,7 @@ class Field(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+        self.export_name = 'Field'
     def factory(*args_, **kwargs_):
         if Field.subclass:
             return Field.subclass(*args_, **kwargs_)
@@ -1542,17 +1543,7 @@ class Field(GeneratedsSuper):
     def set_name(self, name): self.name = name
     def get_unit(self): return self.unit
     def set_unit(self, unit): self.unit = unit
-    def export(self, outfile, level, namespace_='', name_='Field', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Field')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Field'):
         if self.dataType is not None:
             outfile.write(' dataType=%s' % (quote_attrib(self.dataType), ))
