@@ -1002,7 +1002,7 @@ class What(DataRepBase, GeneratedsSuper):
 # end class What
 
 
-class Param(GeneratedsSuper):
+class Param(DataRepBase, GeneratedsSuper):
     """What/Param definition. A Param has name, value, ucd, unit, dataType;
     and may have Description and Reference."""
     subclass = None
@@ -1023,6 +1023,7 @@ class Param(GeneratedsSuper):
         else:
             self.Reference = Reference
         self.Value = Value
+        self.export_name = 'Param'
     def factory(*args_, **kwargs_):
         if Param.subclass:
             return Param.subclass(*args_, **kwargs_)
@@ -1054,17 +1055,7 @@ class Param(GeneratedsSuper):
     def set_ucd(self, ucd): self.ucd = ucd
     def get_unit(self): return self.unit
     def set_unit(self, unit): self.unit = unit
-    def export(self, outfile, level, namespace_='', name_='Param', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Param')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Param'):
         if self.name is not None:
             outfile.write(' name=%s' % (self.format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
