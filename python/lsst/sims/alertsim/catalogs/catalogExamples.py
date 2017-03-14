@@ -4,7 +4,7 @@ from lsst.sims.catalogs.definitions import InstanceCatalog
 from lsst.sims.catUtils.mixins import AstrometryStars, CameraCoords, PhotometryStars, Variability, VariabilityStars
 from lsst.sims.catUtils.baseCatalogModels import *
 from lsst.sims.catalogs.decorators import compound
-from lsst.sims.alertsim.catalogs import DiaSourceCommons
+from .diaSourceCommons import DiaSourceCommons
 
 __all__ = ["BasicVarStars", "DiaSourceVarStars", "VariabilityDummy",
            "VanillaStars"]
