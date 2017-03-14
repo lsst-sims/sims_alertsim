@@ -2450,7 +2450,7 @@ class Position2D(DataRepBase, GeneratedsSuper):
 # end class Position2D
 
 
-class Position3D(GeneratedsSuper):
+class Position3D(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
@@ -2460,6 +2460,7 @@ class Position3D(GeneratedsSuper):
         self.Name2 = Name2
         self.Name3 = Name3
         self.Value3 = Value3
+        self.export_name = 'Position3D'
     def factory(*args_, **kwargs_):
         if Position3D.subclass:
             return Position3D.subclass(*args_, **kwargs_)
@@ -2476,17 +2477,7 @@ class Position3D(GeneratedsSuper):
     def set_Value3(self, Value3): self.Value3 = Value3
     def get_unit(self): return self.unit
     def set_unit(self, unit): self.unit = unit
-    def export(self, outfile, level, namespace_='', name_='Position3D', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Position3D')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Position3D'):
         if self.unit is not None:
             outfile.write(' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'), ))
