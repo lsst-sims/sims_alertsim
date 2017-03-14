@@ -3088,7 +3088,7 @@ class Why(DataRepBase, GeneratedsSuper):
 # end class Why
 
 
-class Inference(GeneratedsSuper):
+class Inference(DataRepBase, GeneratedsSuper):
     """Why/Inference: A container for a more nuanced expression, including
     relationships and probability."""
     subclass = None
@@ -3112,6 +3112,8 @@ class Inference(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+        self.export_name = 'Inference'
+
     def factory(*args_, **kwargs_):
         if Inference.subclass:
             return Inference.subclass(*args_, **kwargs_)
@@ -3141,17 +3143,7 @@ class Inference(GeneratedsSuper):
     def validate_smallFloat(self, value):
         # Validate type smallFloat, a restriction on xs:float.
         pass
-    def export(self, outfile, level, namespace_='', name_='Inference', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Inference')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Inference'):
         if self.relation is not None:
             outfile.write(' relation=%s' % (self.format_string(quote_attrib(self.relation).encode(ExternalEncoding), input_name='relation'), ))
