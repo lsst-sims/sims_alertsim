@@ -72,13 +72,14 @@ class TCPReceiver(object):
         in the constructor
         """
         while 1:
-            data = self._connection.recv(self.BUFFER_SIZE)
+            data_bytes = self._connection.recv(self.BUFFER_SIZE)
+            data = data_bytes[4:].decode('ascii')
             if not data: break
-            header = data[0:4]
+            header = data_bytes[0:4]
             if file_handle is not None:
                 file_handle.write(data)
             print("header:", header)
-            print("received data:", data[4:])
+            print("received data:", data)
             self._connection.send(header)  # echo
 
 

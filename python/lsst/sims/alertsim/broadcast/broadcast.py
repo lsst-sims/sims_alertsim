@@ -103,8 +103,13 @@ class TcpIp(Broadcast):
         @param [in] message is an xml VOEvent document
         
         """
-        
-        self.sock.send(self._add_voevent_header(message)) if self.header else self.sock.send(message)
+
+        if self.header is not None:
+            to_send = self._add_voevent_header(message).encode()
+        else:
+            to_send = message.encode()
+
+        self.sock.send(to_send)
         data = self.sock.recv(self.BUFFER_SIZE)
         print("received data:", data)
 
