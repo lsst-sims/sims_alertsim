@@ -1,5 +1,6 @@
 from __future__ import print_function
 from builtins import object
+import codecs
 import socket
 import struct
 import sys
@@ -39,9 +40,10 @@ class Broadcast(object):
 
     #@staticmethod
     def _add_voevent_header(self, message):
-        """ add 4 byte hex header at the beginning of the message """
+        """ add 4 byte hex header at the beginning of the message;
+            Returns a bytes object."""
         header = '%08x' % (len(message))
-        return header.decode('hex') + message
+        return codecs.decode(header, encoding='hex') + message.encode()
 
 class TcpIp(Broadcast):
 
@@ -105,7 +107,7 @@ class TcpIp(Broadcast):
         """
 
         if self.header is not None:
-            to_send = self._add_voevent_header(message).encode()
+            to_send = self._add_voevent_header(message)
         else:
             to_send = message.encode()
 
