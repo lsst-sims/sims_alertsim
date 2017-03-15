@@ -24,6 +24,8 @@ def setup_module(module):
 
 class AlertSimEndToEndTest(unittest.TestCase):
 
+    longMessage = True
+
     @classmethod
     def setUpClass(cls):
         cls.scratch_dir = os.path.join(getPackageDir('sims_alertsim'),
@@ -166,7 +168,7 @@ class AlertSimEndToEndTest(unittest.TestCase):
         voevent_list = read_and_divide(self.voev_filename)
 
         ucds = ["pos.eq.ra", "pos.eq.dec", "phot.mag"]
-        voevent_data_tuples = parse_parameters(ucds, voevent_list)
+        voevent_data_dicts = parse_parameters(ucds, voevent_list)
 
         dtype = np.dtype([('mjd', float), ('ra', float), ('dec', float),
                           ('mag', float)])
@@ -174,15 +176,16 @@ class AlertSimEndToEndTest(unittest.TestCase):
 
         # check that the number of voevents matches
         # the number of rows in our test column
-        self.assertEqual(len(control_data), len(voevent_data_tuples),
+        self.assertEqual(len(control_data), len(voevent_data_dicts),
                          msg=('%d catalog entries; %d voevents'
-                              % (len(control_data), len(voevent_data_tuples))))
+                              % (len(control_data), len(voevent_data_dicts))))
 
         # loop over voevents, verifying that each one agrees with
         # the contents of the catalog
         tol = 1.0e-4
-        for event in voevent_data_tuples:
-            date = Time(event[4].replace(' ','T'), scale='tai', format='isot')
+        ct_tested = 0
+        for event in voevent_data_dicts:
+            date = Time(event['isoTime'].replace(' ','T'), scale='tai', format='isot')
             tai = date.tai.mjd
 
             # find all of the catalog entries with the same
@@ -192,17 +195,29 @@ class AlertSimEndToEndTest(unittest.TestCase):
 
             # from those catalog entries with the same mjd,
             # find the one with the same ra, dec
-            dist = haversine(float(event[0]),
-                             float(event[1]),
+            dist = haversine(float(event['raJ2000']),
+                             float(event['decJ2000']),
                              np.radians(correct_date['ra']),
                              np.radians(correct_date['dec']))
             ix = np.argmin(dist)
             catobj = correct_date[ix]
 
+            ct_tested += 1
             self.assertLess(np.abs(tai-catobj['mjd']), tol)
-            self.assertLess(np.abs(np.degrees(float(event[0]))-catobj['ra']), tol)
-            self.assertLess(np.abs(np.degrees(float(event[1]))-catobj['dec']), tol)
-            self.assertLess(np.abs(float(event[2])-catobj['mag']), tol)
+            self.assertLess(np.abs(np.degrees(float(event['raJ2000']))-catobj['ra']), tol,
+                            msg='test: %.5e\ncontrol: %.5e' % (np.degrees(float(event['raJ2000'])), catobj['ra']))
+            self.assertLess(np.abs(np.degrees(float(event['decJ2000']))-catobj['dec']), tol,
+                            msg='test: %.5e\ncontrol: %.5e' % (np.degrees(float(event['decJ2000'])), catobj['dec']))
+
+            for key in event:
+                if key.startswith('lsst_'):
+                    mag_name = key
+                    break
+
+            self.assertLess(np.abs(float(event[mag_name])-catobj['mag']), tol,
+                            msg='test: %.5e\ncontrol: %.5e' % (float(event[mag_name]), catobj['mag']))
+
+        self.assertGreater(ct_tested, 0)
 
         del db
         if os.path.exists(cat_name):
