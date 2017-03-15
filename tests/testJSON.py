@@ -124,6 +124,7 @@ class JsonTestCase(unittest.TestCase):
         non_random_cols = ['midPointTai', 'filterName', 'ccdVisitId', 'diaSourceId',
                            'radec', 'xy', 'totFlux', 'snr']
 
+        unique_chipnum = []
         for ix, obs in enumerate(obs_list):
             cat = DiaSourceVarStars(self.db, obs_metadata=obs, column_outputs=['chipNum', 'chipName'])
             cat._seed = 44
@@ -134,7 +135,6 @@ class JsonTestCase(unittest.TestCase):
             for col in non_random_cols:
                 self.assertIn(col, cat._column_outputs)
 
-            unique_chipnum = []
             comparisons = 0
             for source in cat.iter_catalog():
                 chipNum = source[chipNumDex]
@@ -160,7 +160,7 @@ class JsonTestCase(unittest.TestCase):
                                 self.assertEqual(val, control[col], msg=msg)
 
             self.assertGreater(comparisons, 0)
-            self.assertGreater(unique_chipnum, 1)
+        self.assertGreater(len(unique_chipnum), 1)
 
         for file_name in list_of_json_files:
             full_name = os.path.join(json_dir, file_name)
