@@ -91,7 +91,7 @@ except ImportError as exp:
 
     class GeneratedsSuper(object):
         def format_string(self, input_data, input_name=''):
-            return input_data
+            return input_data.decode(encoding='ascii')
         def format_integer(self, input_data, input_name=''):
             return '%d' % input_data
         def format_float(self, input_data, input_name=''):
