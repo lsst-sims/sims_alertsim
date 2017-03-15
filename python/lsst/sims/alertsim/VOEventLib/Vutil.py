@@ -7,7 +7,7 @@ import sys
 from . import VOEventClasses
 
 if sys.version_info.major == 2:
-    import StringIO
+    from StringIO import StringIO
 else:
     from io import StringIO
 
