@@ -1,3 +1,4 @@
+from builtins import object
 import sys, os
 
 from lsst.sims.alertsim.VOEventLib import (VOEvent, Who, Author, Citations,
@@ -6,7 +7,7 @@ from lsst.sims.alertsim.VOEventLib import (VOEvent, Who, Author, Citations,
 
 from astropy.time import Time as AstropyTime
 
-class VOEventGenerator:
+class VOEventGenerator(object):
 
     """ A class for generating VOEvent documents.
     Uses VOEventLib by Roy Williams

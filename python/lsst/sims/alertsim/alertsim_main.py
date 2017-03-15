@@ -2,6 +2,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+from builtins import zip
 import subprocess
 import sys
 import time
@@ -271,7 +272,7 @@ def _remove_band_attrs(obj, bandname):
 
 
     # this may not be the safest way and needs to be revised
-    for key in obj.__dict__.keys():
+    for key in list(obj.__dict__.keys()):
         if ('lsst' in key) and not (key.endswith(bandname)):
             obj.__dict__.pop(key)
 

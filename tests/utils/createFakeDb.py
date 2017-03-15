@@ -1,4 +1,5 @@
 from __future__ import with_statement
+from builtins import zip
 import numpy as np
 import os
 import json

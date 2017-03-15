@@ -33,7 +33,7 @@ class LocalStarDB(CatalogDBObject):
                ('galacticAv', 'ebv*3.1'),
                ('radialVelocity', 'vrad'),
                ('variabilityParameters', 'varParamStr', str, 256),
-               ('sedFilename', 'sedfilename', unicode, 40)]
+               ('sedFilename', 'sedfilename', str, 40)]
 
 
 class AlertSimCatalogTestCase(unittest.TestCase):

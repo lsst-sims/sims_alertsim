@@ -1,4 +1,5 @@
 from __future__ import with_statement
+from builtins import zip
 import unittest
 import json
 import os
@@ -31,7 +32,7 @@ class LocalStarDB(CatalogDBObject):
                ('galacticAv', 'ebv*3.1'),
                ('radialVelocity', 'vrad'),
                ('variabilityParameters', 'varParamStr', str, 256),
-               ('sedFilename', 'sedfilename', unicode, 40)]
+               ('sedFilename', 'sedfilename', str, 40)]
 
 
 def setup_module(module):

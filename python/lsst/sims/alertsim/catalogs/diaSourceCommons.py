@@ -551,7 +551,7 @@ class DiaSourceCommons(CameraCoords):
     #    return self._decapitalize_column_name('htmID')
 
     def _decapitalize_column_name(self, colname):
-        if colname in  self.db_obj.columnMap.keys():
+        if colname in  self.db_obj.columnMap:
             return self.column_by_name(colname)
         else:
             return self.column_by_name(colname.lower())

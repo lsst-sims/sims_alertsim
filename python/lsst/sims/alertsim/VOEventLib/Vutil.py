@@ -1,6 +1,15 @@
 from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
 import sys
 from . import VOEventClasses
+
+if sys.version_info.major == 2:
+    import StringIO
+else:
+    from io import StringIO
 
 __all__ = ["makeWhereWhen", "stringVOEvent"]
 
@@ -30,10 +39,6 @@ class VOEventExportClass(VOEventClasses.VOEvent):
         else:
             outfile.write('/>\n')
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
 
 def stringVOEvent(event, schemaURL = "http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd"):
     '''
@@ -99,7 +104,6 @@ def parseString(inString):
     '''
     Parses a string and builds the VOEvent DOM.
     '''
-    from StringIO import StringIO
     doc = VOEventClasses.parsexml_(StringIO(inString))
     rootNode = doc.getroot()
     rootTag, rootClass = VOEventClasses.get_root_tag(rootNode)

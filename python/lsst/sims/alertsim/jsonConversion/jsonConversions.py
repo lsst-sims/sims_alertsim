@@ -1,4 +1,5 @@
 from __future__ import with_statement
+from builtins import zip
 import json
 import os
 
@@ -25,7 +26,7 @@ def jsonFromCatalog(obs_list, cat_class, db, json_dir):
         obshistid = obs.OpsimMetaData['obsHistID']
         for data in cat.iter_catalog():
             source = dict(zip(cat._column_outputs, data))
-            chipNum = source['ccdVisitId']/10000000
+            chipNum = source['ccdVisitId']//10000000
             if chipNum>0:
                 tag = '%d_%d' % (chipNum, obshistid)
                 if tag not in source_dict:

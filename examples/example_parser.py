@@ -1,6 +1,7 @@
 """ Parse input args and broadcast VOEvents """
 from __future__ import print_function
 
+from builtins import map
 import sys
 import argparse
 import socket
@@ -17,7 +18,7 @@ def _number_or_tuple(s, stype):
 
     """
 
-    a = map(stype, s.split(','))
+    a = list(map(stype, s.split(',')))
 
     if len(a)<1 or len(a)>2:
         raise argparse.ArgumentTypeError("Please run --help")

@@ -2,6 +2,7 @@
 from __future__ import print_function
 
 #from lsst.sims.catUtils.baseCatalogModels import *
+from builtins import range
 import numpy as np
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
