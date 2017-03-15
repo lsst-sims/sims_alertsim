@@ -73,9 +73,9 @@ class TCPReceiver(object):
         """
         while 1:
             data_bytes = self._connection.recv(self.BUFFER_SIZE)
-            data = data_bytes[4:].decode('ascii')
+            data = data_bytes[8:].decode('ascii')
             if not data: break
-            header = data_bytes[0:4]
+            header = data_bytes[0:8]
             if file_handle is not None:
                 file_handle.write(data)
             print("header:", header)

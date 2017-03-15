@@ -43,7 +43,9 @@ class Broadcast(object):
         """ add 4 byte hex header at the beginning of the message;
             Returns a bytes object."""
         header = '%08x' % (len(message))
-        return codecs.decode(header, encoding='hex') + message.encode()
+
+        return (header+message).encode()
+
 
 class TcpIp(Broadcast):
 
