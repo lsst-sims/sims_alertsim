@@ -1,3 +1,4 @@
+from __future__ import print_function
 import sys
 import socket
 import subprocess
@@ -37,18 +38,18 @@ def main(port):
     s.bind((TCP_IP, TCP_PORT))
     s.listen(1)
 
-    print 'My address:', TCP_IP
+    print('My address:', TCP_IP)
 
     conn, addr = s.accept()
-    print 'Connection address:', addr
+    print('Connection address:', addr)
     f = open("VOEvents.txt", 'w')
     while 1:
         data = conn.recv(BUFFER_SIZE)
         if not data: break
         header = data[0:4]
         f.write(data)
-        print "header:", header
-        print "received data:", data[4:]
+        print("header:", header)
+        print("received data:", data[4:])
         conn.send(header)  # echo
     f.close()
     conn.close()

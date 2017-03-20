@@ -2,7 +2,6 @@
 import numpy as np
 from collections import OrderedDict
 from lsst.sims.catalogs.definitions import InstanceCatalog
-from lsst.sims.catUtils.baseCatalogModels import *
 from lsst.sims.catalogs.decorators import compound
 
 """

@@ -2,6 +2,8 @@
 Data model class definitions
 '''
 
+from builtins import zip
+from builtins import object
 class CelestialObject(object):
 
     """ A class used to dynamically generate attributes 

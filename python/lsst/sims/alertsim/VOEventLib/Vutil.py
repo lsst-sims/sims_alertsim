@@ -1,14 +1,25 @@
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import str
+from builtins import range
 import sys
-import VOEvent
+from . import VOEventClasses
 
+if sys.version_info.major == 2:
+    from StringIO import StringIO
+else:
+    from io import StringIO
 
-class VOEventExportClass(VOEvent.VOEvent):
+__all__ = ["makeWhereWhen", "stringVOEvent"]
+
+class VOEventExportClass(VOEventClasses.VOEvent):
     def __init__(self, event, schemaURL):
         self.event = event
         self.schemaURL = schemaURL
 
     def export(self, outfile, level, namespace_='', name_='VOEvent', namespacedef_=''):
-        VOEvent.showIndent(outfile, level)
+        VOEventClasses.showIndent(outfile, level)
         added_stuff = 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" \n'
         added_stuff += 'xmlns:voe="http://www.ivoa.net/xml/VOEvent/v2.0" \n'
         added_stuff += 'xsi:schemaLocation="http://www.ivoa.net/xml/VOEvent/v2.0 %s"\n' % self.schemaURL
@@ -23,15 +34,11 @@ class VOEventExportClass(VOEvent.VOEvent):
             outfile.write('>\n')
 #            self.event.exportChildren(outfile, level + 1, namespace_='', name_)
             self.event.exportChildren(outfile, level + 1, '', name_)
-            VOEvent.showIndent(outfile, level)
+            VOEventClasses.showIndent(outfile, level)
             outfile.write('</%s%s>\n' % (namespace_, name_))
         else:
             outfile.write('/>\n')
 
-try:
-    from cStringIO import StringIO
-except ImportError:
-    from StringIO import StringIO
 
 def stringVOEvent(event, schemaURL = "http://www.ivoa.net/xml/VOEvent/VOEvent-v2.0.xsd"):
     '''
@@ -86,9 +93,9 @@ def parse(file):
     '''
     Parses a file and builds the VOEvent DOM.
     '''
-    doc = VOEvent.parsexml_(file)
+    doc = VOEventClasses.parsexml_(file)
     rootNode = doc.getroot()
-    rootTag, rootClass = VOEvent.get_root_tag(rootNode)
+    rootTag, rootClass = VOEventClasses.get_root_tag(rootNode)
     v = rootClass.factory()
     v.build(rootNode)
     return v
@@ -97,10 +104,9 @@ def parseString(inString):
     '''
     Parses a string and builds the VOEvent DOM.
     '''
-    from StringIO import StringIO
-    doc = VOEvent.parsexml_(StringIO(inString))
+    doc = VOEventClasses.parsexml_(StringIO(inString))
     rootNode = doc.getroot()
-    rootTag, rootClass = VOEvent.get_root_tag(rootNode)
+    rootTag, rootClass = VOEventClasses.get_root_tag(rootNode)
     rootObj = rootClass.factory()
     rootObj.build(rootNode)
     return rootObj
@@ -151,7 +157,7 @@ def getWhereWhen(v):
 def makeWhereWhen(wwd):
     '''
     Expects a dictionary of the information in the WhereWhen section, and makes a 
-    VOEvent.WhereWhen object suitable for set_WhereWhen().
+    VOEventClasses.WhereWhen object suitable for set_WhereWhen().
     observatory: location of observatory (string);
     coord_system: coordinate system ID, for example UTC-FK5-GEO;
     time: ISO8601 representation of time, for example 1918-11-11T11:11:11;
@@ -161,38 +167,38 @@ def makeWhereWhen(wwd):
     positionalError: positional error in degrees.
     '''
 
-    if not wwd.has_key('observatory'):     wwd['observatory'] = 'unknown'
-    if not wwd.has_key('coord_system'):    wwd['coord_system'] = 'UTC-FK5-GEO'
-    if not wwd.has_key('timeError'):       wwd['timeError'] = 0.0
-    if not wwd.has_key('positionalError'): wwd['positionalError'] = 0.0
+    if 'observatory' not in wwd:     wwd['observatory'] = 'unknown'
+    if 'coord_system' not in wwd:    wwd['coord_system'] = 'UTC-FK5-GEO'
+    if 'timeError' not in wwd:       wwd['timeError'] = 0.0
+    if 'positionalError' not in wwd: wwd['positionalError'] = 0.0
 
-    if not wwd.has_key('time'): 
-        print "Cannot make WhereWhen without time"
+    if 'time' not in wwd: 
+        print("Cannot make WhereWhen without time")
         return None
-    if not wwd.has_key('longitude'):
-        print "Cannot make WhereWhen without longitude"
+    if 'longitude' not in wwd:
+        print("Cannot make WhereWhen without longitude")
         return None
-    if not wwd.has_key('latitude'):
-        print "Cannot make WhereWhen without latitude"
+    if 'latitude' not in wwd:
+        print("Cannot make WhereWhen without latitude")
         return None
 
-    ac = VOEvent.AstroCoords(coord_system_id=wwd['coord_system'])
+    ac = VOEventClasses.AstroCoords(coord_system_id=wwd['coord_system'])
 
     ac.set_Time(
-        VOEvent.Time(
-            TimeInstant = VOEvent.TimeInstant(wwd['time'])))
+        VOEventClasses.Time(
+            TimeInstant = VOEventClasses.TimeInstant(wwd['time'])))
 
     ac.set_Position2D(
-        VOEvent.Position2D(
-            Value2 = VOEvent.Value2(wwd['longitude'], wwd['latitude']),
+        VOEventClasses.Position2D(
+            Value2 = VOEventClasses.Value2(wwd['longitude'], wwd['latitude']),
             Error2Radius = wwd['positionalError']))
 
-    acs = VOEvent.AstroCoordSystem(id=wwd['coord_system'])
+    acs = VOEventClasses.AstroCoordSystem(id=wwd['coord_system'])
 
-    onl = VOEvent.ObservationLocation(acs, ac)
-    oyl = VOEvent.ObservatoryLocation(id=wwd['observatory'])
-    odl = VOEvent.ObsDataLocation(oyl, onl)
-    ww = VOEvent.WhereWhen()
+    onl = VOEventClasses.ObservationLocation(acs, ac)
+    oyl = VOEventClasses.ObservatoryLocation(id=wwd['observatory'])
+    odl = VOEventClasses.ObsDataLocation(oyl, onl)
+    ww = VOEventClasses.WhereWhen()
     ww.set_ObsDataLocation(odl)
     return ww
 
@@ -218,7 +224,7 @@ def findParam(event, groupName, paramName):
     '''
     w = event.get_What()
     if not w:
-        print "No <What> section in the event!"
+        print("No <What> section in the event!")
         return None
     if groupName == '':
         for p in event.get_What().get_Param():
@@ -230,11 +236,11 @@ def findParam(event, groupName, paramName):
                 for p in event.get_What().get_Param():
                     if p.get_name() == paramName:
                         return p
-    print 'Cannot find param named %s/%s' % (groupName, paramName)
+    print('Cannot find param named %s/%s' % (groupName, paramName))
     return None
 
 ######## utilityTable ########################
-class utilityTable(VOEvent.Table):
+class utilityTable(VOEventClasses.Table):
     '''
     Class to represent a simple Table from VOEvent
     '''
@@ -258,11 +264,11 @@ class utilityTable(VOEvent.Table):
         '''
         From a table template, replaces the Data section with nrows of empty TR and TD
         '''
-        data = VOEvent.Data()
+        data = VOEventClasses.Data()
         ncol = len(self.colNames)
 
         for i in range(nrows):
-            tr = VOEvent.TR()
+            tr = VOEventClasses.TR()
             for col in range(ncol):
                 tr.add_TD(self.default[col])
             data.add_TR(tr)
@@ -308,7 +314,7 @@ class utilityTable(VOEvent.Table):
         if name in self.colNames:
             icol = self.colNames.index(name)
         else:
-            print>>out, "setTable: Unknown column name %s. Known list is %s" % (name, str(self.colNames))
+            print("setTable: Unknown column name %s. Known list is %s" % (name, str(self.colNames)), file=out)
             return False
 
         d = self.table.get_Data()
@@ -316,7 +322,7 @@ class utilityTable(VOEvent.Table):
         nrows = len(d.get_TR())
 
         if nrows <= irow:
-            print>>out, "setTable: not enough rows -- you want %d, table has %d. Use blankTable to allocate the table." % (irow+1, nrows)
+            print("setTable: not enough rows -- you want %d, table has %d. Use blankTable to allocate the table." % (irow+1, nrows), file=out)
             return False
 
         tr = d.get_TR()[irow]
