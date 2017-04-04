@@ -8,6 +8,7 @@ import functools
 import catsim_utils, opsim_utils, avro_utils
 import numpy as np
 from copy import deepcopy
+from lsst.sims.photUtils import Sed  # for converting magnitudes into fluxes
 from lsst.sims.alertsim.dataModel import DataMetadata, CelestialObject
 from lsst.sims.alertsim.generateVOEvent import VOEventGenerator
 from lsst.sims.alertsim.broadcast import *
@@ -197,8 +198,53 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field, history, sess
 
         for line in obs_data.iter_catalog():
 
+
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
-            print diaSource_dict
+            
+            diaSource_list = []
+
+            uniqueId = diaSource_dict['diaObjectId']
+
+            lc = lc_dict[uniqueId]
+
+            ss = Sed()
+
+            for filterName, nestedDict in lc.iteritems():
+                for i, mjd in enumerate(nestedDict['mjd']):
+
+                    # copy diaSource values and adjust filter, mjd, mag, error
+                    temp_dict = diaSource_dict
+
+                    totMag = nestedDict['mag'][i]
+                    meanMag = temp_dict['lsst_%s' % filterName]-temp_dict['delta_lsst_%s' % filterName]
+                    
+                    totFlux = ss.fluxFromMag(totMag)
+                    meanFlux = ss.fluxFromMag(meanMag)
+                    diaFlux = totFlux - meanFlux
+
+                    # error is not handled yet!!
+                    error = nestedDict['error'][i]
+
+                    # remove mags and deltas from other filters
+                    list_of_keys = []
+                    otherFilters = BANDNAMES
+                    otherFilters.remove(filterName)
+
+                    for name in otherFilters:
+                        list_of_keys.append('lsst_%s' % name)
+                        list_of_keys.append('delta_lsst_%s' % name)
+                    
+                    for key in list_of_keys:
+                        temp_dict.pop(key)
+
+                    temp_dict['filterName'] = filterName
+                    temp_dict['lsst_%s' % filterName] = mag
+                    temp_dict['delta_lsst_%s' % filterName] = mag - base_mag
+                    temp_dict['mjd'] = mjd + 17/86400
+                    temp_dict[''] = mjd + 17/86400
+                    
+
+            #print diaSource_dict
             diaSource_history = []
             alert_dict = {'alertId':45135, 'l1dbId':12545, 
                 'diaSource':diaSource_dict, 'prv_diaSources':[diaSource_dict]*len(observations_field)}

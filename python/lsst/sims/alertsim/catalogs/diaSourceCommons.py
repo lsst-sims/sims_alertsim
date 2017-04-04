@@ -1,10 +1,9 @@
 """ DiaSourceCommons """
 import numpy as np
-import re
 from random_utils import array_to_dict
+from dia_transformations import *
 from lsst.sims.catalogs.decorators import cached, compound
 from lsst.sims.catUtils.mixins import CameraCoords
-from lsst.sims.photUtils import Sed  # for converting magnitudes into fluxes
 from lsst.obs.lsstSim import LsstSimMapper
 from lsst.sims.catUtils.baseCatalogModels import *
 
@@ -250,13 +249,9 @@ class DiaSourceCommons(CameraCoords):
 
     def get_midPointTai(self):
         """
-        Return mid point of exposure by taking OpSim start-of-exposure time
-        and adding 17 seconds (15 seconds for first exposure; 1 second for
-        shutter close; one second for shutter open).  Ignore the fact that,
-        as DPDD states, midpoint will vary for different objects based on
-        their position relative to the shutter motion.
+        Return mid point of exposure 
         """
-        return np.array([self.obs_metadata.mjd.TAI+17.0/86400.0]*len(self.column_by_name('uniqueId')))
+        return np.array([midPointTai(self.obs_metadata.mjd.TAI)]*len(self.column_by_name('uniqueId')))
 
     def get_filterName(self):
         return np.array([self.obs_metadata.bandpass]*len(self.column_by_name('uniqueId')))
@@ -266,27 +261,13 @@ class DiaSourceCommons(CameraCoords):
         """
         Concatenate the digits in 'R:i,j S:m,n' to make the chip number ijmn
         """
-        chip_name = self.column_by_name('chipName')
-        """
-        for idx, val in enumerate(chip_name):
-            if val is None: chip_name[idx] = '0'
-            
-        chip_arr = np.array([int(''.join(re.findall(r'\d+', name))) for name in chip_name])
-        return chip_arr
-        """
-        return np.array([int(''.join(re.findall(r'\d+', name))) if name is not None else 0
-                         for name in chip_name])
+        return chipNum(self.column_by_name('chipName'))
 
     def get_ccdVisitId(self):
         """
-        Previous solution:
-        Return chipNum*10^7 + obsHistID (obsHistID should never be more than 3 million)
-        This was no good as 0220 was same as 2200
-        Now:
-        Return obsHistID*10^4 + chipNum
+        Concatenate ObsHistID and chipNum
         """
-
-        return self.obs_metadata.OpsimMetaData['obsHistID']*10000+self.column_by_name('chipNum')
+        return ccdVisitId(self.obs_metadata.OpsimMetaData['obsHistID'], self.column_by_name('chipNum'))
 
     def get_diaSourceId(self):
         """
@@ -352,18 +333,14 @@ class DiaSourceCommons(CameraCoords):
         """
         The total flux of the variable source
         """
-        ss = Sed()
-        tot_mag = self.column_by_name('totMag')
-        return ss.fluxFromMag(tot_mag)
+        return fluxFromMag(self.column_by_name('totMag'))
 
     @cached
     def get_meanFlux(self):
         """
         The mean (quiescent) flux of the variable source
         """
-        ss = Sed()
-        mean_mag = self.column_by_name('meanMag')
-        return ss.fluxFromMag(mean_mag)
+        return fluxFromMag(self.column_by_name('meanMag'))
 
 
     @cached
