@@ -273,11 +273,8 @@ class DiaSourceCommons(CameraCoords):
         """
         A unique identifier for each DIASource (this needs to be unique for
         each apparition of a given object)
-
-        Take uniqueID, multiply by 10^7 and add obsHistID from self.obs_metadata
-        (obsHistID should only go up to about 3 million)
         """
-        return self.column_by_name('uniqueId')*10000000+self.obs_metadata.OpsimMetaData['obsHistID']
+        return diaSourceId(self.column_by_name('uniqueId'), self.obs_metadata.OpsimMetaData['obsHistID'])
 
     def get_ra(self):
         """
@@ -361,28 +358,19 @@ class DiaSourceCommons(CameraCoords):
     def get_fluxError(self):
         """
         The error in our measurement of the difference image flux.
-
-        Note, we have assumed that
-
-        magnitude_error = 2.5*log10(1 + 1/SNR)
-
-        to get from magnitude errors to SNR
         """
         mean_mag_error = self.column_by_name('sigma_meanMag')
         tot_mag_error = self.column_by_name('sigma_totMag')
-        mean_snr = 1.0/(np.power(10.0, 0.4*mean_mag_error) - 1.0)
-        tot_snr = 1.0/(np.power(10.0, 0.4*tot_mag_error) - 1.0)
-        tot_flux_err = self.column_by_name('totFlux')/tot_snr
-        mean_flux_err = self.column_by_name('meanFlux')/mean_snr
-        return np.array([np.sqrt(tot_flux_err*tot_flux_err + mean_flux_err*mean_flux_err),
-                         tot_flux_err, mean_flux_err])
+        mean_flux = self.column_by_name('meanFlux')
+        tot_flux = self.column_by_name('totFlux')
+        return fluxError(mean_mag_error, tot_mag_error, mean_flux, tot_flux)
 
     @cached
     def get_snr(self):
         """
-        Get the SNR by dividing flux by uncertainty
+        Get the SNR
         """
-        return self.column_by_name('diaFlux')/self.column_by_name('diaFluxError')
+        return snr(self.column_by_name('diaFlux'), self.column_by_name('diaFluxError'))
 
     def get_psFlux(self):
         """
@@ -403,57 +391,15 @@ class DiaSourceCommons(CameraCoords):
     def get_apFlux(self):
         """
         apMeanSb01 will be the true flux of the source.
-
-        All others will be apMeanSb01 multiplied by 1.0 + epsilon,
-        since CatSim does not contain methods to calculate different
-        types of flux.
         """
-        true_flux = self.column_by_name('diaFlux')
-        vals = np.array([true_flux,
-                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
-                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
-                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
-                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
-                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
-                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
-                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
-                         true_flux*(1.0+0.0001*self.randomFloats(-1)),
-                         true_flux*(1.0+0.0001*self.randomFloats(-1))]).T
-
-        cols = ['apMeanSb01', 'apMeanSb02', 'apMeanSb03', 
-                 'apMeanSb04', 'apMeanSb05', 'apMeanSb06', 
-                 'apMeanSb07', 'apMeanSb08', 'apMeanSb09', 
-                 'apMeanSb10']
-        return array_to_dict(cols, vals)
+        return apFlux(self.column_by_name('diaFlux'))
 
     def get_apFluxErr(self):
         """
         Calculate the true flux error by getting the magntidue error and assuming that
-
         magnitude_error = 2.5*log10(1 + 1/SNR)
-
-        apMeanSb01Sigma will be the true flux error.  Everything else will be true flux error
-        multiplied by 1+epsilon because CatSim does not have methods to calculate different types
-        of fluxes.
         """
-        true_fluxError = self.column_by_name('diaFluxError')
-
-        vals = np.array([true_fluxError,
-                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
-                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
-                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
-                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
-                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
-                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
-                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
-                         true_fluxError*(1.0+0.0001*self.randomFloats(-1)),
-                         true_fluxError*(1.0+0.0001*self.randomFloats(-1))]).T
-
-        cols = ['apMeanSb01Err', 'apMeanSb02Err', 'apMeanSb03Err', 
-                 'apMeanSb04Err', 'apMeanSb05Err', 'apMeanSb06Err', 
-                 'apMeanSb07Err', 'apMeanSb08Err', 'apMeanSb09Err', 
-                 'apMeanSb10Err']
-        return array_to_dict(cols, vals)
+        return apFluxErr(self.column_by_name('diaFluxError'))
     
 
     def get_psRa(self):
