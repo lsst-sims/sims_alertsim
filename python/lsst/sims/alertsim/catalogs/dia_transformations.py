@@ -1,15 +1,16 @@
+""" dia_transformations """
+from lsst.sims.photUtils import Sed  # for converting magnitudes into fluxes
+from random_utils import array_to_dict
+import numpy as np
+import re
+import random
+
 """
 A module which groups methods for transformation of catsim values 
 to diaSource attributes as stated in DPDD.
 These methods needed to be separated from catalog classes 
 because ad-hoc usage is required.
 """
-
-from lsst.sims.photUtils import Sed  # for converting magnitudes into fluxes
-from random_utils import array_to_dict
-import numpy as np
-import re
-import random
 
 def midPointTai(tai):
     """
@@ -116,6 +117,7 @@ def apFlux(diaFlux):
              'apMeanSb04', 'apMeanSb05', 'apMeanSb06', 
              'apMeanSb07', 'apMeanSb08', 'apMeanSb09', 
              'apMeanSb10']
+    
     return array_to_dict(cols, vals)
 
 def apFluxErr(diaFluxError):
@@ -145,4 +147,5 @@ def apFluxErr(diaFluxError):
              'apMeanSb04Err', 'apMeanSb05Err', 'apMeanSb06Err', 
              'apMeanSb07Err', 'apMeanSb08Err', 'apMeanSb09Err', 
              'apMeanSb10Err']
+    
     return array_to_dict(cols, vals)
