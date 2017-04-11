@@ -52,12 +52,15 @@ def array_to_dict(cols, vals):
     # and return a single dict or a list
     # of dicts accordingly
 
-    if any(isinstance(i, list) for i in vals): 
+    if (vals.ndim > 1):
         list_of_dicts = []
         for val in vals:
             single_dict = dict(zip(cols, val))
             list_of_dicts.append(single_dict)
+
         return list_of_dicts
+
     else:
         single_dict = dict(zip(cols, vals))
+
         return single_dict
