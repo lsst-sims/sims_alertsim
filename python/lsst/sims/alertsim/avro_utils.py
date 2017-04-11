@@ -1,3 +1,4 @@
+from __future__ import print_function
 try:
     import avro.schema
     from avro.datafile import DataFileReader, DataFileWriter
@@ -48,7 +49,7 @@ def catsim_to_avro(list_of_alert_dicts, session_dir, schemaURI='avsc/diasource.a
         file_obj = open("json_output/"+session_dir+"/"+chipNum, 'a')
 
         json_qd = json.loads(json.dumps(alert_dict))
-        json.dump(json_qd, file_obj)
+        print json_qd
 
         writer.append(json_qd)
         file_obj.close()

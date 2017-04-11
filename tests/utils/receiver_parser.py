@@ -41,23 +41,24 @@ def read_and_divide(uri):
 def parse_parameters(ucds, voevent_list):
 
     """
-    Returns a list which contains tuples of values for each ucd
+    Returns a list which contains dicts of values for each ucd
     that was matched in the VOEvent
     """
 
-    data_tuples = []
+    data_list = []
     for voevent in voevent_list:
-        data_tuple = []
+        data_dict = {}
         root = ET.fromstring(voevent)
         for ucd in ucds:
             #XPATH expression for matching given ucd
             lines = root.findall("What//Param[@ucd='%s']" % (ucd,))
             for line in lines:
                 value = line.attrib["value"]
-                data_tuple.append(value)
+                name = line.attrib["name"]
+                data_dict[name] = value
             #XPATH expression for matching ISOTime
             isoTime = root.findtext("*//ISOTime")
-        data_tuple.append(isoTime)
-        data_tuples.append(data_tuple)
+            data_dict['isoTime'] = root.findtext("*//ISOTime")
+        data_list.append(data_dict)
 
-    return data_tuples
+    return data_list

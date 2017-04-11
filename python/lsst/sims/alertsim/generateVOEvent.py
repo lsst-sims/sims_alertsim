@@ -1,8 +1,11 @@
-import sys, os
-from lsst.sims.alertsim.VOEventLib import *
+from builtins import object
+from lsst.sims.alertsim.VOEventLib import (VOEvent, Who, Author, Citations,
+                                           EventIVORN, What, Group, Param,
+                                           makeWhereWhen, stringVOEvent)
+
 from astropy.time import Time as AstropyTime
 
-class VOEventGenerator:
+class VOEventGenerator(object):
 
     """ A class for generating VOEvent documents.
     Uses VOEventLib by Roy Williams
@@ -20,7 +23,7 @@ class VOEventGenerator:
 
     def _initVOEvent(self, description, role, eventid):
         ############ VOEvent header ############################
-        self.voevent = VOEvent.VOEvent(version=self.voevent_version)
+        self.voevent = VOEvent(version=self.voevent_version)
         self.voevent.set_ivorn("ivo://servo.aob.rs/alertsim#%s" % eventid)
         self.voevent.set_role(role)
         self.voevent.set_Description(description)

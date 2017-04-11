@@ -1,12 +1,12 @@
 """ Main module """
+from __future__ import print_function
+from __future__ import absolute_import
 
-import subprocess
+from builtins import zip
 import os
-import sys
 import time
 import functools
-import catsim_utils, opsim_utils, avro_utils
-import numpy as np
+from . import catsim_utils, opsim_utils, avro_utils
 from copy import deepcopy
 from lsst.sims.alertsim.dataModel import DataMetadata, CelestialObject
 from lsst.sims.alertsim.generateVOEvent import VOEventGenerator
@@ -71,7 +71,7 @@ def main(opsim_table=None, catsim_table='allstars',
     """
 
 
-    print "fetching opsim results..."
+    print("fetching opsim results...")
 
 
     """ matrix of all observations per field up to current mjd """
@@ -80,14 +80,7 @@ def main(opsim_table=None, catsim_table='allstars',
             opsim_night=opsim_night, opsim_filter=opsim_filter, 
             opsim_mjd=opsim_mjd, history=history)
 
-    """
-    from itertools import islice
-    iterator = islice(obs_history, 100, 130)
-    for item in iterator:
-        print item
-    """
-
-    print "opsim result fetched and transformed to ObservationMetaData objects"
+    print("opsim result fetched and transformed to ObservationMetaData objects")
 
     if not serialize_json:
 
@@ -146,7 +139,7 @@ def get_sender(protocol, ipaddr, port, header):
     @param [out] is object of the broadcast child class
     
     """
-    return vars(broadcast)[protocol](ipaddr, port, header)
+    return vars(broadcast.broadcast)[protocol](ipaddr, port, header)
 
 def iter_and_serialize(obs_data, obs_metadata, observations_field, history, session_dir):
 
@@ -301,8 +294,8 @@ def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
                 data_metadata)
 
         if (cel_obj_all_mags.varParamStr.value == 'None'):
-            print "You should declare varParamStr not like " \
-                  "'None' in catsim constraint"
+            print("You should declare varParamStr not like " \
+                  "'None' in catsim constraint")
             exit(1)
 
         cel_obj = deepcopy(cel_obj_all_mags)
@@ -346,7 +339,7 @@ def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
         # generate and send
         gen = VOEventGenerator(eventid = event_count)
         xml = gen.generateFromObjects(cel_objects, obs_metadata)
-        #print xml
+        print(xml)
         sender.send(xml)
         event_count += 1
         sending_times.append(time.time())
@@ -354,11 +347,11 @@ def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
     # add exception for index out of range
     try:
         sending_diff = sending_times[-1] - sending_times[0]
-        print "Number of events from this visit : %d. Time from first to last " \
+        print("Number of events from this visit : %d. Time from first to last " \
             "event %f or %f per event" % (event_count, sending_diff,
-                    sending_diff/event_count)
+                    sending_diff/event_count))
     except IndexError:
-        print "No events in this visit"
+        print("No events in this visit")
 
 
 def _remove_band_attrs(obj, bandname):
@@ -372,7 +365,7 @@ def _remove_band_attrs(obj, bandname):
 
 
     # this may not be the safest way and needs to be revised
-    for key in obj.__dict__.keys():
+    for key in list(obj.__dict__.keys()):
         if ('lsst' in key) and not (key.endswith(bandname)):
             obj.__dict__.pop(key)
 

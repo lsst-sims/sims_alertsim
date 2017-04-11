@@ -1,8 +1,9 @@
 """ Query opsim """
+from __future__ import print_function
 
 #from lsst.sims.catUtils.baseCatalogModels import *
+from builtins import range
 import numpy as np
-from lsst.sims.utils import ObservationMetaData
 from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
 
 def opsim_query(stack_version, **kwargs):
@@ -40,7 +41,7 @@ def opsim_query_stack8(opsim_path, objid, radius, opsim_night,
             constraint=constraint )
     result = query.exec_query.fetchall()
 
-    print result
+    print(result)
     return result
 
 def opsim_query_stack10(opsim_path, objid, radius, opsim_night, 
@@ -59,12 +60,12 @@ def opsim_query_stack10(opsim_path, objid, radius, opsim_night,
     Returns a list of ObservationMetaData
     """
 
-    import lsst.sims.maf.db as db
+    import lsst.sims.catalogs.db as db
 
     if not opsim_path:
         """ access to fatboy """
         raise NotImplementedError("Not yet sure how to do the OpSim queries from fatboy")
-        table = db.Table(tableName=objid, idColKey='obshistid', database='LSSTCATSIM', 
+        table = db.CatalogDBObject(table=objid, idColKey='obshistid', database='LSSTCATSIM',
                 driver='mssql+pymssql', host='localhost', port='51433' )
     else:
         """ local access """

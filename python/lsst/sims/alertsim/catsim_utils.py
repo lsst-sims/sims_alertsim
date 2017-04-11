@@ -58,7 +58,6 @@ def catsim_query_stack10 (objid, constraint, obs_metadata, dia):
     """
 
     from lsst.sims.catalogs.db import CatalogDBObject
-    from lsst.sims.catalogs import *
     
     dbobj = CatalogDBObject.from_objid(objid)
 

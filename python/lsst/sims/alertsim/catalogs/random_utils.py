@@ -1,4 +1,5 @@
 """ Random utils """
+from builtins import zip
 import numpy as np
 
 """ Common utilities for catalog classes.

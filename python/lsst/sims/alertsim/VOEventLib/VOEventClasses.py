@@ -4,16 +4,33 @@
 # Generated Fri Mar  4 13:10:52 2011 by generateDS.py version 2.1a.
 #
 
+from __future__ import print_function
+from future import standard_library
+standard_library.install_aliases()
+from builtins import range
+from past.builtins import basestring
+from builtins import object
 import sys
-import getopt
-from string import lower as str_lower
 import re as re_
+
+if sys.version_info.major == 2:
+    from StringIO import StringIO
+else:
+    from io import StringIO
+
+__all__ = ["VOEvent", "Who", "What", "Author", "Citations",
+           "EventIVORN", "Group", "Param", "showIndent",
+           "parsexml_", "get_root_tag", "AstroCoords", "Time",
+           "TimeInstant", "Position2D", "Value2",
+           "AstroCoordSystem", "ObservationLocation",
+           "ObservatoryLocation", "ObsDataLocation",
+           "WhereWhen", "Table", "Data", "TR"]
 
 etree_ = None
 Verbose_import_ = False
 (   XMLParser_import_none, XMLParser_import_lxml,
     XMLParser_import_elementtree
-    ) = range(3)
+    ) = list(range(3))
 XMLParser_import_library = None
 try:
     # lxml
@@ -70,11 +87,11 @@ def parsexml_(*args, **kwargs):
 
 try:
     from generatedssuper import GeneratedsSuper
-except ImportError, exp:
+except ImportError as exp:
 
     class GeneratedsSuper(object):
         def format_string(self, input_data, input_name=''):
-            return input_data
+            return input_data.decode(encoding='ascii')
         def format_integer(self, input_data, input_name=''):
             return '%d' % input_data
         def format_float(self, input_data, input_name=''):
@@ -176,7 +193,7 @@ def raise_parse_error(node, msg):
     raise GDSParseError(msg)
 
 
-class MixedContainer:
+class MixedContainer(object):
     # Constants for category:
     CategoryNone = 0
     CategoryText = 1
@@ -269,7 +286,23 @@ def _cast(typ, value):
 # Data representation classes.
 #
 
-class VOEvent(GeneratedsSuper):
+class DataRepBase(object):
+
+    def export(self, outfile, level, namespace_='', name_=None, namespacedef_=''):
+        if name_ is None:
+            name_ = self.export_name
+        showIndent(outfile, level)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        self.exportAttributes(outfile, level, namespace_, name_=self.export_name)
+        if self.hasContent_():
+            outfile.write('>\n')
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            showIndent(outfile, level)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
+
+class VOEvent(DataRepBase, GeneratedsSuper):
     """VOEvent is the root element for describing observations of immediate
     astronomical events. For more information, see
     http://www.ivoa.net/twiki/bin/view/IVOA/IvoaVOEvent. The event
@@ -289,6 +322,7 @@ class VOEvent(GeneratedsSuper):
         self.Citations = Citations
         self.Description = Description
         self.Reference = Reference
+        self.export_name = 'VOEvent'
     def factory(*args_, **kwargs_):
         if VOEvent.subclass:
             return VOEvent.subclass(*args_, **kwargs_)
@@ -320,17 +354,7 @@ class VOEvent(GeneratedsSuper):
         pass
     def get_ivorn(self): return self.ivorn
     def set_ivorn(self, ivorn): self.ivorn = ivorn
-    def export(self, outfile, level, namespace_='', name_='VOEvent', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='VOEvent')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='VOEvent'):
         outfile.write(' version=%s' % (self.format_string(quote_attrib(self.version).encode(ExternalEncoding), input_name='version'), ))
         if self.role is not None:
@@ -481,7 +505,7 @@ class VOEvent(GeneratedsSuper):
 # end class VOEvent
 
 
-class Who(GeneratedsSuper):
+class Who(DataRepBase, GeneratedsSuper):
     """Who: Curation Metadata"""
     subclass = None
     superclass = None
@@ -491,6 +515,7 @@ class Who(GeneratedsSuper):
         self.Description = Description
         self.Reference = Reference
         self.Author = Author
+        self.export_name = 'Who'
     def factory(*args_, **kwargs_):
         if Who.subclass:
             return Who.subclass(*args_, **kwargs_)
@@ -507,17 +532,7 @@ class Who(GeneratedsSuper):
     def set_Reference(self, Reference): self.Reference = Reference
     def get_Author(self): return self.Author
     def set_Author(self, Author): self.Author = Author
-    def export(self, outfile, level, namespace_='', name_='Who', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Who')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Who'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='Who'):
@@ -602,7 +617,7 @@ class Who(GeneratedsSuper):
 # end class Who
 
 
-class Author(GeneratedsSuper):
+class Author(DataRepBase, GeneratedsSuper):
     """Author information follows the IVOA curation information schema: the
     organization responsible for the packet can have a title, short
     name or acronym, and a logo. A contact person has a name, email,
@@ -638,6 +653,9 @@ class Author(GeneratedsSuper):
             self.contributor = []
         else:
             self.contributor = contributor
+
+        self.export_name = 'Author'
+
     def factory(*args_, **kwargs_):
         if Author.subclass:
             return Author.subclass(*args_, **kwargs_)
@@ -672,17 +690,7 @@ class Author(GeneratedsSuper):
     def set_contributor(self, contributor): self.contributor = contributor
     def add_contributor(self, value): self.contributor.append(value)
     def insert_contributor(self, index, value): self.contributor[index] = value
-    def export(self, outfile, level, namespace_='', name_='Author', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Author')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Author'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='Author'):
@@ -823,7 +831,7 @@ class Author(GeneratedsSuper):
 # end class Author
 
 
-class What(GeneratedsSuper):
+class What(DataRepBase, GeneratedsSuper):
     """What: Event Characterization. This is the part of the data model
     that is chosen by the Authoer of the event rather than the IVOA.
     There can be Params, that may be in Groups, and Tables, and
@@ -852,6 +860,9 @@ class What(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+
+        self.export_name = 'What'
+
     def factory(*args_, **kwargs_):
         if What.subclass:
             return What.subclass(*args_, **kwargs_)
@@ -878,17 +889,7 @@ class What(GeneratedsSuper):
     def set_Reference(self, Reference): self.Reference = Reference
     def add_Reference(self, value): self.Reference.append(value)
     def insert_Reference(self, index, value): self.Reference[index] = value
-    def export(self, outfile, level, namespace_='', name_='What', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='What')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='What'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='What'):
@@ -1009,7 +1010,7 @@ class What(GeneratedsSuper):
 # end class What
 
 
-class Param(GeneratedsSuper):
+class Param(DataRepBase, GeneratedsSuper):
     """What/Param definition. A Param has name, value, ucd, unit, dataType;
     and may have Description and Reference."""
     subclass = None
@@ -1030,6 +1031,7 @@ class Param(GeneratedsSuper):
         else:
             self.Reference = Reference
         self.Value = Value
+        self.export_name = 'Param'
     def factory(*args_, **kwargs_):
         if Param.subclass:
             return Param.subclass(*args_, **kwargs_)
@@ -1061,17 +1063,7 @@ class Param(GeneratedsSuper):
     def set_ucd(self, ucd): self.ucd = ucd
     def get_unit(self): return self.unit
     def set_unit(self, unit): self.unit = unit
-    def export(self, outfile, level, namespace_='', name_='Param', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Param')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Param'):
         if self.name is not None:
             outfile.write(' name=%s' % (self.format_string(quote_attrib(self.name).encode(ExternalEncoding), input_name='name'), ))
@@ -1191,7 +1183,7 @@ class Param(GeneratedsSuper):
 # end class Param
 
 
-class Group(GeneratedsSuper):
+class Group(DataRepBase, GeneratedsSuper):
     """What/Group definition: A group is a collection of Params, with name
     and type attributes."""
     subclass = None
@@ -1211,6 +1203,8 @@ class Group(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+        self.export_name = 'Group'
+
     def factory(*args_, **kwargs_):
         if Group.subclass:
             return Group.subclass(*args_, **kwargs_)
@@ -1233,17 +1227,7 @@ class Group(GeneratedsSuper):
     def set_type(self, type_): self.type_ = type_
     def get_name(self): return self.name
     def set_name(self, name): self.name = name
-    def export(self, outfile, level, namespace_='', name_='Group', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Group')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Group'):
         if self.type_ is not None:
             outfile.write(' type=%s' % (self.format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
@@ -1339,7 +1323,7 @@ class Group(GeneratedsSuper):
 # end class Group
 
 
-class Table(GeneratedsSuper):
+class Table(DataRepBase, GeneratedsSuper):
     """What/Table definition. This small Table has Fields for the column
     definitions, and Data to hold the table data, with TR for row
     and TD for value of a table cell."""
@@ -1365,6 +1349,7 @@ class Table(GeneratedsSuper):
         else:
             self.Field = Field
         self.Data = Data
+        self.export_name = 'Table'
     def factory(*args_, **kwargs_):
         if Table.subclass:
             return Table.subclass(*args_, **kwargs_)
@@ -1393,17 +1378,7 @@ class Table(GeneratedsSuper):
     def set_type(self, type_): self.type_ = type_
     def get_name(self): return self.name
     def set_name(self, name): self.name = name
-    def export(self, outfile, level, namespace_='', name_='Table', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Table')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Table'):
         if self.type_ is not None:
             outfile.write(' type=%s' % (self.format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
@@ -1531,7 +1506,7 @@ class Table(GeneratedsSuper):
 # end class Table
 
 
-class Field(GeneratedsSuper):
+class Field(DataRepBase, GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, dataType='string', utype=None, ucd=None, name=None, unit=None, Description=None, Reference=None):
@@ -1548,6 +1523,7 @@ class Field(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+        self.export_name = 'Field'
     def factory(*args_, **kwargs_):
         if Field.subclass:
             return Field.subclass(*args_, **kwargs_)
@@ -1575,17 +1551,7 @@ class Field(GeneratedsSuper):
     def set_name(self, name): self.name = name
     def get_unit(self): return self.unit
     def set_unit(self, unit): self.unit = unit
-    def export(self, outfile, level, namespace_='', name_='Field', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Field')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Field'):
         if self.dataType is not None:
             outfile.write(' dataType=%s' % (quote_attrib(self.dataType), ))
@@ -1687,7 +1653,7 @@ class Field(GeneratedsSuper):
 # end class Field
 
 
-class Data(GeneratedsSuper):
+class Data(DataRepBase, GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, TR=None):
@@ -1695,6 +1661,8 @@ class Data(GeneratedsSuper):
             self.TR = []
         else:
             self.TR = TR
+        self.export_name = 'Data'
+
     def factory(*args_, **kwargs_):
         if Data.subclass:
             return Data.subclass(*args_, **kwargs_)
@@ -1705,17 +1673,7 @@ class Data(GeneratedsSuper):
     def set_TR(self, TR): self.TR = TR
     def add_TR(self, value): self.TR.append(value)
     def insert_TR(self, index, value): self.TR[index] = value
-    def export(self, outfile, level, namespace_='', name_='Data', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Data')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Data'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='Data'):
@@ -1763,7 +1721,7 @@ class Data(GeneratedsSuper):
 # end class Data
 
 
-class TR(GeneratedsSuper):
+class TR(DataRepBase, GeneratedsSuper):
     subclass = None
     superclass = None
     def __init__(self, TD=None):
@@ -1771,6 +1729,7 @@ class TR(GeneratedsSuper):
             self.TD = []
         else:
             self.TD = TD
+        self.export_name = 'TR'
     def factory(*args_, **kwargs_):
         if TR.subclass:
             return TR.subclass(*args_, **kwargs_)
@@ -1781,17 +1740,7 @@ class TR(GeneratedsSuper):
     def set_TD(self, TD): self.TD = TD
     def add_TD(self, value): self.TD.append(value)
     def insert_TD(self, index, value): self.TD[index] = value
-    def export(self, outfile, level, namespace_='', name_='TR', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='TR')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='TR'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='TR'):
@@ -1836,7 +1785,7 @@ class TR(GeneratedsSuper):
 # end class TR
 
 
-class WhereWhen(GeneratedsSuper):
+class WhereWhen(DataRepBase, GeneratedsSuper):
     """WhereWhen: Space-Time Coordinates. Lots and lots of elements here,
     but the import is that each event has these: observatory,
     coord_system, time, timeError, longitude, latitude, posError."""
@@ -1853,6 +1802,8 @@ class WhereWhen(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+        self.export_name = 'WhereWhen'
+
     def factory(*args_, **kwargs_):
         if WhereWhen.subclass:
             return WhereWhen.subclass(*args_, **kwargs_)
@@ -1871,17 +1822,7 @@ class WhereWhen(GeneratedsSuper):
     def insert_Reference(self, index, value): self.Reference[index] = value
     def get_id(self): return self.id
     def set_id(self, id): self.id = id
-    def export(self, outfile, level, namespace_='', name_='WhereWhen', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='WhereWhen')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='WhereWhen'):
         if self.id is not None:
             outfile.write(' id=%s' % (self.format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
@@ -1963,13 +1904,15 @@ class WhereWhen(GeneratedsSuper):
 # end class WhereWhen
 
 
-class ObsDataLocation(GeneratedsSuper):
+class ObsDataLocation(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
     def __init__(self, ObservatoryLocation=None, ObservationLocation=None):
         self.ObservatoryLocation = ObservatoryLocation
         self.ObservationLocation = ObservationLocation
+        self.export_name = 'ObsDataLocation'
+
     def factory(*args_, **kwargs_):
         if ObsDataLocation.subclass:
             return ObsDataLocation.subclass(*args_, **kwargs_)
@@ -1980,17 +1923,7 @@ class ObsDataLocation(GeneratedsSuper):
     def set_ObservatoryLocation(self, ObservatoryLocation): self.ObservatoryLocation = ObservatoryLocation
     def get_ObservationLocation(self): return self.ObservationLocation
     def set_ObservationLocation(self, ObservationLocation): self.ObservationLocation = ObservationLocation
-    def export(self, outfile, level, namespace_='', name_='ObsDataLocation', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='ObsDataLocation')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='ObsDataLocation'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='ObsDataLocation'):
@@ -2045,13 +1978,14 @@ class ObsDataLocation(GeneratedsSuper):
 # end class ObsDataLocation
 
 
-class ObservationLocation(GeneratedsSuper):
+class ObservationLocation(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
     def __init__(self, AstroCoordSystem=None, AstroCoords=None):
         self.AstroCoordSystem = AstroCoordSystem
         self.AstroCoords = AstroCoords
+        self.export_name = 'ObservationLocation'
     def factory(*args_, **kwargs_):
         if ObservationLocation.subclass:
             return ObservationLocation.subclass(*args_, **kwargs_)
@@ -2062,17 +1996,7 @@ class ObservationLocation(GeneratedsSuper):
     def set_AstroCoordSystem(self, AstroCoordSystem): self.AstroCoordSystem = AstroCoordSystem
     def get_AstroCoords(self): return self.AstroCoords
     def set_AstroCoords(self, AstroCoords): self.AstroCoords = AstroCoords
-    def export(self, outfile, level, namespace_='', name_='ObservationLocation', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='ObservationLocation')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='ObservationLocation'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='ObservationLocation'):
@@ -2127,13 +2051,14 @@ class ObservationLocation(GeneratedsSuper):
 # end class ObservationLocation
 
 
-class AstroCoordSystem(GeneratedsSuper):
+class AstroCoordSystem(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
     def __init__(self, id=None, valueOf_=None):
         self.id = _cast(None, id)
         self.valueOf_ = valueOf_
+        self.export_name = 'AstroCoordSystem'
     def factory(*args_, **kwargs_):
         if AstroCoordSystem.subclass:
             return AstroCoordSystem.subclass(*args_, **kwargs_)
@@ -2147,17 +2072,7 @@ class AstroCoordSystem(GeneratedsSuper):
         pass
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='AstroCoordSystem', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='AstroCoordSystem')
-        if self.hasContent_():
-            outfile.write('>')
-            outfile.write(self.valueOf_)
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='AstroCoordSystem'):
         if self.id is not None:
             outfile.write(' id=%s' % (quote_attrib(self.id), ))
@@ -2198,7 +2113,7 @@ class AstroCoordSystem(GeneratedsSuper):
 # end class AstroCoordSystem
 
 
-class AstroCoords(GeneratedsSuper):
+class AstroCoords(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
@@ -2207,6 +2122,7 @@ class AstroCoords(GeneratedsSuper):
         self.Time = Time
         self.Position2D = Position2D
         self.Position3D = Position3D
+        self.export_name = 'AstroCoords'
     def factory(*args_, **kwargs_):
         if AstroCoords.subclass:
             return AstroCoords.subclass(*args_, **kwargs_)
@@ -2224,17 +2140,7 @@ class AstroCoords(GeneratedsSuper):
     def validate_idValues(self, value):
         # Validate type idValues, a restriction on xs:string.
         pass
-    def export(self, outfile, level, namespace_='', name_='AstroCoords', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='AstroCoords')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='AstroCoords'):
         if self.coord_system_id is not None:
             outfile.write(' coord_system_id=%s' % (quote_attrib(self.coord_system_id), ))
@@ -2308,7 +2214,7 @@ class AstroCoords(GeneratedsSuper):
 # end class AstroCoords
 
 
-class Time(GeneratedsSuper):
+class Time(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
@@ -2316,6 +2222,7 @@ class Time(GeneratedsSuper):
         self.unit = _cast(None, unit)
         self.TimeInstant = TimeInstant
         self.Error = Error
+        self.export_name = 'Time'
     def factory(*args_, **kwargs_):
         if Time.subclass:
             return Time.subclass(*args_, **kwargs_)
@@ -2328,17 +2235,7 @@ class Time(GeneratedsSuper):
     def set_Error(self, Error): self.Error = Error
     def get_unit(self): return self.unit
     def set_unit(self, unit): self.unit = unit
-    def export(self, outfile, level, namespace_='', name_='Time', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Time')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Time'):
         if self.unit is not None:
             outfile.write(' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'), ))
@@ -2393,18 +2290,19 @@ class Time(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.Error = fval_
 # end class Time
 
 
-class TimeInstant(GeneratedsSuper):
+class TimeInstant(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
     def __init__(self, ISOTime=None):
         self.ISOTime = ISOTime
+        self.export_name = 'TimeInstant'
     def factory(*args_, **kwargs_):
         if TimeInstant.subclass:
             return TimeInstant.subclass(*args_, **kwargs_)
@@ -2413,17 +2311,7 @@ class TimeInstant(GeneratedsSuper):
     factory = staticmethod(factory)
     def get_ISOTime(self): return self.ISOTime
     def set_ISOTime(self, ISOTime): self.ISOTime = ISOTime
-    def export(self, outfile, level, namespace_='', name_='TimeInstant', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='TimeInstant')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='TimeInstant'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='TimeInstant'):
@@ -2462,7 +2350,7 @@ class TimeInstant(GeneratedsSuper):
 # end class TimeInstant
 
 
-class Position2D(GeneratedsSuper):
+class Position2D(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
@@ -2472,6 +2360,7 @@ class Position2D(GeneratedsSuper):
         self.Name2 = Name2
         self.Value2 = Value2
         self.Error2Radius = Error2Radius
+        self.export_name = 'Position2D'
     def factory(*args_, **kwargs_):
         if Position2D.subclass:
             return Position2D.subclass(*args_, **kwargs_)
@@ -2488,17 +2377,7 @@ class Position2D(GeneratedsSuper):
     def set_Error2Radius(self, Error2Radius): self.Error2Radius = Error2Radius
     def get_unit(self): return self.unit
     def set_unit(self, unit): self.unit = unit
-    def export(self, outfile, level, namespace_='', name_='Position2D', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Position2D')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Position2D'):
         if self.unit is not None:
             outfile.write(' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'), ))
@@ -2573,13 +2452,13 @@ class Position2D(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.Error2Radius = fval_
 # end class Position2D
 
 
-class Position3D(GeneratedsSuper):
+class Position3D(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
@@ -2589,6 +2468,7 @@ class Position3D(GeneratedsSuper):
         self.Name2 = Name2
         self.Name3 = Name3
         self.Value3 = Value3
+        self.export_name = 'Position3D'
     def factory(*args_, **kwargs_):
         if Position3D.subclass:
             return Position3D.subclass(*args_, **kwargs_)
@@ -2605,17 +2485,7 @@ class Position3D(GeneratedsSuper):
     def set_Value3(self, Value3): self.Value3 = Value3
     def get_unit(self): return self.unit
     def set_unit(self, unit): self.unit = unit
-    def export(self, outfile, level, namespace_='', name_='Position3D', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Position3D')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Position3D'):
         if self.unit is not None:
             outfile.write(' unit=%s' % (self.format_string(quote_attrib(self.unit).encode(ExternalEncoding), input_name='unit'), ))
@@ -2692,13 +2562,14 @@ class Position3D(GeneratedsSuper):
 # end class Position3D
 
 
-class Value2(GeneratedsSuper):
+class Value2(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
     def __init__(self, C1=None, C2=None):
         self.C1 = C1
         self.C2 = C2
+        self.export_name = "Value2"
     def factory(*args_, **kwargs_):
         if Value2.subclass:
             return Value2.subclass(*args_, **kwargs_)
@@ -2709,17 +2580,7 @@ class Value2(GeneratedsSuper):
     def set_C1(self, C1): self.C1 = C1
     def get_C2(self): return self.C2
     def set_C2(self, C2): self.C2 = C2
-    def export(self, outfile, level, namespace_='', name_='Value2', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Value2')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Value2'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='Value2'):
@@ -2763,20 +2624,20 @@ class Value2(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.C1 = fval_
         elif nodeName_ == 'C2':
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.C2 = fval_
 # end class Value2
 
 
-class Value3(GeneratedsSuper):
+class Value3(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
@@ -2784,6 +2645,7 @@ class Value3(GeneratedsSuper):
         self.C1 = C1
         self.C2 = C2
         self.C3 = C3
+        self.export_name = 'Value3'
     def factory(*args_, **kwargs_):
         if Value3.subclass:
             return Value3.subclass(*args_, **kwargs_)
@@ -2796,17 +2658,7 @@ class Value3(GeneratedsSuper):
     def set_C2(self, C2): self.C2 = C2
     def get_C3(self): return self.C3
     def set_C3(self, C3): self.C3 = C3
-    def export(self, outfile, level, namespace_='', name_='Value3', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Value3')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Value3'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='Value3'):
@@ -2857,27 +2709,27 @@ class Value3(GeneratedsSuper):
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.C1 = fval_
         elif nodeName_ == 'C2':
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.C2 = fval_
         elif nodeName_ == 'C3':
             sval_ = child_.text
             try:
                 fval_ = float(sval_)
-            except (TypeError, ValueError), exp:
+            except (TypeError, ValueError) as exp:
                 raise_parse_error(child_, 'requires float or double: %s' % exp)
             self.C3 = fval_
 # end class Value3
 
 
-class ObservatoryLocation(GeneratedsSuper):
+class ObservatoryLocation(DataRepBase, GeneratedsSuper):
     """Part of WhereWhen"""
     subclass = None
     superclass = None
@@ -2885,6 +2737,7 @@ class ObservatoryLocation(GeneratedsSuper):
         self.id = _cast(None, id)
         self.AstroCoordSystem = AstroCoordSystem
         self.AstroCoords = AstroCoords
+        self.export_name = 'ObservatoryLocation'
     def factory(*args_, **kwargs_):
         if ObservatoryLocation.subclass:
             return ObservatoryLocation.subclass(*args_, **kwargs_)
@@ -2897,17 +2750,7 @@ class ObservatoryLocation(GeneratedsSuper):
     def set_AstroCoords(self, AstroCoords): self.AstroCoords = AstroCoords
     def get_id(self): return self.id
     def set_id(self, id): self.id = id
-    def export(self, outfile, level, namespace_='', name_='ObservatoryLocation', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='ObservatoryLocation')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='ObservatoryLocation'):
         if self.id is not None:
             outfile.write(' id=%s' % (self.format_string(quote_attrib(self.id).encode(ExternalEncoding), input_name='id'), ))
@@ -2967,7 +2810,7 @@ class ObservatoryLocation(GeneratedsSuper):
 # end class ObservatoryLocation
 
 
-class How(GeneratedsSuper):
+class How(DataRepBase, GeneratedsSuper):
     """How: Instrument Configuration. Built with some Description and
     Reference elements."""
     subclass = None
@@ -2981,6 +2824,8 @@ class How(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+        self.export_name = 'How'
+
     def factory(*args_, **kwargs_):
         if How.subclass:
             return How.subclass(*args_, **kwargs_)
@@ -2995,17 +2840,7 @@ class How(GeneratedsSuper):
     def set_Reference(self, Reference): self.Reference = Reference
     def add_Reference(self, value): self.Reference.append(value)
     def insert_Reference(self, index, value): self.Reference[index] = value
-    def export(self, outfile, level, namespace_='', name_='How', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='How')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='How'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='How'):
@@ -3069,7 +2904,7 @@ class How(GeneratedsSuper):
 # end class How
 
 
-class Why(GeneratedsSuper):
+class Why(DataRepBase, GeneratedsSuper):
     """Why: Initial Scientific Assessment. Can make simple
     Concept/Name/Desc/Ref for the inference or use multiple
     Inference containers for more semantic sophistication."""
@@ -3098,6 +2933,8 @@ class Why(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+        self.export_name = 'Why'
+
     def factory(*args_, **kwargs_):
         if Why.subclass:
             return Why.subclass(*args_, **kwargs_)
@@ -3128,17 +2965,7 @@ class Why(GeneratedsSuper):
     def set_importance(self, importance): self.importance = importance
     def get_expires(self): return self.expires
     def set_expires(self, expires): self.expires = expires
-    def export(self, outfile, level, namespace_='', name_='Why', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Why')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Why'):
         if self.importance is not None:
             outfile.write(' importance="%s"' % self.format_float(self.importance, input_name='importance'))
@@ -3243,7 +3070,7 @@ class Why(GeneratedsSuper):
         if value is not None:
             try:
                 self.importance = float(value)
-            except ValueError, exp:
+            except ValueError as exp:
                 raise ValueError('Bad float/double attribute (importance): %s' % exp)
         value = attrs.get('expires')
         if value is not None:
@@ -3269,7 +3096,7 @@ class Why(GeneratedsSuper):
 # end class Why
 
 
-class Inference(GeneratedsSuper):
+class Inference(DataRepBase, GeneratedsSuper):
     """Why/Inference: A container for a more nuanced expression, including
     relationships and probability."""
     subclass = None
@@ -3293,6 +3120,8 @@ class Inference(GeneratedsSuper):
             self.Reference = []
         else:
             self.Reference = Reference
+        self.export_name = 'Inference'
+
     def factory(*args_, **kwargs_):
         if Inference.subclass:
             return Inference.subclass(*args_, **kwargs_)
@@ -3322,17 +3151,7 @@ class Inference(GeneratedsSuper):
     def validate_smallFloat(self, value):
         # Validate type smallFloat, a restriction on xs:float.
         pass
-    def export(self, outfile, level, namespace_='', name_='Inference', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Inference')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Inference'):
         if self.relation is not None:
             outfile.write(' relation=%s' % (self.format_string(quote_attrib(self.relation).encode(ExternalEncoding), input_name='relation'), ))
@@ -3442,7 +3261,7 @@ class Inference(GeneratedsSuper):
 # end class Inference
 
 
-class Citations(GeneratedsSuper):
+class Citations(DataRepBase, GeneratedsSuper):
     """Citations: Follow-up Observations. This section is a sequence of
     EventIVORN elements, each of which has the IVORN of a cited
     event."""
@@ -3454,6 +3273,8 @@ class Citations(GeneratedsSuper):
         else:
             self.EventIVORN = EventIVORN
         self.Description = Description
+        self.export_name = 'Citations'
+
     def factory(*args_, **kwargs_):
         if Citations.subclass:
             return Citations.subclass(*args_, **kwargs_)
@@ -3466,17 +3287,7 @@ class Citations(GeneratedsSuper):
     def insert_EventIVORN(self, index, value): self.EventIVORN[index] = value
     def get_Description(self): return self.Description
     def set_Description(self, Description): self.Description = Description
-    def export(self, outfile, level, namespace_='', name_='Citations', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Citations')
-        if self.hasContent_():
-            outfile.write('>\n')
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            showIndent(outfile, level)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Citations'):
         pass
     def exportChildren(self, outfile, level, namespace_='', name_='Citations'):
@@ -3534,7 +3345,7 @@ class Citations(GeneratedsSuper):
 # end class Citations
 
 
-class EventIVORN(GeneratedsSuper):
+class EventIVORN(DataRepBase, GeneratedsSuper):
     """Citations/EventIVORN. The value is the IVORN of the cited event, the
     'cite' attribute is the nature of that relationship, choosing
     from 'followup', 'supersedes', or 'retraction'."""
@@ -3543,6 +3354,7 @@ class EventIVORN(GeneratedsSuper):
     def __init__(self, cite=None, valueOf_=None):
         self.cite = _cast(None, cite)
         self.valueOf_ = valueOf_
+        self.export_name = 'EventIVORN'
     def factory(*args_, **kwargs_):
         if EventIVORN.subclass:
             return EventIVORN.subclass(*args_, **kwargs_)
@@ -3556,17 +3368,7 @@ class EventIVORN(GeneratedsSuper):
         pass
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='EventIVORN', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='EventIVORN')
-        if self.hasContent_():
-            outfile.write('>')
-            outfile.write(self.valueOf_)
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='EventIVORN'):
         if self.cite is not None:
             outfile.write(' cite=%s' % (quote_attrib(self.cite), ))
@@ -3607,7 +3409,7 @@ class EventIVORN(GeneratedsSuper):
 # end class EventIVORN
 
 
-class Reference(GeneratedsSuper):
+class Reference(DataRepBase, GeneratedsSuper):
     """Reference: External Content. The payload is the uri, and the 'type'
     describes the nature of the data under that uri. The Reference
     can also be named."""
@@ -3618,6 +3420,7 @@ class Reference(GeneratedsSuper):
         self.uri = _cast(None, uri)
         self.name = _cast(None, name)
         self.valueOf_ = valueOf_
+        self.export_name = 'Reference'
     def factory(*args_, **kwargs_):
         if Reference.subclass:
             return Reference.subclass(*args_, **kwargs_)
@@ -3632,17 +3435,7 @@ class Reference(GeneratedsSuper):
     def set_name(self, name): self.name = name
     def get_valueOf_(self): return self.valueOf_
     def set_valueOf_(self, valueOf_): self.valueOf_ = valueOf_
-    def export(self, outfile, level, namespace_='', name_='Reference', namespacedef_=''):
-        showIndent(outfile, level)
-        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
-        self.exportAttributes(outfile, level, namespace_, name_='Reference')
-        if self.hasContent_():
-            outfile.write('>')
-            outfile.write(self.valueOf_)
-            self.exportChildren(outfile, level + 1, namespace_, name_)
-            outfile.write('</%s%s>\n' % (namespace_, name_))
-        else:
-            outfile.write('/>\n')
+
     def exportAttributes(self, outfile, level, namespace_='', name_='Reference'):
         if self.type_ is not None:
             outfile.write(' type=%s' % (self.format_string(quote_attrib(self.type_).encode(ExternalEncoding), input_name='type'), ))
@@ -3702,7 +3495,7 @@ Usage: python <Parser>.py [ -s ] <in_xml_file>
 """
 
 def usage():
-    print USAGE_TEXT
+    print(USAGE_TEXT)
     sys.exit(1)
 
 
@@ -3727,7 +3520,6 @@ def parse(inFileName):
 
 
 def parseString(inString):
-    from StringIO import StringIO
     doc = parsexml_(StringIO(inString))
     rootNode = doc.getroot()
     rootTag, rootClass = get_root_tag(rootNode)

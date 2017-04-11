@@ -1,7 +1,6 @@
 setupRequired(sims_utils)
 setupRequired(sims_catalogs)
 setupRequired(sims_catUtils)
-setupRequired(sims_maf)
 setupRequired(python)
 setupRequired(pymssql)
 setupRequired(daf_persistence)

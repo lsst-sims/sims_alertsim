@@ -8,6 +8,7 @@ import numpy as np
 import lsst.utils.tests
 import lsst.sims.alertsim.alertsim_main as alertsim
 from lsst.utils import getPackageDir
+from lsst.sims.utils.CodeUtilities import sims_clean_up
 from lsst.sims.catalogs.db import CatalogDBObject
 from lsst.sims.catUtils.mixins import VariabilityStars, PhotometryStars
 from lsst.sims.catalogs.definitions import InstanceCatalog
@@ -22,6 +23,8 @@ def setup_module(module):
     lsst.utils.tests.init()
 
 class AlertSimEndToEndTest(unittest.TestCase):
+
+    longMessage = True
 
     @classmethod
     def setUpClass(cls):
@@ -44,6 +47,7 @@ class AlertSimEndToEndTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        sims_clean_up()
         if os.path.exists(cls.opsim_file_name):
             os.unlink(cls.opsim_file_name)
 
@@ -71,7 +75,8 @@ class AlertSimEndToEndTest(unittest.TestCase):
         time.sleep(5)
 
     def tearDown(self):
-        os.kill(self.receiver_process.pid, 3)
+        if self.receiver_process.poll() is None:
+            os.kill(self.receiver_process.pid, 3)
         if os.path.exists(self.voev_filename):
             os.unlink(self.voev_filename)
 
@@ -132,14 +137,26 @@ class AlertSimEndToEndTest(unittest.TestCase):
         #retreive local ipaddress
         local_ip_adress = "127.0.0.1"
 
-        #works on mac
-        if sys.platform == 'darwin':
-            local_ip_address = socket.gethostbyname(socket.gethostname())
-        else:
-        #works on linux, at least OpenSuSE
-            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-            s.connect(('8.8.8.8', 0))  # connecting to a UDP address doesn't send packets
-            local_ip_address = s.getsockname()[0]
+        # Make it pass on a plane
+        try:
+            if sys.platform == 'darwin':
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                s.connect(("lsst.org", 80))
+                local_ip_address = s.getsockname()[0]
+                s.close
+            else:
+            #works on linux, at least OpenSuSE
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                s.connect(('8.8.8.8', 0))  # connecting to a UDP address doesn't send packets
+                local_ip_address = s.getsockname()[0]
+        except:
+            return
+
+        # Verify that the receiver is running (on jenkins run-rebuild, it
+        # won't be, because of how the system is configured).  If the receiver
+        # is not running, just exit gracefully.
+        if self.receiver_process.poll() is not None:
+            return
 
         alertsim.main(opsim_table = "",
 	    catsim_table = "test_allstars",
@@ -151,7 +168,7 @@ class AlertSimEndToEndTest(unittest.TestCase):
         voevent_list = read_and_divide(self.voev_filename)
 
         ucds = ["pos.eq.ra", "pos.eq.dec", "phot.mag"]
-        voevent_data_tuples = parse_parameters(ucds, voevent_list)
+        voevent_data_dicts = parse_parameters(ucds, voevent_list)
 
         dtype = np.dtype([('mjd', float), ('ra', float), ('dec', float),
                           ('mag', float)])
@@ -159,15 +176,16 @@ class AlertSimEndToEndTest(unittest.TestCase):
 
         # check that the number of voevents matches
         # the number of rows in our test column
-        self.assertEqual(len(control_data), len(voevent_data_tuples),
+        self.assertEqual(len(control_data), len(voevent_data_dicts),
                          msg=('%d catalog entries; %d voevents'
-                              % (len(control_data), len(voevent_data_tuples))))
+                              % (len(control_data), len(voevent_data_dicts))))
 
         # loop over voevents, verifying that each one agrees with
         # the contents of the catalog
         tol = 1.0e-4
-        for event in voevent_data_tuples:
-            date = Time(event[4].replace(' ','T'), scale='tai', format='isot')
+        ct_tested = 0
+        for event in voevent_data_dicts:
+            date = Time(event['isoTime'].replace(' ','T'), scale='tai', format='isot')
             tai = date.tai.mjd
 
             # find all of the catalog entries with the same
@@ -177,17 +195,29 @@ class AlertSimEndToEndTest(unittest.TestCase):
 
             # from those catalog entries with the same mjd,
             # find the one with the same ra, dec
-            dist = haversine(float(event[0]),
-                             float(event[1]),
+            dist = haversine(float(event['raJ2000']),
+                             float(event['decJ2000']),
                              np.radians(correct_date['ra']),
                              np.radians(correct_date['dec']))
             ix = np.argmin(dist)
             catobj = correct_date[ix]
 
+            ct_tested += 1
             self.assertLess(np.abs(tai-catobj['mjd']), tol)
-            self.assertLess(np.abs(np.degrees(float(event[0]))-catobj['ra']), tol)
-            self.assertLess(np.abs(np.degrees(float(event[1]))-catobj['dec']), tol)
-            self.assertLess(np.abs(float(event[2])-catobj['mag']), tol)
+            self.assertLess(np.abs(np.degrees(float(event['raJ2000']))-catobj['ra']), tol,
+                            msg='test: %.5e\ncontrol: %.5e' % (np.degrees(float(event['raJ2000'])), catobj['ra']))
+            self.assertLess(np.abs(np.degrees(float(event['decJ2000']))-catobj['dec']), tol,
+                            msg='test: %.5e\ncontrol: %.5e' % (np.degrees(float(event['decJ2000'])), catobj['dec']))
+
+            for key in event:
+                if key.startswith('lsst_'):
+                    mag_name = key
+                    break
+
+            self.assertLess(np.abs(float(event[mag_name])-catobj['mag']), tol,
+                            msg='test: %.5e\ncontrol: %.5e' % (float(event[mag_name]), catobj['mag']))
+
+        self.assertGreater(ct_tested, 0)
 
         del db
         if os.path.exists(cat_name):

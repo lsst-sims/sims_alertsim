@@ -1,3 +1,4 @@
+from __future__ import print_function
 import socket
 import struct
 import sys
@@ -19,11 +20,11 @@ sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
 # Receive/respond loop
 while True:
-    print >>sys.stderr, '\nwaiting to receive message'
+    print('\nwaiting to receive message', file=sys.stderr)
     data, address = sock.recvfrom(10240)
 
-    print >>sys.stderr, 'received %s bytes from %s' % (len(data), address)
-    print >>sys.stderr, data
+    print('received %s bytes from %s' % (len(data), address), file=sys.stderr)
+    print(data, file=sys.stderr)
 
-    print >>sys.stderr, 'sending acknowledgement to', address
+    print('sending acknowledgement to', address, file=sys.stderr)
     sock.sendto('ack', address)

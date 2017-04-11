@@ -1,10 +1,12 @@
 from __future__ import with_statement
+from builtins import zip
 import unittest
 import json
 import os
 import numbers
 from lsst.utils import getPackageDir
 import lsst.utils.tests
+from lsst.sims.utils.CodeUtilities import sims_clean_up
 from utils import createFakeCatSimDB
 from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
 from lsst.sims.catalogs.db import CatalogDBObject
@@ -29,7 +31,7 @@ class LocalStarDB(CatalogDBObject):
                ('galacticAv', 'ebv*3.1'),
                ('radialVelocity', 'vrad'),
                ('variabilityParameters', 'varParamStr', str, 256),
-               ('sedFilename', 'sedfilename', unicode, 40)]
+               ('sedFilename', 'sedfilename', str, 40)]
 
 
 def setup_module(module):
@@ -72,6 +74,7 @@ class JsonTestCase(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
+        sims_clean_up()
         del cls.db
         del cls.gen
         if os.path.exists(cls.catsim_db_name):
@@ -120,6 +123,8 @@ class JsonTestCase(unittest.TestCase):
         non_random_cols = ['midPointTai', 'filterName', 'ccdVisitId', 'diaSourceId',
                            'radec', 'xy', 'totFlux', 'snr']
 
+        unique_chipnum = []
+        was_found = {}
         for ix, obs in enumerate(obs_list):
             cat = DiaSourceVarStars(self.db, obs_metadata=obs, column_outputs=['chipNum', 'chipName'])
             cat._seed = 44
@@ -130,7 +135,6 @@ class JsonTestCase(unittest.TestCase):
             for col in non_random_cols:
                 self.assertIn(col, cat._column_outputs)
 
-            unique_chipnum = []
             comparisons = 0
             for source in cat.iter_catalog():
                 chipNum = source[chipNumDex]
@@ -140,6 +144,13 @@ class JsonTestCase(unittest.TestCase):
                     if chipNum not in unique_chipnum:
                         unique_chipnum.append(chipNum)
                     control = dia_dict[chipNum][diaSourceId]
+                    if chipNum not in was_found:
+                        was_found[chipNum] = []
+
+                    # make sure we haven't already discovered this diasource
+                    self.assertNotIn(diaSourceId, was_found[chipNum])
+                    was_found[chipNum].append(diaSourceId)
+
                     for ix, (col, val) in enumerate(zip(cat._column_outputs, source)):
                         msg = 'failed on %s' % col
                         if col in non_random_cols:
@@ -156,7 +167,13 @@ class JsonTestCase(unittest.TestCase):
                                 self.assertEqual(val, control[col], msg=msg)
 
             self.assertGreater(comparisons, 0)
-            self.assertGreater(unique_chipnum, 1)
+        self.assertGreater(len(unique_chipnum), 1)
+
+        # verify that we found everything we were supposed to
+        for chipNum in dia_dict:
+            self.assertIn(chipNum, was_found)
+            for diaSourceId in dia_dict[chipNum]:
+                self.assertIn(diaSourceId, dia_dict[chipNum])
 
         for file_name in list_of_json_files:
             full_name = os.path.join(json_dir, file_name)
