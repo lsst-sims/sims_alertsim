@@ -8,7 +8,6 @@ import functools
 import catsim_utils, opsim_utils, avro_utils
 import numpy as np
 from copy import deepcopy
-from lsst.sims.photUtils import Sed  # for converting magnitudes into fluxes
 from lsst.sims.alertsim.dataModel import DataMetadata, CelestialObject
 from lsst.sims.alertsim.generateVOEvent import VOEventGenerator
 from lsst.sims.alertsim.broadcast import *
@@ -189,7 +188,7 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field, history, sess
             
         #print len(pointings)
         lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings)
-        print lc_dict
+        #print lc_dict
        
         print "observations_field len %d" %len(observations_field)
        
@@ -198,56 +197,66 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field, history, sess
 
         for line in obs_data.iter_catalog():
 
-
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
             
-            diaSource_list = []
+            diaSource_history = []
 
             uniqueId = diaSource_dict['diaObjectId']
 
             lc = lc_dict[uniqueId]
 
-            ss = Sed()
-
             for filterName, nestedDict in lc.iteritems():
                 for i, mjd in enumerate(nestedDict['mjd']):
+                    
+                    # find a proper ObservationMetaData object by mjd.
+                    # this should be ok if opsim/lc data is consistent, 
+                    # however it would be healthier if some smart exception
+                    # is added
+                    current_metadata = next((x for x in observations_field if x.mjd.TAI == mjd), None)
 
                     # copy diaSource values and adjust filter, mjd, mag, error
-                    temp_dict = diaSource_dict
+                    temp_dict = deepcopy(diaSource_dict)
 
                     totMag = nestedDict['mag'][i]
                     meanMag = temp_dict['lsst_%s' % filterName]-temp_dict['delta_lsst_%s' % filterName]
                     
-                    totFlux = ss.fluxFromMag(totMag)
-                    meanFlux = ss.fluxFromMag(meanMag)
+                    totFlux = fluxFromMag(totMag)
+                    meanFlux = fluxFromMag(meanMag)
                     diaFlux = totFlux - meanFlux
 
                     # error is not handled yet!!
                     error = nestedDict['error'][i]
 
                     # remove mags and deltas from other filters
-                    list_of_keys = []
-                    otherFilters = BANDNAMES
-                    otherFilters.remove(filterName)
 
+                    list_of_keys = []
+                    # copy by value so BANDNAMES remain untouched for the next run
+                    otherFilters = BANDNAMES[:]
+                    otherFilters.remove(filterName)
+                    
                     for name in otherFilters:
                         list_of_keys.append('lsst_%s' % name)
                         list_of_keys.append('delta_lsst_%s' % name)
                     
                     for key in list_of_keys:
-                        temp_dict.pop(key)
+                        # remove key from the dict if the key exists
+                        temp_dict.pop(key, None)
 
+                    # apply transformations to form diaSource attributes
                     temp_dict['filterName'] = filterName
-                    temp_dict['lsst_%s' % filterName] = mag
-                    temp_dict['delta_lsst_%s' % filterName] = mag - base_mag
-                    temp_dict['mjd'] = mjd + 17/86400
-                    temp_dict[''] = mjd + 17/86400
-                    
+                    temp_dict['lsst_%s' % filterName] = totMag
+                    temp_dict['delta_lsst_%s' % filterName] = totMag - meanMag
+                    temp_dict['midPointTAI'] = midPointTai(mjd)
+                    print current_metadata.OpsimMetaData['obsHistID'}
+                    # how to get obsHistID?
+                    #temp_dict['ccdVisitId'] = ccdVisitId(obsHistID, temp_dict['ccdVisitId'] % 10000)
+                    #temp_dict['diaSourceId'] = diaSourceId(
+                    temp_dict['apFlux'] = apFlux(diaFlux)
+                    diaSource_history.append(temp_dict)
 
-            #print diaSource_dict
-            diaSource_history = []
             alert_dict = {'alertId':45135, 'l1dbId':12545, 
-                'diaSource':diaSource_dict, 'prv_diaSources':[diaSource_dict]*len(observations_field)}
+                'diaSource':diaSource_dict, 'prv_diaSources':diaSource_history}
+            print alert_dict
             list_of_alert_dicts.append(alert_dict)
 
     avro_utils.catsim_to_avro(list_of_alert_dicts=list_of_alert_dicts, 
