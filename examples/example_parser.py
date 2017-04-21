@@ -78,7 +78,7 @@ PARSER.add_argument("-pr", "--protocol", help="TcpIp, Multicast, Unicast",
         choices=('TcpIp', 'Multicast', 'Unicast'), default='TcpIp')
 PARSER.add_argument("-ip", "--ipaddress",
         help="ip address of the recepient or multicast channel",
-        default='147.91.240.26')
+        default='147.91.240.29')
 PARSER.add_argument("--no_header",
         help="don't generate hex header for VOEvents",
         action="store_false", default=True)
