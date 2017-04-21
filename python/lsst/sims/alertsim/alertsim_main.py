@@ -170,16 +170,17 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field, history, sess
             list_of_alert_dicts.append(alert_dict)
     else:
         from lsst.sims.catUtils.utils import StellarLightCurveGenerator
+        lc_gen = StellarLightCurveGenerator(obs_data.db_obj, '/scratch/veljko/opsim/minion_1016_sqlite.db')
+
         print("#### real radius")
         ra1=obs_metadata.pointingRA - 1.75
         ra2=obs_metadata.pointingRA + 1.75
         dec1=obs_metadata.pointingDec - 1.75
         dec2=obs_metadata.pointingDec + 1.75
 
+        
         print("ra %f - %f, decl %f - %f" % (ra1, ra2, dec1, dec2))
-        lc_gen = StellarLightCurveGenerator(obs_data.db_obj, '/scratch/veljko/opsim/minion_1016_sqlite.db')
         pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), expMJD=(0, obs_metadata.mjd.TAI))
-        print (pointings)
         print("number of pointings %d: " % sum(len(x) for x in pointings))
         #import pdb; pdb.set_trace()
         lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings)
@@ -194,12 +195,11 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field, history, sess
         print("ra %f - %f, decl %f - %f" % (ra1, ra2, dec1, dec2))
         pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), expMJD=(0, obs_metadata.mjd.TAI))
         print("number of pointings %d: " % sum(len(x) for x in pointings))
-        #print("number of pointings %d: " % len(pointings))
         lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings)
         #print(lc_dict)
         
         exit(0)
-        #print("done with lc's")
+        print("done with lc's")
         print("observations_field len %d" %len(observations_field))
        
         for line in obs_data.iter_catalog():
