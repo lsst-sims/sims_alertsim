@@ -70,7 +70,6 @@ def main(opsim_table=None, catsim_table='allstars',
     number
     """
 
-
     print("fetching opsim results...")
 
 
@@ -121,7 +120,7 @@ def main(opsim_table=None, catsim_table='allstars',
                     obs_metadata=obs_metadata, dia=dia)
 
             """ query catsim and serialize to json  """
-            iter_and_serialize(obs_data, obs_metadata, obs_per_field, history, session_dir)
+            iter_and_serialize(obs_data, obs_metadata, obs_per_field, history, session_dir, radius)
 
 
 def get_sender(protocol, ipaddr, port, header):
@@ -141,7 +140,8 @@ def get_sender(protocol, ipaddr, port, header):
     """
     return vars(broadcast)[protocol](ipaddr, port, header)
 
-def iter_and_serialize(obs_data, obs_metadata, observations_field, history, session_dir):
+def iter_and_serialize(obs_data, obs_metadata, observations_field, 
+        history, session_dir, radius):
 
     """ Iterate over catalog and serialize data as JSON, divided
     into files by CCD number
@@ -173,19 +173,24 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field, history, sess
         lc_gen = StellarLightCurveGenerator(obs_data.db_obj, '/scratch/veljko/opsim/minion_1016_sqlite.db')
 
         print("#### real radius")
-        ra1=obs_metadata.pointingRA - 1.75
-        ra2=obs_metadata.pointingRA + 1.75
-        dec1=obs_metadata.pointingDec - 1.75
-        dec2=obs_metadata.pointingDec + 1.75
+        print(radius)
+        print(vars(obs_metadata))
+        ra1=obs_metadata.pointingRA - radius
+        ra2=obs_metadata.pointingRA + radius
+        dec1=obs_metadata.pointingDec - radius
+        dec2=obs_metadata.pointingDec + radius
 
-        
+        from lsst.sims.photUtils import cache_LSST_seds
+        cache_LSST_seds()
         print("ra %f - %f, decl %f - %f" % (ra1, ra2, dec1, dec2))
         pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), expMJD=(0, obs_metadata.mjd.TAI))
+        print(pointings)
         print("number of pointings %d: " % sum(len(x) for x in pointings))
         #import pdb; pdb.set_trace()
+        #lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings, chunk_size=10000)
         lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings)
         #print(lc_dict)
-        
+        """
         print("#### small radius")
         ra1=obs_metadata.pointingRA - 0.1
         ra2=obs_metadata.pointingRA + 0.1
@@ -196,15 +201,12 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field, history, sess
         pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), expMJD=(0, obs_metadata.mjd.TAI))
         print("number of pointings %d: " % sum(len(x) for x in pointings))
         lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings)
-        #print(lc_dict)
-        
-        exit(0)
+        """
         print("done with lc's")
         print("observations_field len %d" %len(observations_field))
        
-        for line in obs_data.iter_catalog():
+        for line in obs_data.iter_catalog(chunk_size=1000):
 
-            print("here")
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
             
             diaSource_history = []
@@ -255,10 +257,7 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field, history, sess
                     temp_dict['lsst_%s' % filterName] = totMag
                     temp_dict['delta_lsst_%s' % filterName] = totMag - meanMag
                     temp_dict['midPointTAI'] = midPointTai(mjd)
-                    #print("obshistid")
-                    #print(current_metadata.OpsimMetaData['obsHistID'])
-                    # how to get obsHistID?
-                    #temp_dict['ccdVisitId'] = ccdVisitId(obsHistID, temp_dict['ccdVisitId'] % 10000)
+                    temp_dict['ccdVisitId'] = ccdVisitId(current_metadata.OpsimMetaData['obsHistID'], temp_dict['ccdVisitId'] % 10000)
                     #temp_dict['diaSourceId'] = diaSourceId(
                     temp_dict['apFlux'] = apFlux(diaFlux)
                     diaSource_history.append(temp_dict)
@@ -267,7 +266,7 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field, history, sess
                 'diaSource':diaSource_dict, 'prv_diaSources':diaSource_history}
             #print(alert_dict)
             list_of_alert_dicts.append(alert_dict)
-
+    print ("number of events %d" % len(list_of_alert_dicts))
     avro_utils.catsim_to_avro(list_of_alert_dicts=list_of_alert_dicts, 
             session_dir=session_dir)
 
