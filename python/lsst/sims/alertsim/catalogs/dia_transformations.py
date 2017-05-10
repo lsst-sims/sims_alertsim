@@ -44,10 +44,8 @@ def chipNum(chip_name):
     chip_arr = np.array([int(''.join(re.findall(r'\d+', name))) for name in chip_name])
     return chip_arr
     """
-    print chip_name
     return np.array([int(''.join(re.findall(r'\d+', name))) if name is not None else 0
                      for name in chip_name])
-    #return np.array([1111 for name in chip_name])
 
 def diaSourceId(uniqueId, obsHistID):
     """
