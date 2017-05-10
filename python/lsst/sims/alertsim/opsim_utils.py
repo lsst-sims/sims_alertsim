@@ -73,7 +73,7 @@ def opsim_query_stack10(opsim_path, objid, radius, opsim_night,
         obs_gen = ObservationMetaDataGenerator(database=opsim_path, driver='sqlite')
         #return obs_gen.getObservationMetaDataFromConstraint(constraint)
         obs_all = obs_gen.getObservationMetaData(night=opsim_night, 
-                    telescopeFilter=opsim_filter, expMJD=opsim_mjd)
+                    telescopeFilter=opsim_filter, expMJD=opsim_mjd, boundLength=radius)
         
         obs_history = []
 
