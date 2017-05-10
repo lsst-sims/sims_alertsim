@@ -41,7 +41,7 @@ def catsim_to_avro(list_of_alert_dicts, session_dir, schemaURI='avsc/diasource.a
     print("number of events %d" % (len(list_of_alert_dicts)))
 
     for alert_dict in list_of_alert_dicts:
-        print("Ccd and visit id %d" % (alert_dict['diaSource']['ccdVisitId']))
+        #print("Ccd and visit id %d" % (alert_dict['diaSource']['ccdVisitId']))
         
         #last 4 digits of ccdVisitId are chip number
         chipNum = str(alert_dict['diaSource']['ccdVisitId'])[-4:]
@@ -49,7 +49,7 @@ def catsim_to_avro(list_of_alert_dicts, session_dir, schemaURI='avsc/diasource.a
         file_obj = open("json_output/"+session_dir+"/"+chipNum, 'a')
 
         json_qd = json.loads(json.dumps(alert_dict))
-        print(json_qd)
+        #print(json_qd)
 
         writer.append(json_qd)
         file_obj.close()
