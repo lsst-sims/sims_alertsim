@@ -96,7 +96,7 @@ def main(opsim_table=None, catsim_table='allstars',
                     obs_metadata=obs_metadata, dia=dia)
 
             """ query catsim, pack voevents and send """
-            iter_and_send(sender, obs_data, obs_metadata, obs_per_field, history)
+            iter_and_send(sender, obs_data, obs_metadata, obs_per_field, history, radius, opsim_path)
 
         """ close connection """
         sender.close()
@@ -120,7 +120,8 @@ def main(opsim_table=None, catsim_table='allstars',
                     obs_metadata=obs_metadata, dia=dia)
 
             """ query catsim and serialize to json  """
-            iter_and_serialize(obs_data, obs_metadata, obs_per_field, history, session_dir, radius)
+            iter_and_serialize(obs_data, obs_metadata, obs_per_field, history, 
+                    session_dir, radius, opsim_path)
 
 
 def get_sender(protocol, ipaddr, port, header):
@@ -141,7 +142,7 @@ def get_sender(protocol, ipaddr, port, header):
     return vars(broadcast)[protocol](ipaddr, port, header)
 
 def iter_and_serialize(obs_data, obs_metadata, observations_field, 
-        history, session_dir, radius):
+        history, session_dir, radius, opsim_path):
 
     """ Iterate over catalog and serialize data as JSON, divided
     into files by CCD number
@@ -170,7 +171,7 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field,
             list_of_alert_dicts.append(alert_dict)
     else:
         from lsst.sims.catUtils.utils import StellarLightCurveGenerator
-        lc_gen = StellarLightCurveGenerator(obs_data.db_obj, '/scratch/veljko/opsim/minion_1016_sqlite.db')
+        lc_gen = StellarLightCurveGenerator(obs_data.db_obj, opsim_path)
 
         print("#### real radius")
         print(radius)
@@ -270,7 +271,7 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field,
     avro_utils.catsim_to_avro(list_of_alert_dicts=list_of_alert_dicts, 
             session_dir=session_dir)
 
-def iter_and_send(sender, obs_data, obs_metadata, observations_field, history):
+def iter_and_send(sender, obs_data, obs_metadata, observations_field, history, radius, opsim_path):
 
     """ Iterate over catalog and generate XML 
 
