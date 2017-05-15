@@ -81,7 +81,7 @@ class AlertSimEndToEndTest(unittest.TestCase):
             os.unlink(self.voev_filename)
 
 
-    @unittest.expectedFailure
+    @unittest.skip("This test is subject to a race condition")
     def test_alert_sim_end_to_end(self):
 
         class AlertSimTestCatalogDBObject(CatalogDBObject):
