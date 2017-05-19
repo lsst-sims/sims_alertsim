@@ -91,8 +91,14 @@ def main(opsim_table=None, catsim_table='allstars',
             """ current observation - largest mjd from a sorted list  """
             obs_metadata = obs_per_field[0]
 
+            """ 
+            make an additional CatSim constraint based on fiveSigmaDepth value
+            from OpsimMetaData
+            """
+            full_constraint = catsim_constraint + _get_additional_constraint(obs_metadata)
+
             obs_data = catsim_utils.catsim_query(stack_version=STACK_VERSION,
-                    objid=catsim_table, constraint=catsim_constraint,
+                    objid=catsim_table, constraint=full_constraint,
                     obs_metadata=obs_metadata, dia=dia)
 
             """ query catsim, pack voevents and send """
@@ -115,13 +121,21 @@ def main(opsim_table=None, catsim_table='allstars',
             """ current observation - largest mjd from a sorted list  """
             obs_metadata = obs_per_field[0]
 
+            """ 
+            make an additional CatSim constraint based on fiveSigmaDepth value
+            from OpsimMetaData
+            """
+            full_constraint = catsim_constraint + _get_additional_constraint(obs_metadata)
+
+            print('### full constraint: %s' % (full_constraint))
+
             obs_data = catsim_utils.catsim_query(stack_version=STACK_VERSION,
-                    objid=catsim_table, constraint=catsim_constraint,
+                    objid=catsim_table, constraint=full_constraint,
                     obs_metadata=obs_metadata, dia=dia)
 
             """ query catsim and serialize to json  """
             iter_and_serialize(obs_data, obs_metadata, obs_per_field, history, 
-                    session_dir, radius, opsim_path)
+                               session_dir, radius, opsim_path)
 
 
 def get_sender(protocol, ipaddr, port, header):
@@ -142,7 +156,7 @@ def get_sender(protocol, ipaddr, port, header):
     return vars(broadcast)[protocol](ipaddr, port, header)
 
 def iter_and_serialize(obs_data, obs_metadata, observations_field, 
-        history, session_dir, radius, opsim_path):
+                       history, session_dir, radius, opsim_path):
 
     """ Iterate over catalog and serialize data as JSON, divided
     into files by CCD number
@@ -173,31 +187,24 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field,
         from lsst.sims.catUtils.utils import StellarLightCurveGenerator
         lc_gen = StellarLightCurveGenerator(obs_data.db_obj, opsim_path)
 
-        print("#### real radius")
-        print(radius)
-        print(vars(obs_metadata))
+        print("#### radius = %f" % (radius))
         ra1=obs_metadata.pointingRA - radius
         ra2=obs_metadata.pointingRA + radius
         dec1=obs_metadata.pointingDec - radius
         dec2=obs_metadata.pointingDec + radius
 
-        from lsst.sims.photUtils import cache_LSST_seds
-        cache_LSST_seds()
+        #from lsst.sims.photUtils import cache_LSST_seds
+        #cache_LSST_seds()
         print("ra %f - %f, decl %f - %f" % (ra1, ra2, dec1, dec2))
         pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), expMJD=(0, obs_metadata.mjd.TAI))
         print(pointings)
+        
         print("number of pointings %d: " % sum(len(x) for x in pointings))
         #import pdb; pdb.set_trace()
-        #lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings, chunk_size=10000)
-        lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings)
+        #lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings, chunk_size=1000)
+        #lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings)
         #print(lc_dict)
-        """
-        print("#### small radius")
-        ra1=obs_metadata.pointingRA - 0.1
-        ra2=obs_metadata.pointingRA + 0.1
-        dec1=obs_metadata.pointingDec - 0.1
-        dec2=obs_metadata.pointingDec + 0.1
-        
+        """ 
         print("ra %f - %f, decl %f - %f" % (ra1, ra2, dec1, dec2))
         pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), expMJD=(0, obs_metadata.mjd.TAI))
         print("number of pointings %d: " % sum(len(x) for x in pointings))
@@ -206,14 +213,15 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field,
         print("done with lc's")
         print("observations_field len %d" %len(observations_field))
        
-        for line in obs_data.iter_catalog(chunk_size=1000):
+        for line in obs_data.iter_catalog(chunk_size=3000):
+        #for line in obs_data.iter_catalog():
 
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
             
             diaSource_history = []
 
             uniqueId = diaSource_dict['diaObjectId']
-
+            """
             lc = lc_dict[uniqueId]
 
             for filterName, nestedDict in lc.iteritems():
@@ -262,12 +270,14 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field,
                     #temp_dict['diaSourceId'] = diaSourceId(
                     temp_dict['apFlux'] = apFlux(diaFlux)
                     diaSource_history.append(temp_dict)
-
+            """
             alert_dict = {'alertId':45135, 'l1dbId':12545, 
                 'diaSource':diaSource_dict, 'prv_diaSources':diaSource_history}
             #print(alert_dict)
             list_of_alert_dicts.append(alert_dict)
     print ("number of events %d" % len(list_of_alert_dicts))
+    #for ix in range(0,200):
+    #    print(list_of_alert_dicts[ix].get("diaSource").get("varParamStr"))
     avro_utils.catsim_to_avro(list_of_alert_dicts=list_of_alert_dicts, 
             session_dir=session_dir)
 
@@ -398,3 +408,10 @@ def _rsetattr(obj, attr, val):
     pre, _, post = attr.rpartition('.')
     return setattr(functools.reduce(getattr,
         [obj]+pre.split('.')) if pre else obj, post, val)
+
+def _get_additional_constraint(obs_metadata):
+    """ make Catsim constraint out of Opsim metadata parameters """
+    fiveSigmaDepth = obs_metadata.OpsimMetaData['fiveSigmaDepth']
+    opsim_filter = obs_metadata.OpsimMetaData['filter']
+    new_constraint = " and %smag <= %f" % (opsim_filter, fiveSigmaDepth)
+    return new_constraint
