@@ -105,7 +105,7 @@ def _convert_obs_to_history(obs_list, obs_gen):
         # note: expMJD=(a,b) will include a,b
         history_per_field = obs_gen.getObservationMetaData(fieldRA=obs.pointingRA, 
                 fieldDec=obs.pointingDec, boundLength=obs.boundLength, 
-                expMJD=(0, obs.mjd.TAI))
+                expMJD=(obs.mjd.TAI-365, obs.mjd.TAI))
         # sort reverse so that the first element is the newest 
         history_per_field.sort(key=lambda x: x.mjd.TAI, reverse=True)
         history_matrix.append(history_per_field)
