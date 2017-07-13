@@ -9,6 +9,7 @@ except:
 
 from timeit import default_timer as timer
 import json
+from collections import defaultdict
 
 def _raise_no_avro(method_name):
     msg = "To use %s you must install avro from https://avro.apache.org" % method_name
@@ -40,35 +41,52 @@ def catsim_to_avro(list_of_alert_dicts, session_dir, schemaURI='avsc/diasource.a
 
     print("number of events %d" % (len(list_of_alert_dicts)))
 
-    for alert_dict in list_of_alert_dicts:
-        #print("Ccd and visit id %d" % (alert_dict['diaSource']['ccdVisitId']))
-        
+    alert_dicts_divided = defaultdict(list)
+    for d in list_of_alert_dicts:
+        alert_dicts_divided[(d['diaSource']['ccdVisitId'])].append(d)
+    
+    print("##### starting serialization")
+
+    for ix, list_per_chip in enumerate(alert_dicts_divided.values()):
+        print("Ccd and visit id %d" % (list_per_chip[0]['diaSource']['ccdVisitId']))
         #last 4 digits of ccdVisitId are chip number
-        chipNum = str(alert_dict['diaSource']['ccdVisitId'])[-4:]
+        chipNum = str(list_per_chip[0]['diaSource']['ccdVisitId'])[-4:]
+
+        serialization_timer = timer()
+
         #open file with a name of a chipNum in append mode
         file_obj = open("json_output/"+session_dir+"/"+chipNum, 'a')
+        
+        avro_validated = False
 
-        json_qd = json.loads(json.dumps(alert_dict))
-        #print(json_qd)
+        for alert_dict in list_per_chip:
+            json_qd = json.loads(json.dumps(alert_dict))
+        
+            json.dump(json_qd, file_obj)
+        
+            if (ix==0 and avro_validated==False):
+                writer.append(json_qd)
+                print("Avro schema validated for this chunk")
+                avro_validated = True
 
-        writer.append(json_qd)
         file_obj.close()
+        print("serialization for %d events on this chip took %s" % (len(list_per_chip), timer()-serialization_timer))
 
     writer.close()
 
-    """
-    print "writing time %s" % (timer() - writing_time)
+    print("total serialization time for this chunk is %s" % (timer() - writing_time))
 
+    """
     #reading_time = timer()
     reader = DataFileReader(open("avsc/alert.avro", "rb"), DatumReader())
     
     for line in reader:
         print line
+
+    print "reading time %s" % (timer() - reading_time)
+
+    reader.close()
     """
-
-    #print "reading time %s" % (timer() - reading_time)
-
-    #reader.close()
 
 def load_avsc_schema(schema_path, names = None):
     
