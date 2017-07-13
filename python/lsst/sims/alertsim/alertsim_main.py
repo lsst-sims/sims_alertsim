@@ -102,7 +102,8 @@ def main(opsim_table=None, catsim_table='allstars',
                     obs_metadata=obs_metadata, dia=dia)
 
             """ query catsim, pack voevents and send """
-            iter_and_send(sender, obs_data, obs_metadata, obs_per_field, history, radius, opsim_path)
+            iter_and_send(sender, obs_data, obs_metadata, obs_per_field, history, 
+                    radius, opsim_path, full_constraint)
 
         """ close connection """
         sender.close()
@@ -135,7 +136,7 @@ def main(opsim_table=None, catsim_table='allstars',
 
             """ query catsim and serialize to json  """
             iter_and_serialize(obs_data, obs_metadata, obs_per_field, history, 
-                               session_dir, radius, opsim_path)
+                               session_dir, radius, opsim_path, full_constraint)
 
 
 def get_sender(protocol, ipaddr, port, header):
@@ -156,7 +157,7 @@ def get_sender(protocol, ipaddr, port, header):
     return vars(broadcast)[protocol](ipaddr, port, header)
 
 def iter_and_serialize(obs_data, obs_metadata, observations_field, 
-                       history, session_dir, radius, opsim_path):
+                       history, session_dir, radius, opsim_path, full_constraint):
 
     """ Iterate over catalog and serialize data as JSON, divided
     into files by CCD number
@@ -184,24 +185,25 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field,
                 'diaSource':diaSource_dict}
             list_of_alert_dicts.append(alert_dict)
     else:
-        from lsst.sims.catUtils.utils import StellarLightCurveGenerator
-        lc_gen = StellarLightCurveGenerator(obs_data.db_obj, opsim_path)
-
+        from lsst.sims.catUtils.utils import FastStellarLightCurveGenerator
+        lc_gen = FastStellarLightCurveGenerator(obs_data.db_obj, opsim_path)
+        #from lsst.sims.catUtils.utils import StellarLightCurveGenerator
+        #lc_gen = StellarLightCurveGenerator(obs_data.db_obj, opsim_path)
+        
         print("#### radius = %f" % (radius))
         ra1=obs_metadata.pointingRA - radius
         ra2=obs_metadata.pointingRA + radius
         dec1=obs_metadata.pointingDec - radius
         dec2=obs_metadata.pointingDec + radius
 
-        #from lsst.sims.photUtils import cache_LSST_seds
-        #cache_LSST_seds()
+        from lsst.sims.photUtils import cache_LSST_seds
+        cache_LSST_seds()
         print("ra %f - %f, decl %f - %f" % (ra1, ra2, dec1, dec2))
-        pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), expMJD=(0, obs_metadata.mjd.TAI))
-        print(pointings)
+        pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), expMJD=(obs_metadata.mjd.TAI-365, obs_metadata.mjd.TAI), boundLength=radius)
         
         print("number of pointings %d: " % sum(len(x) for x in pointings))
         #import pdb; pdb.set_trace()
-        #lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings, chunk_size=1000)
+        lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings=pointings, constraint=full_constraint, chunk_size=1000)
         #lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings)
         #print(lc_dict)
         """ 
@@ -212,16 +214,25 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field,
         """
         print("done with lc's")
         print("observations_field len %d" %len(observations_field))
-       
-        for line in obs_data.iter_catalog(chunk_size=3000):
+        from timeit import default_timer as timer
+        catsim_timer = timer()
+        counter = 0
+        catsim_chunk_size = 3000
+        
+        for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
+        #for i, line in enumerate(obs_data.iter_catalog(chunk_size=catsim_chunk_size)):
         #for line in obs_data.iter_catalog():
-
-            diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
+            if(counter==0): print("begin main loop %s" % (timer()-catsim_timer))
             
+            counter = counter + 1
+            if (counter % 100 == 0):
+                print("%s %s" % (counter, timer()))
+            
+            diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
+
             diaSource_history = []
 
             uniqueId = diaSource_dict['diaObjectId']
-            """
             lc = lc_dict[uniqueId]
 
             for filterName, nestedDict in lc.iteritems():
@@ -270,18 +281,27 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field,
                     #temp_dict['diaSourceId'] = diaSourceId(
                     temp_dict['apFlux'] = apFlux(diaFlux)
                     diaSource_history.append(temp_dict)
-            """
+
             alert_dict = {'alertId':45135, 'l1dbId':12545, 
                 'diaSource':diaSource_dict, 'prv_diaSources':diaSource_history}
             #print(alert_dict)
             list_of_alert_dicts.append(alert_dict)
+
+            if (counter==catsim_chunk_size):
+                print(counter)
+                print('ready to write %d events to json' % catsim_chunk_size)
+                avro_utils.catsim_to_avro(list_of_alert_dicts=list_of_alert_dicts, 
+                    session_dir=session_dir)
+                list_of_alert_dicts=[]
+                counter = 0
+
+    avro_utils.catsim_to_avro(list_of_alert_dicts=list_of_alert_dicts, 
+        session_dir=session_dir)
     print ("number of events %d" % len(list_of_alert_dicts))
     #for ix in range(0,200):
     #    print(list_of_alert_dicts[ix].get("diaSource").get("varParamStr"))
-    avro_utils.catsim_to_avro(list_of_alert_dicts=list_of_alert_dicts, 
-            session_dir=session_dir)
 
-def iter_and_send(sender, obs_data, obs_metadata, observations_field, history, radius, opsim_path):
+def iter_and_send(sender, obs_data, obs_metadata, observations_field, history, radius, opsim_path, full_constraint):
 
     """ Iterate over catalog and generate XML 
 
