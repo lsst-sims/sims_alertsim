@@ -257,6 +257,8 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field,
                     # error is not handled yet!!
                     error = nestedDict['error'][i]
 
+                    obsHistID = current_metadata.OpsimMetaData['obsHistID']
+
                     # remove mags and deltas from other filters
 
                     list_of_keys = []
@@ -277,8 +279,8 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field,
                     temp_dict['lsst_%s' % filterName] = totMag
                     temp_dict['delta_lsst_%s' % filterName] = totMag - meanMag
                     temp_dict['midPointTAI'] = midPointTai(mjd)
-                    temp_dict['ccdVisitId'] = ccdVisitId(current_metadata.OpsimMetaData['obsHistID'], temp_dict['ccdVisitId'] % 10000)
-                    #temp_dict['diaSourceId'] = diaSourceId(
+                    temp_dict['ccdVisitId'] = ccdVisitId(obsHistID, temp_dict['ccdVisitId'] % 10000)
+                    temp_dict['diaSourceId'] = diaSourceId(temp_dict['obsHistId'] % 10000000, obsHistID)
                     temp_dict['apFlux'] = apFlux(diaFlux)
                     diaSource_history.append(temp_dict)
 
