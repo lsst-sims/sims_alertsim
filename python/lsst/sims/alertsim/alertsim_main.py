@@ -74,7 +74,7 @@ def main(opsim_table=None, catsim_table='allstars',
 
 
     """ matrix of all observations per field up to current mjd """
-    obs_history = opsim_utils.opsim_query(stack_version=STACK_VERSION, 
+    obs_matrix = opsim_utils.opsim_query(stack_version=STACK_VERSION, 
             opsim_path=opsim_path, objid=opsim_table, radius=radius, 
             opsim_night=opsim_night, opsim_filter=opsim_filter, 
             opsim_mjd=opsim_mjd, history=history)
@@ -86,7 +86,7 @@ def main(opsim_table=None, catsim_table='allstars',
         """ establish connection """
         sender = get_sender(protocol, ipaddr, port, header)
 
-        for obs_per_field in obs_history:
+        for obs_per_field in obs_matrix:
 
             """ current observation - largest mjd from a sorted list  """
             obs_metadata = obs_per_field[0]
@@ -117,7 +117,7 @@ def main(opsim_table=None, catsim_table='allstars',
         except OSError:
             pass
 
-        for obs_per_field in obs_history:
+        for obs_per_field in obs_matrix:
 
             """ current observation - largest mjd from a sorted list  """
             obs_metadata = obs_per_field[0]
