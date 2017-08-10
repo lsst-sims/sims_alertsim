@@ -81,62 +81,46 @@ def main(opsim_table=None, catsim_table='allstars',
 
     print("opsim result fetched and transformed to ObservationMetaData objects")
 
-    if not serialize_json:
+    sender = None
+    session_dir = None
 
-        """ establish connection """
-        sender = get_sender(protocol, ipaddr, port, header)
+    if serialize_json:
 
-        for obs_per_field in obs_matrix:
-
-            """ current observation - largest mjd from a sorted list  """
-            obs_metadata = obs_per_field[0]
-
-            """ 
-            make an additional CatSim constraint based on fiveSigmaDepth value
-            from OpsimMetaData
-            """
-            full_constraint = catsim_constraint + _get_additional_constraint(obs_metadata)
-
-            obs_data = catsim_utils.catsim_query(stack_version=STACK_VERSION,
-                    objid=catsim_table, constraint=full_constraint,
-                    obs_metadata=obs_metadata, dia=dia)
-
-            """ query catsim, pack voevents and send """
-            iter_and_send(sender, obs_data, obs_metadata, obs_per_field, history, 
-                    radius, opsim_path, full_constraint)
-
-        """ close connection """
-        sender.close()
-
-    else:
-        
+        """ make unique local session directory based on the timestamp """
         session_dir = str(int(time.time()))
-
         try:
             os.makedirs("json_output/"+session_dir)
         except OSError:
             pass
 
-        for obs_per_field in obs_matrix:
+    else:
+        
+        """ establish connection """
+        sender = get_sender(protocol, ipaddr, port, header)
 
-            """ current observation - largest mjd from a sorted list  """
-            obs_metadata = obs_per_field[0]
+    for obs_per_field in obs_matrix:
 
-            """ 
-            make an additional CatSim constraint based on fiveSigmaDepth value
-            from OpsimMetaData
-            """
-            full_constraint = catsim_constraint + _get_additional_constraint(obs_metadata)
+        """ current observation - largest mjd from a sorted list  """
+        obs_metadata = obs_per_field[0]
 
-            print('### full constraint: %s' % (full_constraint))
+        """ 
+        make an additional CatSim constraint based on fiveSigmaDepth value
+        from OpsimMetaData
+        """
+        full_constraint = catsim_constraint + _get_additional_constraint(obs_metadata)
+        print('### full constraint: %s' % (full_constraint))
+        
+        obs_data = catsim_utils.catsim_query(stack_version=STACK_VERSION,
+                objid=catsim_table, constraint=full_constraint,
+                obs_metadata=obs_metadata, dia=dia)
 
-            obs_data = catsim_utils.catsim_query(stack_version=STACK_VERSION,
-                    objid=catsim_table, constraint=full_constraint,
-                    obs_metadata=obs_metadata, dia=dia)
+        """ query catsim, pack voevents and send/serialize """
+        query_and_dispatch(obs_data, obs_metadata, obs_per_field, history, 
+                sender, session_dir, radius, opsim_path, full_constraint, serialize_json)
 
-            """ query catsim and serialize to json  """
-            iter_and_serialize(obs_data, obs_metadata, obs_per_field, history, 
-                               session_dir, radius, opsim_path, full_constraint)
+    if not serialize_json:
+        """ close connection """
+        sender.close()
 
 
 def get_sender(protocol, ipaddr, port, header):
@@ -156,8 +140,9 @@ def get_sender(protocol, ipaddr, port, header):
     """
     return vars(broadcast)[protocol](ipaddr, port, header)
 
-def iter_and_serialize(obs_data, obs_metadata, observations_field, 
-                       history, session_dir, radius, opsim_path, full_constraint):
+def query_and_dispatch(obs_data, obs_metadata, observations_field, 
+                       history, session_dir, sender, radius, opsim_path, 
+                       full_constraint, serialize_json):
 
     """ Iterate over catalog and serialize data as JSON, divided
     into files by CCD number
@@ -291,9 +276,23 @@ def iter_and_serialize(obs_data, obs_metadata, observations_field,
 
             if (counter==catsim_chunk_size):
                 print(counter)
-                print('ready to write %d events to json' % catsim_chunk_size)
-                avro_utils.catsim_to_avro(list_of_alert_dicts=list_of_alert_dicts, 
-                    session_dir=session_dir)
+                if serialize_json:
+                    print('ready to write %d events to json' % catsim_chunk_size)
+                    avro_utils.catsim_to_avro(list_of_alert_dicts=list_of_alert_dicts, 
+                        session_dir=session_dir)
+                else:
+                    print('ready to send %d events' % catsim_chunk_size)
+                    for alert_dict in list_of_alert_dicts:
+
+                        #gen = VOEventGenerator(eventid = event_count)
+                        gen = VOEventGenerator(eventid = 12435)
+                        xml = gen.generateFromDicts(alert_dict)
+                        #print(xml)
+                        sender.send(xml)
+                        #event_count += 1
+                        #sending_times.append(time.time())
+
+
                 list_of_alert_dicts=[]
                 counter = 0
 
