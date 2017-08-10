@@ -97,27 +97,41 @@ class VOEventGenerator(object):
     def generateFromDicts(self, alert_dict):
 
         diaSource = alert_dict['diaSource']
-        diaSourceHistory = alert_dict['prv_diaSources']
         
         self.ra = diaSource['ra']
         self.dec = diaSource['decl']
 
         ############ What ############################
         w = What()
-#
 
         g = Group(type_="DIASource", name="DIASourceCurrent")
-        for key, val in diaSource:
-            p = Param(name=key, ucd='', value=val, unit = '')
-            g.add_Param(p)
-        w.add_Group(g)
-        
-        for historicalDiaSource in diaSourceHistory:
-            g = Group(type_="DIASource", name="DIASourceHistory")
-            for key, val in historicalDiaSource:
+        for key, val in diaSource.items():
+            if type(val) is not dict:
                 p = Param(name=key, ucd='', value=val, unit = '')
                 g.add_Param(p)
-            w.add_Group(g)
+            else:
+                for nkey, nval in val.items():
+                    p = Param(name=nkey, ucd='', value=nval, unit = '')
+                    g.add_Param(p)
+
+        w.add_Group(g)
+        
+        if 'prv_diaSources' in alert_dict:
+            diaSourceHistory = alert_dict['prv_diaSources']
+            for historicalDiaSource in diaSourceHistory:
+                g = Group(type_="DIASource", name="DIASourceHistory")
+                for key, val in historicalDiaSource.items():
+                    if type(val) is not dict:
+                        p = Param(name=key, ucd='', value=val, unit = '')
+                        g.add_Param(p)
+                    else:
+                        for nkey, nval in val.items():
+                            p = Param(name=nkey, ucd='', value=nval, unit = '')
+                            g.add_Param(p)
+
+
+
+                w.add_Group(g)
 
         """
         g = Group(type_="DIAObject", name="DIAObject")
