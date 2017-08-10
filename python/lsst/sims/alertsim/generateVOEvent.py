@@ -94,40 +94,59 @@ class VOEventGenerator(object):
         xml = stringVOEvent(self.voevent, self.schemaURL)
         return xml
 
-    """
-    may be useful at some point, needs to be checked
+    def generateFromDicts(self, alert_dict):
 
-    def generateFromLists(self, cols, vals, ucds):
+        diaSource = alert_dict['diaSource']
+        diaSourceHistory = alert_dict['prv_diaSources']
+        
+        self.ra = diaSource['ra']
+        self.dec = diaSource['decl']
 
         ############ What ############################
         w = What()
+#
 
-        # params related to the event. None are in Groups.
-        for col, val, ucd in zip(cols, vals, ucds):
-            p = Param(name=col, ucd=ucd, value=val)
-           #p.set_Description(["The object ID assigned by the Sillybilly survey"])
-            w.add_Param(p)
+        g = Group(type_="DIASource", name="DIASourceCurrent")
+        for key, val in diaSource:
+            p = Param(name=key, ucd='', value=val, unit = '')
+            g.add_Param(p)
+        w.add_Group(g)
+        
+        for historicalDiaSource in diaSourceHistory:
+            g = Group(type_="DIASource", name="DIASourceHistory")
+            for key, val in historicalDiaSource:
+                p = Param(name=key, ucd='', value=val, unit = '')
+                g.add_Param(p)
+            w.add_Group(g)
 
+        """
+        g = Group(type_="DIAObject", name="DIAObject")
+        for key, val in diaObjectData.__dict__.items():
+            if not key.startswith("__"):
+                p = Param(name=key, ucd=val.ucd, value=val.value, unit = val.unit)
+                g.add_Param(p)
+        w.add_Group(g)
+#       """
         self.voevent.set_What(w)
 
         ############ Wherewhen ############################
         wwd = {'observatory':     self.observatory,
                'coord_system':    'UTC-FK5-GEO',
-               'time':            self._convertToIso(obsMetaData.mjd.TAI),
+               'time':            self._convertToIso(diaSource['midPointTai']),
                'timeError':       0.11,
-               'longitude':       0,
-               'latitude':        0,
+               'longitude':       self.ra,
+               'latitude':        self.dec,
                'positionalError': 0.01,
         }
 
         ww = makeWhereWhen(wwd)
         if ww: self.voevent.set_WhereWhen(ww)
 
+
         ############ output the event ############################
-        xml = stringVOEvent(self.voevent, schemaURL)
+        xml = stringVOEvent(self.voevent, self.schemaURL)
         return xml
 
-    """
 
     def _convertToIso(self, mjd):
         t = AstropyTime(mjd, format='mjd', scale='tai')
