@@ -45,7 +45,7 @@ class Broadcast(object):
         header = '%08x' % (len(message))
 
         #return (header+message).encode()
-        return header.decode('hex') + message
+        return header.encode('hex') + message
 
 
 class TcpIp(Broadcast):
