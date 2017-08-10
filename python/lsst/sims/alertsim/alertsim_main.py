@@ -116,7 +116,7 @@ def main(opsim_table=None, catsim_table='allstars',
 
         """ query catsim, pack voevents and send/serialize """
         query_and_dispatch(obs_data, obs_metadata, obs_per_field, history, 
-                sender, session_dir, radius, opsim_path, full_constraint, serialize_json)
+                session_dir, sender, radius, opsim_path, full_constraint, serialize_json)
 
     if not serialize_json:
         """ close connection """
@@ -265,7 +265,7 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     temp_dict['delta_lsst_%s' % filterName] = totMag - meanMag
                     temp_dict['midPointTAI'] = midPointTai(mjd)
                     temp_dict['ccdVisitId'] = ccdVisitId(obsHistID, temp_dict['ccdVisitId'] % 10000)
-                    temp_dict['diaSourceId'] = diaSourceId(temp_dict['obsHistId'] % 10000000, obsHistID)
+                    temp_dict['diaSourceId'] = diaSourceId(temp_dict['diaSourceId'] % 10000000, obsHistID)
                     temp_dict['apFlux'] = apFlux(diaFlux)
                     diaSource_history.append(temp_dict)
 
@@ -296,9 +296,23 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                 list_of_alert_dicts=[]
                 counter = 0
 
-    avro_utils.catsim_to_avro(list_of_alert_dicts=list_of_alert_dicts, 
-        session_dir=session_dir)
-    print ("number of events %d" % len(list_of_alert_dicts))
+    """ deal with the rest of events """
+    if serialize_json:
+        print('ready to write %d events to json' % len(list_of_alert_dicts))
+        avro_utils.catsim_to_avro(list_of_alert_dicts=list_of_alert_dicts, 
+            session_dir=session_dir)
+    else:
+        print('ready to send %d events' % len(list_of_alert_dicts))
+        for alert_dict in list_of_alert_dicts:
+
+            #gen = VOEventGenerator(eventid = event_count)
+            gen = VOEventGenerator(eventid = 12435)
+            xml = gen.generateFromDicts(alert_dict)
+            #print(xml)
+            sender.send(xml)
+            #event_count += 1
+            #sending_times.append(time.time())
+
     #for ix in range(0,200):
     #    print(list_of_alert_dicts[ix].get("diaSource").get("varParamStr"))
 
