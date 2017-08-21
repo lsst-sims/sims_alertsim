@@ -5,6 +5,8 @@ import time
 import subprocess
 import socket
 import numpy as np
+import tempfile
+import shutil
 import lsst.utils.tests
 import lsst.sims.alertsim.alertsim_main as alertsim
 from lsst.utils import getPackageDir
@@ -19,6 +21,9 @@ from utils import read_and_divide, parse_parameters
 
 from astropy.time import Time
 
+ROOT = os.path.abspath(os.path.dirname(__file__))
+
+
 def setup_module(module):
     lsst.utils.tests.init()
 
@@ -28,8 +33,7 @@ class AlertSimEndToEndTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.scratch_dir = os.path.join(getPackageDir('sims_alertsim'),
-                                       'tests', 'scratch')
+        cls.scratch_dir = tempfile.mkdtemp(dir=ROOT, prefix='AlertSimEndToEndTest-')
 
         pointing_list = ((11.0, -9.0), (145.0, -20.0))
 
@@ -53,6 +57,8 @@ class AlertSimEndToEndTest(unittest.TestCase):
 
         if os.path.exists(cls.catsim_file_name):
             os.unlink(cls.catsim_file_name)
+        if os.path.exists(cls.scratch_dir):
+            shutil.rmtree(cls.scratch_dir)
 
     def setUp(self):
 
