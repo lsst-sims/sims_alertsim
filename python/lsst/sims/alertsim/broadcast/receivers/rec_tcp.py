@@ -50,7 +50,7 @@ def main(port):
         f.write(data)
         print("header:", header)
         print("received data:", data[4:])
-        conn.send(header)  # echo
+        conn.send("ack\n")  # echo
     f.close()
     conn.close()
 
