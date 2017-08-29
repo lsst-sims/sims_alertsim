@@ -4,6 +4,8 @@ import unittest
 import json
 import os
 import numbers
+import tempfile
+import shutil
 from lsst.utils import getPackageDir
 import lsst.utils.tests
 from lsst.sims.utils.CodeUtilities import sims_clean_up
@@ -12,6 +14,8 @@ from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
 from lsst.sims.catalogs.db import CatalogDBObject
 from lsst.sims.alertsim.catalogs import DiaSourceVarStars
 from lsst.sims.alertsim.jsonConversion import jsonFromCatalog
+
+ROOT = os.path.abspath(os.path.dirname(__file__))
 
 class LocalStarDB(CatalogDBObject):
     tableid = 'test'
@@ -44,14 +48,10 @@ class JsonTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.scratch_dir = os.path.join(getPackageDir('sims_alertsim'),
-                                      'tests', 'scratch')
+        cls.scratch_dir = tempfile.mkdtemp(dir=ROOT, prefix='JsonTestCase-')
 
         cls.catsim_db_name = os.path.join(cls.scratch_dir,
                                           'json_fake_catsim.db')
-
-        if os.path.exists(cls.catsim_db_name):
-            os.unlink(cls.catsim_db_name)
 
         cls.opsim_db = os.path.join(getPackageDir('sims_data'), 'OpSimData',
                                     'opsimblitz1_1133_sqlite.db')
@@ -79,6 +79,8 @@ class JsonTestCase(unittest.TestCase):
         del cls.gen
         if os.path.exists(cls.catsim_db_name):
             os.unlink(cls.catsim_db_name)
+        if os.path.exists(cls.scratch_dir):
+            shutil.rmtree(cls.scratch_dir)
 
     def test_diasource_json(self):
         """
@@ -88,8 +90,7 @@ class JsonTestCase(unittest.TestCase):
         """
         obs_list = self.gen.getObservationMetaData(obsHistID=(0,50))
 
-        json_dir = os.path.join(getPackageDir('sims_alertsim'),
-                                'tests', 'scratch', 'jsonTest')
+        json_dir = os.path.join(self.scratch_dir, 'jsonTest')
         if not os.path.exists(json_dir):
             os.mkdir(json_dir)
         else:
@@ -188,4 +189,3 @@ class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
 if __name__ == "__main__":
     lsst.utils.tests.init()
     unittest.main()
-

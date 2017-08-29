@@ -1,6 +1,8 @@
 from __future__ import with_statement
 import unittest
 import os
+import tempfile
+import shutil
 import lsst.utils.tests
 from lsst.utils import getPackageDir
 from utils import createFakeCatSimDB
@@ -9,6 +11,8 @@ from lsst.sims.utils import ObservationMetaData
 from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
 from lsst.sims.catalogs.db import CatalogDBObject
 from lsst.sims.alertsim.catalogs import BasicVarStars, DiaSourceVarStars
+
+ROOT = os.path.abspath(os.path.dirname(__file__))
 
 
 def setup_module(module):
@@ -40,8 +44,8 @@ class AlertSimCatalogTestCase(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.db_file_name = os.path.join(getPackageDir("sims_alertsim"),
-                                        "tests", "scratch", "catalog_test_obj.db")
+        cls.scratch_dir = tempfile.mkdtemp(dir=ROOT, prefix='AlertSimCatalogTestCase-')
+        cls.db_file_name = os.path.join(cls.scratch_dir, "catalog_test_obj.db")
 
         opsim_db = os.path.join(getPackageDir("sims_data"), "OpSimData", "opsimblitz1_1133_sqlite.db")
         gen = ObservationMetaDataGenerator(database=opsim_db, driver='sqlite')
@@ -60,25 +64,20 @@ class AlertSimCatalogTestCase(unittest.TestCase):
         del cls.db
         if os.path.exists(cls.db_file_name):
             os.unlink(cls.db_file_name)
+        if os.path.exists(cls.scratch_dir):
+            shutil.rmtree(cls.scratch_dir)
 
     def testBasicVarStars(self):
         """
         Just test that the BasicVarStars catalog runs
         """
         cat = BasicVarStars(self.db, obs_metadata=self.obs)
-        cat_name = os.path.join(getPackageDir("sims_alertsim"),
-                                "tests", "scratch", "variable_stars_test_output.txt")
 
-        if os.path.exists(cat_name):
-            os.unlink(cat_name)
-
-        cat.write_catalog(cat_name)
-        with open(cat_name, 'r') as input_file:
-            lines = input_file.readlines()
+        with lsst.utils.tests.getTempFilePath('.txt') as cat_name:
+            cat.write_catalog(cat_name)
+            with open(cat_name, 'r') as input_file:
+                lines = input_file.readlines()
             self.assertGreater(len(lines), 1)
-
-        if os.path.exists(cat_name):
-            os.unlink(cat_name)
 
     def test_variable_stars_dia(self):
         """
@@ -94,11 +93,7 @@ class AlertSimCatalogTestCase(unittest.TestCase):
             ct += 1
         self.assertGreater(ct, 1)
 
-        cat_name = os.path.join(getPackageDir("sims_alertsim"),
-                                "tests", "scratch", "variable_stars_dia_test_output.txt")
-
-        if os.path.exists(cat_name):
-            os.unlink(cat_name)
+        cat_name = os.path.join(self.scratch_dir, "variable_stars_dia_test_output.txt")
 
         with self.assertRaises(NotImplementedError):
             cat.write_catalog(cat_name)

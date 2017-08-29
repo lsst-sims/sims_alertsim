@@ -47,7 +47,6 @@ class Broadcast(object):
         #return (header+message).encode()
         return header.encode('hex') + message
 
-
 class TcpIp(Broadcast):
 
     """

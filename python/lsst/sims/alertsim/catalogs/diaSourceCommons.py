@@ -7,7 +7,6 @@ from lsst.sims.catalogs.decorators import cached, compound
 from lsst.sims.catUtils.mixins import CameraCoords
 from lsst.obs.lsstSim import LsstSimMapper
 
-#from lsst.sims.catalogs.decorators import compound
 __all__ = ["DiaSourceCommons"]
 
 
