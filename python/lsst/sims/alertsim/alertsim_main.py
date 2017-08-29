@@ -10,9 +10,8 @@ from . import catsim_utils, opsim_utils, avro_utils
 from copy import deepcopy
 from lsst.sims.alertsim.dataModel import DataMetadata, CelestialObject
 from lsst.sims.alertsim.generateVOEvent import VOEventGenerator
-from .catalogs import BasicVarStars, VariabilityDummy
-from . import broadcast
-
+from lsst.sims.alertsim.broadcast import *
+from lsst.sims.alertsim.catalogs import *
 
 BANDNAMES = ['u', 'g', 'r', 'i', 'z', 'y']
 STACK_VERSION = 10
@@ -139,7 +138,7 @@ def get_sender(protocol, ipaddr, port, header):
     @param [out] is object of the broadcast child class
     
     """
-    return vars(broadcast.broadcast)[protocol](ipaddr, port, header)
+    return vars(broadcast)[protocol](ipaddr, port, header)
 
 def query_and_dispatch(obs_data, obs_metadata, observations_field, 
                        history, session_dir, sender, radius, opsim_path, 
@@ -188,16 +187,8 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
         pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), expMJD=(obs_metadata.mjd.TAI-365, obs_metadata.mjd.TAI), boundLength=radius)
         
         print("number of pointings %d: " % sum(len(x) for x in pointings))
-        #import pdb; pdb.set_trace()
         lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings=pointings, constraint=full_constraint, chunk_size=1000)
-        #lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings)
-        #print(lc_dict)
-        """ 
-        print("ra %f - %f, decl %f - %f" % (ra1, ra2, dec1, dec2))
-        pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), expMJD=(0, obs_metadata.mjd.TAI))
-        print("number of pointings %d: " % sum(len(x) for x in pointings))
-        lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings)
-        """
+
         print("done with lc's")
         print("observations_field len %d" %len(observations_field))
         from timeit import default_timer as timer
@@ -401,7 +392,7 @@ def iter_and_send(sender, obs_data, obs_metadata, observations_field, history, r
         # generate and send
         gen = VOEventGenerator(eventid = event_count)
         xml = gen.generateFromObjects(cel_objects, obs_metadata)
-        print(xml)
+        #print(xml)
         sender.send(xml)
         event_count += 1
         sending_times.append(time.time())
