@@ -2,16 +2,17 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+from copy import deepcopy
 from builtins import zip
 import os
 import time
 import functools
-from . import catsim_utils, opsim_utils, avro_utils
-from copy import deepcopy
+
+from lsst.sims.alertsim import catsim_utils, opsim_utils, avro_utils
+from lsst.sims.alertsim import broadcast
 from lsst.sims.alertsim.dataModel import DataMetadata, CelestialObject
 from lsst.sims.alertsim.generateVOEvent import VOEventGenerator
-from lsst.sims.alertsim.broadcast import *
-from lsst.sims.alertsim.catalogs import *
+from lsst.sims.alertsim.catalogs import dia_transformations as dia_trans
 
 BANDNAMES = ['u', 'g', 'r', 'i', 'z', 'y']
 STACK_VERSION = 10
@@ -138,7 +139,7 @@ def get_sender(protocol, ipaddr, port, header):
     @param [out] is object of the broadcast child class
     
     """
-    return vars(broadcast)[protocol](ipaddr, port, header)
+    return vars(broadcast.broadcast)[protocol](ipaddr, port, header)
 
 def query_and_dispatch(obs_data, obs_metadata, observations_field, 
                        history, session_dir, sender, radius, opsim_path, 
@@ -170,6 +171,17 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                 'diaSource':diaSource_dict}
             list_of_alert_dicts.append(alert_dict)
     else:
+        from lsst.sims.photUtils import cache_LSST_seds
+        cache_LSST_seds()
+
+        from lsst.sims.catUtils.mixins import ParametrizedLightCurveMixin
+
+        plc = ParametrizedLightCurveMixin()
+        plc.load_parametrized_light_curves()
+        
+        #from lsst.sims.catUtils import load_parametrized_light_curves
+        #load_parametrized_light_curves()
+
         from lsst.sims.catUtils.utils import FastStellarLightCurveGenerator
         lc_gen = FastStellarLightCurveGenerator(obs_data.db_obj, opsim_path)
         #from lsst.sims.catUtils.utils import StellarLightCurveGenerator
@@ -181,8 +193,6 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
         dec1=obs_metadata.pointingDec - radius
         dec2=obs_metadata.pointingDec + radius
 
-        from lsst.sims.photUtils import cache_LSST_seds
-        cache_LSST_seds()
         print("ra %f - %f, decl %f - %f" % (ra1, ra2, dec1, dec2))
         pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), expMJD=(obs_metadata.mjd.TAI-365, obs_metadata.mjd.TAI), boundLength=radius)
         
@@ -212,7 +222,7 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
             uniqueId = diaSource_dict['diaObjectId']
             lc = lc_dict[uniqueId]
 
-            for filterName, nestedDict in lc.iteritems():
+            for filterName, nestedDict in lc.items():
                 for i, mjd in enumerate(nestedDict['mjd']):
                     
                     # find a proper ObservationMetaData object by mjd.
@@ -227,8 +237,8 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     totMag = nestedDict['mag'][i]
                     meanMag = temp_dict['lsst_%s' % filterName]-temp_dict['delta_lsst_%s' % filterName]
                     
-                    totFlux = fluxFromMag(totMag)
-                    meanFlux = fluxFromMag(meanMag)
+                    totFlux = dia_trans.fluxFromMag(totMag)
+                    meanFlux = dia_trans.fluxFromMag(meanMag)
                     diaFlux = totFlux - meanFlux
 
                     # error is not handled yet!!
@@ -255,10 +265,10 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     temp_dict['filterName'] = filterName
                     temp_dict['lsst_%s' % filterName] = totMag
                     temp_dict['delta_lsst_%s' % filterName] = totMag - meanMag
-                    temp_dict['midPointTAI'] = midPointTai(mjd)
-                    temp_dict['ccdVisitId'] = ccdVisitId(obsHistID, temp_dict['ccdVisitId'] % 10000)
-                    temp_dict['diaSourceId'] = diaSourceId(temp_dict['diaSourceId'] % 10000000, obsHistID)
-                    temp_dict['apFlux'] = apFlux(diaFlux)
+                    temp_dict['midPointTAI'] = dia_trans.midPointTai(mjd)
+                    temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, temp_dict['ccdVisitId'] % 10000)
+                    temp_dict['diaSourceId'] = dia_trans.diaSourceId(temp_dict['diaSourceId'] % 10000000, obsHistID)
+                    temp_dict['apFlux'] = dia_trans.apFlux(diaFlux)
                     diaSource_history.append(temp_dict)
 
             alert_dict = {'alertId':45135, 'l1dbId':12545, 
