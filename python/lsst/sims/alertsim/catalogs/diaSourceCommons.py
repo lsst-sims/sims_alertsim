@@ -1,8 +1,8 @@
 """ DiaSourceCommons """
 from __future__ import absolute_import
 import numpy as np
-from lsst.sims.alertsim.dia_transformations import *
-from lsst.sims.alertsim.random_utils import array_to_dict
+from lsst.sims.alertsim.catalogs.dia_transformations import *
+from lsst.sims.alertsim.catalogs.random_utils import array_to_dict
 from lsst.sims.catalogs.decorators import cached, compound
 from lsst.sims.catUtils.mixins import CameraCoords
 from lsst.obs.lsstSim import LsstSimMapper
