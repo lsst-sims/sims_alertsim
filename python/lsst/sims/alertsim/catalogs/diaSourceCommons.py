@@ -477,13 +477,3 @@ class DiaSourceCommons(CameraCoords):
         cols = ["ixxSigma", "iyySigma", "ixySigma", 
                 "ixx_iyy_Cov", "ixx_ixy_Cov", "iyy_ixy_Cov"]
         return array_to_dict(cols, vals)
-
-    # resolve db column case-sensitivness
-    #def get_htmId20(self):
-    #    return self._decapitalize_column_name('htmID')
-
-    def _decapitalize_column_name(self, colname):
-        if colname in  self.db_obj.columnMap:
-            return self.column_by_name(colname)
-        else:
-            return self.column_by_name(colname.lower())

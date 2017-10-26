@@ -49,7 +49,8 @@ class DIAObjectCommons(CameraCoords):
                                   "know how to deal with the nested structure "
                                   "of the DIASource schema")
 
-    camera = LsstSimMapper().camera  # the software representation of the LSST camera
+    from lsst.sims.coordUtils import lsst_camera
+    camera = lsst_camera()
 
     # getters for DIASource attributes which are generated from catsim
 
@@ -327,32 +328,32 @@ class DIAObjectCommons(CameraCoords):
 	return array_to_dict(cols, vals)
 
     def get_uLcNonPeriodic(self):
-	vals = self.randomFloatArr(32, -1)
+	vals = self.randomFloatArr(20, -1)
 	cols = ['uLcNonPeriodic01', 'uLcNonPeriodic02', 'uLcNonPeriodic03', 'uLcNonPeriodic04', 'uLcNonPeriodic05', 'uLcNonPeriodic06', 'uLcNonPeriodic07', 'uLcNonPeriodic08', 'uLcNonPeriodic09', 'uLcNonPeriodic10', 'uLcNonPeriodic11', 'uLcNonPeriodic12', 'uLcNonPeriodic13', 'uLcNonPeriodic14', 'uLcNonPeriodic15', 'uLcNonPeriodic16', 'uLcNonPeriodic17', 'uLcNonPeriodic18', 'uLcNonPeriodic19', 'uLcNonPeriodic20']
 	return array_to_dict(cols, vals)
 
     def get_gLcNonPeriodic(self):
-	vals = self.randomFloatArr(32, -1)
+	vals = self.randomFloatArr(20, -1)
 	cols = ['gLcNonPeriodic01', 'gLcNonPeriodic02', 'gLcNonPeriodic03', 'gLcNonPeriodic04', 'gLcNonPeriodic05', 'gLcNonPeriodic06', 'gLcNonPeriodic07', 'gLcNonPeriodic08', 'gLcNonPeriodic09', 'gLcNonPeriodic10', 'gLcNonPeriodic11', 'gLcNonPeriodic12', 'gLcNonPeriodic13', 'gLcNonPeriodic14', 'gLcNonPeriodic15', 'gLcNonPeriodic16', 'gLcNonPeriodic17', 'gLcNonPeriodic18', 'gLcNonPeriodic19', 'gLcNonPeriodic20']
 	return array_to_dict(cols, vals)
 
     def get_rLcNonPeriodic(self):
-	vals = self.randomFloatArr(32, -1)
+	vals = self.randomFloatArr(20, -1)
 	cols = ['rLcNonPeriodic01', 'rLcNonPeriodic02', 'rLcNonPeriodic03', 'rLcNonPeriodic04', 'rLcNonPeriodic05', 'rLcNonPeriodic06', 'rLcNonPeriodic07', 'rLcNonPeriodic08', 'rLcNonPeriodic09', 'rLcNonPeriodic10', 'rLcNonPeriodic11', 'rLcNonPeriodic12', 'rLcNonPeriodic13', 'rLcNonPeriodic14', 'rLcNonPeriodic15', 'rLcNonPeriodic16', 'rLcNonPeriodic17', 'rLcNonPeriodic18', 'rLcNonPeriodic19', 'rLcNonPeriodic20']
 	return array_to_dict(cols, vals)
 
     def get_iLcNonPeriodic(self):
-	vals = self.randomFloatArr(32, -1)
+	vals = self.randomFloatArr(20, -1)
 	cols = ['iLcNonPeriodic01', 'iLcNonPeriodic02', 'iLcNonPeriodic03', 'iLcNonPeriodic04', 'iLcNonPeriodic05', 'iLcNonPeriodic06', 'iLcNonPeriodic07', 'iLcNonPeriodic08', 'iLcNonPeriodic09', 'iLcNonPeriodic10', 'iLcNonPeriodic11', 'iLcNonPeriodic12', 'iLcNonPeriodic13', 'iLcNonPeriodic14', 'iLcNonPeriodic15', 'iLcNonPeriodic16', 'iLcNonPeriodic17', 'iLcNonPeriodic18', 'iLcNonPeriodic19', 'iLcNonPeriodic20']
 	return array_to_dict(cols, vals)
 
     def get_zLcNonPeriodic(self):
-	vals = self.randomFloatArr(32, -1)
+	vals = self.randomFloatArr(20, -1)
 	cols = ['zLcNonPeriodic01', 'zLcNonPeriodic02', 'zLcNonPeriodic03', 'zLcNonPeriodic04', 'zLcNonPeriodic05', 'zLcNonPeriodic06', 'zLcNonPeriodic07', 'zLcNonPeriodic08', 'zLcNonPeriodic09', 'zLcNonPeriodic10', 'zLcNonPeriodic11', 'zLcNonPeriodic12', 'zLcNonPeriodic13', 'zLcNonPeriodic14', 'zLcNonPeriodic15', 'zLcNonPeriodic16', 'zLcNonPeriodic17', 'zLcNonPeriodic18', 'zLcNonPeriodic19', 'zLcNonPeriodic20']
 	return array_to_dict(cols, vals)
 
     def get_yLcNonPeriodic(self):
-	vals = self.randomFloatArr(32, -1)
+	vals = self.randomFloatArr(20, -1)
 	cols = ['yLcNonPeriodic01', 'yLcNonPeriodic02', 'yLcNonPeriodic03', 'yLcNonPeriodic04', 'yLcNonPeriodic05', 'yLcNonPeriodic06', 'yLcNonPeriodic07', 'yLcNonPeriodic08', 'yLcNonPeriodic09', 'yLcNonPeriodic10', 'yLcNonPeriodic11', 'yLcNonPeriodic12', 'yLcNonPeriodic13', 'yLcNonPeriodic14', 'yLcNonPeriodic15', 'yLcNonPeriodic16', 'yLcNonPeriodic17', 'yLcNonPeriodic18', 'yLcNonPeriodic19', 'yLcNonPeriodic20']
 	return array_to_dict(cols, vals)
     
@@ -382,20 +383,3 @@ class DIAObjectCommons(CameraCoords):
     
     def get_nearbyObj3LnP(self):
 	return self.randomFloats(-1)
-    
-    # flags
-
-
-##################
-
-
-
-    # resolve db column case-sensitivness
-    #def get_htmId20(self):
-    #    return self._decapitalize_column_name('htmID')
-
-    def _decapitalize_column_name(self, colname):
-        if colname in  self.db_obj.columnMap.keys():
-            return self.column_by_name(colname)
-        else:
-            return self.column_by_name(colname.lower())
