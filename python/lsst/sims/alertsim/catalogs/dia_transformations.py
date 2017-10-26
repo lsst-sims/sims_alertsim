@@ -1,9 +1,11 @@
 """ dia_transformations """
-from lsst.sims.photUtils import Sed  # for converting magnitudes into fluxes
-from random_utils import array_to_dict
+
 import numpy as np
 import re
 import random
+
+from lsst.sims.photUtils import Sed  # for converting magnitudes into fluxes
+from lsst.sims.alertsim.catalogs.random_utils import array_to_dict
 
 """
 A module which groups methods for transformation of catsim values 
@@ -63,13 +65,6 @@ def fluxFromMag(mag):
     """
     ss = Sed()
     return ss.fluxFromMag(mag)
-
-def addEpsilon(some_value):
-    """
-    Add a small random epsilon to a value. Used for varieties of fluxes and errors 
-    which cannot be calculated at this moment
-    """
-    return some_value + 0.0001*random.random()
 
 def fluxError(mean_mag_error, tot_mag_error, mean_flux, tot_flux):
     """
@@ -149,3 +144,11 @@ def apFluxErr(diaFluxError):
              'apMeanSb10Err']
     
     return array_to_dict(cols, vals)
+
+#def addEpsilon(some_value):
+#    """
+#    Add a small random epsilon to a value. Used for varieties of fluxes and errors 
+#    which cannot be calculated at this moment
+#    """
+#    return some_value + 0.0001*random.random()
+
