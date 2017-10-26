@@ -96,7 +96,9 @@ class DiaSourceCommons(CameraCoords):
                                   "know how to deal with the nested structure "
                                   "of the DIASource schema")
 
-    camera = LsstSimMapper().camera  # the software representation of the LSST camera
+    # the software representation of the LSST camera
+    from lsst.sims.coordUtils import lsst_camera
+    camera = lsst_camera()
 
     # getters for DIASource attributes which are generated from catsim
 

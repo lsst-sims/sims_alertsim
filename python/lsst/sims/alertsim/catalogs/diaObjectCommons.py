@@ -48,6 +48,8 @@ class DIAObjectCommons(CameraCoords):
                                   "VariableStarsDia; write_catalog() does not "
                                   "know how to deal with the nested structure "
                                   "of the DIASource schema")
+     
+    # the software representation of the LSST camera
 
     from lsst.sims.coordUtils import lsst_camera
     camera = lsst_camera()
