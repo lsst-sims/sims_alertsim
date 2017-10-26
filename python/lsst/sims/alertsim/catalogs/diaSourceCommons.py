@@ -1,7 +1,7 @@
 """ DiaSourceCommons """
 from __future__ import absolute_import
 import numpy as np
-from lsst.sims.alertsim.catalogs.dia_transformations import *
+from lsst.sims.alertsim.catalogs import dia_transformations as dia_trans
 from lsst.sims.alertsim.catalogs.random_utils import array_to_dict
 from lsst.sims.catalogs.decorators import cached, compound
 from lsst.sims.catUtils.mixins import CameraCoords
@@ -254,7 +254,7 @@ class DiaSourceCommons(CameraCoords):
         """
         Return mid point of exposure 
         """
-        return np.array([midPointTai(self.obs_metadata.mjd.TAI)]*len(self.column_by_name('uniqueId')))
+        return np.array([dia_trans.midPointTai(self.obs_metadata.mjd.TAI)]*len(self.column_by_name('uniqueId')))
 
     def get_filterName(self):
         return np.array([self.obs_metadata.bandpass]*len(self.column_by_name('uniqueId')))
@@ -264,20 +264,22 @@ class DiaSourceCommons(CameraCoords):
         """
         Concatenate the digits in 'R:i,j S:m,n' to make the chip number ijmn
         """
-        return chipNum(self.column_by_name('chipName'))
+        return dia_trans.chipNum(self.column_by_name('chipName'))
 
     def get_ccdVisitId(self):
         """
         Concatenate ObsHistID and chipNum
         """
-        return ccdVisitId(self.obs_metadata.OpsimMetaData['obsHistID'], self.column_by_name('chipNum'))
+        return dia_trans.ccdVisitId(self.obs_metadata.OpsimMetaData['obsHistID'], 
+                self.column_by_name('chipNum'))
 
     def get_diaSourceId(self):
         """
         A unique identifier for each DIASource (this needs to be unique for
         each apparition of a given object)
         """
-        return diaSourceId(self.column_by_name('uniqueId'), self.obs_metadata.OpsimMetaData['obsHistID'])
+        return dia_trans.diaSourceId(self.column_by_name('uniqueId'), 
+                self.obs_metadata.OpsimMetaData['obsHistID'])
 
     def get_ra(self):
         """
@@ -333,14 +335,14 @@ class DiaSourceCommons(CameraCoords):
         """
         The total flux of the variable source
         """
-        return fluxFromMag(self.column_by_name('totMag'))
+        return dia_trans.fluxFromMag(self.column_by_name('totMag'))
 
     @cached
     def get_meanFlux(self):
         """
         The mean (quiescent) flux of the variable source
         """
-        return fluxFromMag(self.column_by_name('meanMag'))
+        return dia_trans.fluxFromMag(self.column_by_name('meanMag'))
 
 
     @cached
@@ -366,14 +368,16 @@ class DiaSourceCommons(CameraCoords):
         tot_mag_error = self.column_by_name('sigma_totMag')
         mean_flux = self.column_by_name('meanFlux')
         tot_flux = self.column_by_name('totFlux')
-        return fluxError(mean_mag_error, tot_mag_error, mean_flux, tot_flux)
+        return dia_trans.fluxError(mean_mag_error, tot_mag_error, 
+                mean_flux, tot_flux)
 
     @cached
     def get_snr(self):
         """
         Get the SNR
         """
-        return snr(self.column_by_name('diaFlux'), self.column_by_name('diaFluxError'))
+        return dia_trans.snr(self.column_by_name('diaFlux'), 
+                self.column_by_name('diaFluxError'))
 
     def get_psFlux(self):
         """
@@ -395,19 +399,20 @@ class DiaSourceCommons(CameraCoords):
         """
         apMeanSb01 will be the true flux of the source.
         """
-        return apFlux(self.column_by_name('diaFlux'))
+        return dia_trans.apFlux(self.column_by_name('diaFlux'))
 
     def get_apFluxErr(self):
         """
         Calculate the true flux error by getting the magntidue error and assuming that
         magnitude_error = 2.5*log10(1 + 1/SNR)
         """
-        return apFluxErr(self.column_by_name('diaFluxError'))
+        return dia_trans.apFluxErr(self.column_by_name('diaFluxError'))
     
 
     def get_psRa(self):
         """
-        Just return raICRS with a small epsilon added, since CatSim does not have methods to calculate psf RA
+        Just return raICRS with a small epsilon added, 
+        since CatSim does not have methods to calculate psf RA
         """
         return self.column_by_name('raICRS') + 1.0e-6*self.randomFloats(-1)
 
