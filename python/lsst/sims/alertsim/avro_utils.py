@@ -9,10 +9,11 @@ except:
 
 from timeit import default_timer as timer
 import json
+import numpy as np
 from collections import defaultdict
 
 def _raise_no_avro(method_name):
-    msg = "To use %s you must install avro from https://avro.apache.org" % method_name
+    msg = "To use %s you must install avro-python3 from https://avro.apache.org. You might use pip install avro-python3" % method_name
     raise RuntimeError(msg)
 
 
@@ -25,7 +26,6 @@ def catsim_to_avro(list_of_alert_dicts, session_dir, schemaURI='avsc/diasource.a
     global _avro_installed
     if not _avro_installed:
         _raise_no_avro("catsim_to_avro")
-
 
     known_schemas = avro.schema.Names()
 
@@ -60,12 +60,15 @@ def catsim_to_avro(list_of_alert_dicts, session_dir, schemaURI='avsc/diasource.a
         avro_validated = False
 
         for alert_dict in list_per_chip:
-            json_qd = json.loads(json.dumps(alert_dict))
-        
-            json.dump(json_qd, file_obj)
-        
+            
+            # json cannot serialize numpy types
+            _numpy_to_scalar(alert_dict)
+
+            json.dump(alert_dict, file_obj)
+
             if (ix==0 and avro_validated==False):
-                writer.append(json_qd)
+            
+                writer.append(alert_dict)
                 print("Avro schema validated for this chunk")
                 avro_validated = True
 
@@ -106,8 +109,23 @@ def load_avsc_schema(schema_path, names = None):
 
     schema_json = json.loads(open(schema_path).read())
     
-    schema = avro.schema.make_avsc_object(schema_json, names)
+    #schema = avro.schema.make_avsc_object(schema_json, names)
+    schema = avro.schema._SchemaFromJSONObject(schema_json, names)
 
     return schema
     
 
+def _numpy_to_scalar(d):
+
+    """ Recursively change all numpy types to scalar
+
+    @param[in] d is a dictionary containing single alert
+
+    """
+    for k, v in d.items():
+        if isinstance(d[k], dict):
+            _numpy_to_scalar(d[k])
+        elif isinstance(d[k], np.generic):
+                d[k] = np.asscalar(d[k])
+        else:
+            pass
