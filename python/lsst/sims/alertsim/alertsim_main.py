@@ -158,7 +158,7 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
     @param [in] obs_data the data placeholder from catsim query (one visit)
 
     @param [in] obs_metadata is the metadata for the given night, 
-    or obs_per_field[0], kept for clarity
+    or observation_field[0], kept for clarity
 
     @param [in] observations_field is a list of all observations 
     for the given field
@@ -224,10 +224,13 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
             # JSON can't serialize numpy
             _numpy_to_scalar(diaSource_dict)
 
-            diaSource_history = []
-
             diaObjectId = diaSource_dict['diaObjectId']
+            diaSourceId = diaSource_dict['diaSourceId']
+            diaSource_dict['diaSourceId'] = dia_trans.diaSourceId(int(np.asscalar(obs_metadata.OpsimMetaData['obsHistID'])), 
+                    diaSourceId)
             lc = lc_dict[diaObjectId]
+
+            diaSource_history = []
             
             for filterName, nestedDict in lc.items():
                 for i, mjd in enumerate(nestedDict['mjd']):
@@ -251,7 +254,7 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     # error is not handled yet!!
                     error = nestedDict['error'][i]
 
-                    obsHistID = current_metadata.OpsimMetaData['obsHistID']
+                    obsHistID = int(np.asscalar(current_metadata.OpsimMetaData['obsHistID']))
 
                     # remove mags and deltas from other filters
 
@@ -273,18 +276,19 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     temp_dict['lsst_%s' % filterName] = totMag
                     temp_dict['delta_lsst_%s' % filterName] = totMag - meanMag
                     temp_dict['midPointTai'] = dia_trans.midPointTai(mjd)
-                    temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, temp_dict['ccdVisitId'] % 10000)
-                    #print(temp_dict['diaSourceId'])
-                    temp_dict['diaSourceId'] = dia_trans.diaSourceId(temp_dict['diaSourceId'] % 10000000, obsHistID)
-                    #print(temp_dict['diaSourceId'])
+                    temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, 
+                            int(temp_dict['ccdVisitId'] / 10000))
+                    temp_dict['diaSourceId'] = dia_trans.diaSourceId(obsHistID, 
+                            int(temp_dict['diaSourceId'] / 10000000))
                     temp_dict['apFlux'] = dia_trans.apFlux(diaFlux)
+                    # Append to the list of historical instances
+                    diaSource_history.append(temp_dict)
                     
+                    print(temp_dict['diaSourceId'])
                     # Convert newly calculated values from numpy to scalar
                     _numpy_to_scalar(temp_dict)
             
-                    # Append to the list of historical instances
-                    diaSource_history.append(temp_dict)
-
+            exit(0)
             alert_dict = {'alertId':45135, 'l1dbId':12545, 
                 'diaSource':diaSource_dict, 'prv_diaSources':diaSource_history}
             #print(alert_dict)
