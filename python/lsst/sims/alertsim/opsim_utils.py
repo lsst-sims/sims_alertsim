@@ -92,6 +92,12 @@ def _convert_obs_to_history(obs_list, obs_gen):
     Take a list of ObservationMetaData and rearrange it into a 2-d list in which each row
     corresponds to the current ObservationMetaData but also contains all of the prior
     observations of the same field up to that date in sorted order
+
+    @param [in] obs_list is a list of ObservationMetaData for the current night
+    
+    @param [in] obs_gen is the relevant ObservationMetaDataGenerator object
+    
+    Returns a matrix of ObservationMetaData objects 
     """
 
     # sort the ObservationMetaData in chronological order
