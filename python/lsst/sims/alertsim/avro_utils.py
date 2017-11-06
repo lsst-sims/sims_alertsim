@@ -62,7 +62,11 @@ def catsim_to_avro(list_of_alert_dicts, session_dir, schemaURI='avsc/diasource.a
         for alert_dict in list_per_chip:
             
             # json cannot serialize numpy types
-            _numpy_to_scalar(alert_dict)
+            #print("before scalarize")
+            #print(_print_types(alert_dict))
+            #_numpy_to_scalar(alert_dict)
+            #print("after scalarize")
+            #print(_print_types(alert_dict))
 
             json.dump(alert_dict, file_obj)
 
@@ -126,6 +130,14 @@ def _numpy_to_scalar(d):
         if isinstance(d[k], dict):
             _numpy_to_scalar(d[k])
         elif isinstance(d[k], np.generic):
-                d[k] = np.asscalar(d[k])
+            d[k] = np.asscalar(d[k])
         else:
             pass
+
+def _print_types(d, types = []):
+    for k, v in d.items():
+        if isinstance(d[k], dict):
+            _print_types(d[k], types)
+        else:
+            types.append([k, type(v)])
+    return types
