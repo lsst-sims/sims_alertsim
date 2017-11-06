@@ -279,9 +279,16 @@ class DiaSourceCommons(CameraCoords):
         """
         A unique identifier for each DIASource (this needs to be unique for
         each apparition of a given object)
+        
+        !!! Due to the limit of numpy.int64, uniqueId*10^7 is too large, 
+        !!! resulting in a minus value of diaSourceId. For now, this method 
+        !!! will return uniqueId only, which will be transformed to scalar 
+        !!! later and multiplied by 10^7 for the purpose of adding obsHistId
         """
-        return dia_trans.diaSourceId(self.column_by_name('uniqueId'), 
-                self.obs_metadata.OpsimMetaData['obsHistID'])
+        #return dia_trans.diaSourceId(self.column_by_name('uniqueId'), 
+        #        self.obs_metadata.OpsimMetaData['obsHistID'])
+        return self.column_by_name('uniqueId')
+
 
     def get_ra(self):
         """
