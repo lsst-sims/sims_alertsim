@@ -49,7 +49,7 @@ def chipNum(chip_name):
     return np.array([int(''.join(re.findall(r'\d+', name))) if name is not None else 0
                      for name in chip_name])
 
-def diaSourceId(uniqueId, obsHistID):
+def diaSourceId(obsHistID, uniqueId):
     """
     A unique identifier for each DIASource (this needs to be unique for
     each apparition of a given object)
