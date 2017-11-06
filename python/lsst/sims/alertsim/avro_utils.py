@@ -20,9 +20,15 @@ def _raise_no_avro(method_name):
 def catsim_to_avro(list_of_alert_dicts, session_dir, schemaURI='avsc/diasource.avsc'):
 
     """
-    Input: list of dictionaries for a catsim visit which consists
-    of transformed catsim column_name-value pairs, URI of avsc shema    
+    Serializes alerts to json and validates against avro schema
+
+    @param [in] list_of_alert_dicts is a chunk of alerts, with or without history, in a form of dicts
+    
+    @param [in] session_dir is a unique local directory for this session where json is serialized
+
+    @param [in] schemaURI is relative location of avsc schema 
     """
+
     global _avro_installed
     if not _avro_installed:
         _raise_no_avro("catsim_to_avro")
