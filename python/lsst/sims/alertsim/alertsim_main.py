@@ -3,6 +3,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 from copy import deepcopy
+import numpy as np
 from builtins import zip
 import os
 import time
@@ -82,6 +83,11 @@ def main(opsim_table=None, catsim_table='allstars',
 
     print("opsim result fetched and transformed to ObservationMetaData objects")
 
+    from lsst.sims.catUtils.mixins import ParametrizedLightCurveMixin
+
+    plc = ParametrizedLightCurveMixin()
+    plc.load_parametrized_light_curves()
+    
     sender = None
     session_dir = None
 
@@ -145,10 +151,11 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                        history, session_dir, sender, radius, opsim_path, 
                        full_constraint, serialize_json):
 
-    """ Iterate over catalog and serialize data as JSON, divided
-    into files by CCD number
-    
-    @param [in] obs_data the data from catsim query (one visit)
+    """ Iterate over catalog and either:
+        a) serialize data as JSON, divided into files by CCD number
+        b) send data as VOEvents to a remote machine
+
+    @param [in] obs_data the data placeholder from catsim query (one visit)
 
     @param [in] obs_metadata is the metadata for the given night, 
     or obs_per_field[0], kept for clarity
@@ -174,10 +181,6 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
         from lsst.sims.photUtils import cache_LSST_seds
         cache_LSST_seds()
 
-        from lsst.sims.catUtils.mixins import ParametrizedLightCurveMixin
-
-        plc = ParametrizedLightCurveMixin()
-        plc.load_parametrized_light_curves()
         
         #from lsst.sims.catUtils import load_parametrized_light_curves
         #load_parametrized_light_curves()
@@ -217,11 +220,15 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
             
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
 
+            # convert numpy types to scalar
+            # JSON can't serialize numpy
+            _numpy_to_scalar(diaSource_dict)
+
             diaSource_history = []
 
-            uniqueId = diaSource_dict['diaObjectId']
-            lc = lc_dict[uniqueId]
-
+            diaObjectId = diaSource_dict['diaObjectId']
+            lc = lc_dict[diaObjectId]
+            
             for filterName, nestedDict in lc.items():
                 for i, mjd in enumerate(nestedDict['mjd']):
                     
@@ -265,10 +272,17 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     temp_dict['filterName'] = filterName
                     temp_dict['lsst_%s' % filterName] = totMag
                     temp_dict['delta_lsst_%s' % filterName] = totMag - meanMag
-                    temp_dict['midPointTAI'] = dia_trans.midPointTai(mjd)
+                    temp_dict['midPointTai'] = dia_trans.midPointTai(mjd)
                     temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, temp_dict['ccdVisitId'] % 10000)
+                    #print(temp_dict['diaSourceId'])
                     temp_dict['diaSourceId'] = dia_trans.diaSourceId(temp_dict['diaSourceId'] % 10000000, obsHistID)
+                    #print(temp_dict['diaSourceId'])
                     temp_dict['apFlux'] = dia_trans.apFlux(diaFlux)
+                    
+                    # Convert newly calculated values from numpy to scalar
+                    _numpy_to_scalar(temp_dict)
+            
+                    # Append to the list of historical instances
                     diaSource_history.append(temp_dict)
 
             alert_dict = {'alertId':45135, 'l1dbId':12545, 
@@ -452,3 +466,18 @@ def _get_additional_constraint(obs_metadata):
     opsim_filter = obs_metadata.OpsimMetaData['filter']
     new_constraint = " and %smag <= %f" % (opsim_filter, fiveSigmaDepth)
     return new_constraint
+
+def _numpy_to_scalar(d):
+
+    """ Recursively change all numpy types to scalar
+
+    @param[in] d is a dictionary containing single alert
+
+    """
+    for k, v in d.items():
+        if isinstance(d[k], dict):
+            _numpy_to_scalar(d[k])
+        elif isinstance(d[k], np.generic):
+            d[k] = np.asscalar(d[k])
+        else:
+            pass
