@@ -218,7 +218,7 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
         for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
         #for i, line in enumerate(obs_data.iter_catalog(chunk_size=catsim_chunk_size)):
         #for line in obs_data.iter_catalog():
-            if(counter==0): print("begin main loop %s" % (timer()-catsim_timer))
+            if(counter==0): print("crunching new chunk of events %s" % (timer()-catsim_timer))
             
             counter = counter + 1
             if (counter % 100 == 0):
@@ -290,15 +290,12 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     # Append to the list of historical instances
                     diaSource_history.append(temp_dict)
                     
-                    #print(temp_dict['diaSourceId'])
-                    #print(type(temp_dict['diaSourceId']))
                     # Convert newly calculated values from numpy to scalar
                     _numpy_to_scalar(temp_dict)
             
             alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
                     'l1dbId':diaObjectId, 'diaSource':diaSource_dict, 
                     'prv_diaSources':diaSource_history}
-            #print(alert_dict)
 
             list_of_alert_dicts.append(alert_dict)
 
@@ -312,8 +309,7 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     print('ready to send %d events' % catsim_chunk_size)
                     for alert_dict in list_of_alert_dicts:
 
-                        #gen = VOEventGenerator(eventid = event_count)
-                        gen = VOEventGenerator(eventid = 12435)
+                        gen = VOEventGenerator(eventid = alert_dict['alertId'])
                         xml = gen.generateFromDicts(alert_dict)
                         #print(xml)
                         sender.send(xml)
@@ -333,8 +329,7 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
         print('ready to send %d events' % len(list_of_alert_dicts))
         for alert_dict in list_of_alert_dicts:
 
-            #gen = VOEventGenerator(eventid = event_count)
-            gen = VOEventGenerator(eventid = 12435)
+            gen = VOEventGenerator(eventid = alert_dict['alertId'])
             xml = gen.generateFromDicts(alert_dict)
             #print(xml)
             sender.send(xml)
