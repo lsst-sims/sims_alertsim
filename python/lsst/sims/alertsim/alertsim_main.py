@@ -197,8 +197,8 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
         lc_gen = FastStellarLightCurveGenerator(obs_data.db_obj, opsim_path)
         
         print("#### radius = %f" % (radius))
-        ra1=obs_metadata.pointingRA - radius
-        ra2=obs_metadata.pointingRA + radius
+        ra1=obs_metadata.pointingRA - radius/np.cos(np.radians(obs_metadata.pointingDec))
+        ra2=obs_metadata.pointingRA + radius/np.cos(np.radians(obs_metadata.pointingDec))
         dec1=obs_metadata.pointingDec - radius
         dec2=obs_metadata.pointingDec + radius
 
