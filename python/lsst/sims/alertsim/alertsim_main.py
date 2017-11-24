@@ -173,22 +173,23 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
 
     if not history:
         for line in obs_data.iter_catalog():
+
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
+            
+            # convert numpy types to scalar
+            # JSON can't serialize numpy
+            _numpy_to_scalar(diaSource_dict)
+            
             alert_dict = {'alertId':45135, 'l1dbId':12545, 
                 'diaSource':diaSource_dict}
             list_of_alert_dicts.append(alert_dict)
+    
     else:
         from lsst.sims.photUtils import cache_LSST_seds
         cache_LSST_seds()
 
-        
-        #from lsst.sims.catUtils import load_parametrized_light_curves
-        #load_parametrized_light_curves()
-
         from lsst.sims.catUtils.utils import FastStellarLightCurveGenerator
         lc_gen = FastStellarLightCurveGenerator(obs_data.db_obj, opsim_path)
-        #from lsst.sims.catUtils.utils import StellarLightCurveGenerator
-        #lc_gen = StellarLightCurveGenerator(obs_data.db_obj, opsim_path)
         
         print("#### radius = %f" % (radius))
         ra1=obs_metadata.pointingRA - radius
@@ -226,8 +227,8 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
 
             diaObjectId = diaSource_dict['diaObjectId']
             diaSourceId = diaSource_dict['diaSourceId']
-            diaSource_dict['diaSourceId'] = dia_trans.diaSourceId(int(np.asscalar(obs_metadata.OpsimMetaData['obsHistID'])), 
-                    diaSourceId)
+            diaSource_dict['diaSourceId'] = int(dia_trans.diaSourceId(int(np.asscalar(obs_metadata.OpsimMetaData['obsHistID'])), 
+                    counter))
             lc = lc_dict[diaObjectId]
 
             diaSource_history = []
@@ -278,20 +279,22 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     temp_dict['midPointTai'] = dia_trans.midPointTai(mjd)
                     temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, 
                             int(temp_dict['ccdVisitId'] / 10000))
-                    temp_dict['diaSourceId'] = dia_trans.diaSourceId(obsHistID, 
-                            int(temp_dict['diaSourceId'] / 10000000))
+                    temp_dict['diaSourceId'] = int(dia_trans.diaSourceId(obsHistID, 1))
+                    #        int(temp_dict['diaSourceId'] / 10000000)))
                     temp_dict['apFlux'] = dia_trans.apFlux(diaFlux)
                     # Append to the list of historical instances
                     diaSource_history.append(temp_dict)
                     
-                    print(temp_dict['diaSourceId'])
+                    #print(temp_dict['diaSourceId'])
+                    #print(type(temp_dict['diaSourceId']))
                     # Convert newly calculated values from numpy to scalar
                     _numpy_to_scalar(temp_dict)
             
-            exit(0)
-            alert_dict = {'alertId':45135, 'l1dbId':12545, 
-                'diaSource':diaSource_dict, 'prv_diaSources':diaSource_history}
+            alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
+                    'l1dbId':diaObjectId, 'diaSource':diaSource_dict, 
+                    'prv_diaSources':diaSource_history}
             #print(alert_dict)
+
             list_of_alert_dicts.append(alert_dict)
 
             if (counter==catsim_chunk_size):
