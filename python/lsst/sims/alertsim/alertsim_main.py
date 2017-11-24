@@ -7,6 +7,7 @@ import numpy as np
 from builtins import zip
 import os
 import time
+import errno
 import functools
 
 from lsst.sims.alertsim import catsim_utils, opsim_utils, avro_utils
@@ -95,9 +96,13 @@ def main(opsim_table=None, catsim_table='allstars',
 
         """ make unique local session directory based on the timestamp """
         session_dir = str(int(time.time()))
+        
         try:
             os.makedirs("json_output/"+session_dir)
-        except OSError:
+        except OSError as e:
+            # will pass if directory already exists
+            if e.errno != errno.EEXIST:
+                raise
             pass
 
     else:
