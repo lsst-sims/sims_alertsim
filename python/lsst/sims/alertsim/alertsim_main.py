@@ -160,7 +160,7 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
         a) serialize data as JSON, divided into files by CCD number
         b) send data as VOEvents to a remote machine
 
-    @param [in] obs_data the data placeholder from catsim query (one visit)
+    @param [in] obs_data is an instantiation of InstanceCatalog
 
     @param [in] obs_metadata is the metadata for the given night, 
     or observation_field[0], kept for clarity
