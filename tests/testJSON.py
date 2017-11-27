@@ -122,7 +122,10 @@ class JsonTestCase(unittest.TestCase):
                 dia_dict[chipNum][diaSourceId] = source
 
         non_random_cols = ['midPointTai', 'filterName', 'ccdVisitId', 'diaSourceId',
-                           'radec', 'xy', 'totFlux', 'snr']
+                           'ra', 'decl', 'x', 'y', 'totFlux', 'snr']
+
+        with open('diadict', 'w') as f:
+            pprint.pprint(dia_dict, f)
 
         unique_chipnum = []
         was_found = {}
@@ -132,7 +135,7 @@ class JsonTestCase(unittest.TestCase):
             chipNumDex = cat._column_outputs.index('chipNum')
             chipNameDex = cat._column_outputs.index('chipName')
             diaSourceIdDex = cat._column_outputs.index('diaSourceId')
-
+            
             for col in non_random_cols:
                 self.assertIn(col, cat._column_outputs)
 
@@ -175,13 +178,13 @@ class JsonTestCase(unittest.TestCase):
             self.assertIn(chipNum, was_found)
             for diaSourceId in dia_dict[chipNum]:
                 self.assertIn(diaSourceId, dia_dict[chipNum])
-
+        """
         for file_name in list_of_json_files:
             full_name = os.path.join(json_dir, file_name)
             if os.path.exists(full_name):
                 os.unlink(full_name)
         os.rmdir(json_dir)
-
+        """
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
 
