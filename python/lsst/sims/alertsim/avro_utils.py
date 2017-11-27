@@ -7,6 +7,7 @@ try:
 except:
     _avro_installed = False
 
+import os
 from timeit import default_timer as timer
 import json
 import numpy as np
@@ -60,29 +61,25 @@ def catsim_to_avro(list_of_alert_dicts, session_dir, schemaURI='avsc/diasource.a
 
         serialization_timer = timer()
 
+
         #open file with a name of a chipNum in append mode
-        file_obj = open("json_output/"+session_dir+"/"+chipNum, 'a')
-        
-        avro_validated = False
+        with open(os.path.join("json_output/", session_dir, chipNum), 'a') as out_file:
 
-        for alert_dict in list_per_chip:
+            avro_validated = False
             
-            # json cannot serialize numpy types
-            #print("before scalarize")
-            #print(_print_types(alert_dict))
-            #_numpy_to_scalar(alert_dict)
-            #print("after scalarize")
-            #print(_print_types(alert_dict))
-
-            json.dump(alert_dict, file_obj)
-
-            if (ix==0 and avro_validated==False):
+            for alert_dict in list_per_chip:
             
-                writer.append(alert_dict)
-                print("Avro schema validated for this chunk")
-                avro_validated = True
+                json.dump(alert_dict, out_file)
 
-        file_obj.close()
+                if (ix==0 and avro_validated==False):
+            
+                    writer.append(alert_dict)
+                    
+                    print("Avro schema validated for this chunk")
+                    
+                    avro_validated = True
+
+        #file_obj.close()
         print("serialization for %d events on this chip took %s" % (len(list_per_chip), timer()-serialization_timer))
 
     writer.close()
