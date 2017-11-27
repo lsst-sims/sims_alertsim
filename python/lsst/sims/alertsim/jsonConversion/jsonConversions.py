@@ -34,7 +34,7 @@ def jsonFromCatalog(obs_list, cat_class, db, json_dir):
         obshistid = obs.OpsimMetaData['obsHistID']
         for data in cat.iter_catalog():
             source = dict(zip(cat._column_outputs, data))
-            chipNum = source['ccdVisitId']%1000
+            chipNum = source['ccdVisitId']%10000
             if chipNum>0:
                 tag = '%d_%d' % (chipNum, obshistid)
                 if tag not in source_dict:
