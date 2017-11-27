@@ -124,9 +124,6 @@ class JsonTestCase(unittest.TestCase):
         non_random_cols = ['midPointTai', 'filterName', 'ccdVisitId', 'diaSourceId',
                            'ra', 'decl', 'x', 'y', 'totFlux', 'snr']
 
-        with open('diadict', 'w') as f:
-            pprint.pprint(dia_dict, f)
-
         unique_chipnum = []
         was_found = {}
         for ix, obs in enumerate(obs_list):
