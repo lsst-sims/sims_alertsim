@@ -4,6 +4,7 @@ from __future__ import absolute_import
 
 from copy import deepcopy
 import numpy as np
+from timeit import default_timer as timer
 from builtins import zip
 import os
 import time
@@ -15,6 +16,10 @@ from lsst.sims.alertsim import broadcast
 from lsst.sims.alertsim.dataModel import DataMetadata, CelestialObject
 from lsst.sims.alertsim.generateVOEvent import VOEventGenerator
 from lsst.sims.alertsim.catalogs import dia_transformations as dia_trans
+from lsst.sims.catUtils.mixins import ParametrizedLightCurveMixin
+from lsst.sims.photUtils import cache_LSST_seds
+from lsst.sims.catUtils.utils import FastStellarLightCurveGenerator
+
 
 BANDNAMES = ['u', 'g', 'r', 'i', 'z', 'y']
 STACK_VERSION = 10
@@ -83,8 +88,6 @@ def main(opsim_table=None, catsim_table='allstars',
             opsim_mjd=opsim_mjd, history=history)
 
     print("opsim result fetched and transformed to ObservationMetaData objects")
-
-    from lsst.sims.catUtils.mixins import ParametrizedLightCurveMixin
 
     plc = ParametrizedLightCurveMixin()
     plc.load_parametrized_light_curves()
@@ -190,10 +193,8 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
             list_of_alert_dicts.append(alert_dict)
     
     else:
-        from lsst.sims.photUtils import cache_LSST_seds
         cache_LSST_seds()
 
-        from lsst.sims.catUtils.utils import FastStellarLightCurveGenerator
         lc_gen = FastStellarLightCurveGenerator(obs_data.db_obj, opsim_path)
         
         print("#### radius = %f" % (radius))
@@ -210,7 +211,7 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
 
         print("done with lc's")
         print("observations_field len %d" %len(observations_field))
-        from timeit import default_timer as timer
+
         catsim_timer = timer()
         counter = 0
         catsim_chunk_size = 3000
