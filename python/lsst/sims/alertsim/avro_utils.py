@@ -18,7 +18,7 @@ def _raise_no_avro(method_name):
     raise RuntimeError(msg)
 
 
-def catsim_to_avro(list_of_alert_dicts, session_dir, schemaURI='avsc/diasource.avsc'):
+def catsim_to_avro(list_of_alert_dicts, session_dir):
 
     """
     Serializes alerts to json and validates against avro schema
@@ -41,8 +41,6 @@ def catsim_to_avro(list_of_alert_dicts, session_dir, schemaURI='avsc/diasource.a
     diaobject_schema = load_avsc_schema("avsc/diaobject.avsc", known_schemas)
     alert_schema = load_avsc_schema("avsc/alert.avsc", known_schemas)
 
-#    alert_schema = avro.schema.parse(open(schemaURI, "rb").read())
-
     writing_time = timer()
     writer = DataFileWriter(open("avsc/alert.avro", "wb"), DatumWriter(), alert_schema)
 
@@ -61,7 +59,6 @@ def catsim_to_avro(list_of_alert_dicts, session_dir, schemaURI='avsc/diasource.a
 
         serialization_timer = timer()
 
-
         #open file with a name of a chipNum in append mode
         with open(os.path.join("json_output/", session_dir, chipNum), 'a') as out_file:
 
@@ -74,12 +71,9 @@ def catsim_to_avro(list_of_alert_dicts, session_dir, schemaURI='avsc/diasource.a
                 if (ix==0 and avro_validated==False):
             
                     writer.append(alert_dict)
-                    
                     print("Avro schema validated for this chunk")
-                    
                     avro_validated = True
 
-        #file_obj.close()
         print("serialization for %d events on this chip took %s" % (len(list_per_chip), timer()-serialization_timer))
 
     writer.close()
