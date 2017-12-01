@@ -6,6 +6,7 @@ from lsst.sims.alertsim.catalogs.random_utils import array_to_dict
 from lsst.sims.catalogs.decorators import cached, compound
 from lsst.sims.catUtils.mixins import CameraCoords
 from lsst.obs.lsstSim import LsstSimMapper
+from lsst.sims.coordUtils import lsst_camera
 
 __all__ = ["DiaSourceCommons"]
 
@@ -97,7 +98,6 @@ class DiaSourceCommons(CameraCoords):
                                   "of the DIASource schema")
 
     # the software representation of the LSST camera
-    from lsst.sims.coordUtils import lsst_camera
     camera = lsst_camera()
 
     # getters for DIASource attributes which are generated from catsim

@@ -7,6 +7,7 @@ from lsst.sims.catalogs.decorators import cached, compound
 from lsst.sims.catUtils.mixins import CameraCoords
 from lsst.sims.photUtils import Sed  # for converting magnitudes into fluxes
 from lsst.obs.lsstSim import LsstSimMapper
+from lsst.sims.coordUtils import lsst_camera
 
 class DIAObjectCommons(CameraCoords):
 
@@ -50,8 +51,6 @@ class DIAObjectCommons(CameraCoords):
                                   "of the DIASource schema")
      
     # the software representation of the LSST camera
-
-    from lsst.sims.coordUtils import lsst_camera
     camera = lsst_camera()
 
     # getters for DIASource attributes which are generated from catsim
