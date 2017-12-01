@@ -104,7 +104,7 @@ def main(opsim_table=None, catsim_table='allstars',
         session_dir = str(int(time.time()))
         
         try:
-            os.makedirs("json_output/"+session_dir)
+            os.makedirs(os.path.join('json_output/', session_dir))
         except OSError as e:
             # will pass if directory already exists
             if e.errno != errno.EEXIST:
