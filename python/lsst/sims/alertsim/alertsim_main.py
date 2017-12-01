@@ -92,6 +92,9 @@ def main(opsim_table=None, catsim_table='allstars',
     plc = ParametrizedLightCurveMixin()
     plc.load_parametrized_light_curves()
     
+    if history:
+        cache_LSST_seds()
+    
     sender = None
     session_dir = None
 
@@ -188,12 +191,13 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
             # JSON can't serialize numpy
             _numpy_to_scalar(diaSource_dict)
             
-            alert_dict = {'alertId':45135, 'l1dbId':12545, 
-                'diaSource':diaSource_dict}
+            alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
+                    'l1dbId':diaSource_dict['diaObjectId'], 
+                    'diaSource':diaSource_dict, 
+                    'prv_diaSources':[]}
             list_of_alert_dicts.append(alert_dict)
     
     else:
-        cache_LSST_seds()
 
         lc_gen = FastStellarLightCurveGenerator(obs_data.db_obj, opsim_path)
         
