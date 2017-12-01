@@ -223,7 +223,7 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
         for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
         #for i, line in enumerate(obs_data.iter_catalog(chunk_size=catsim_chunk_size)):
         #for line in obs_data.iter_catalog():
-            if(counter==0): print("crunching new chunk of events %s" % (timer()-catsim_timer))
+            if(counter==0): print("Retrieve new chunk of events %s" % (timer()-catsim_timer))
             
             counter = counter + 1
             if (counter % 100 == 0):
@@ -288,9 +288,8 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     temp_dict['delta_lsst_%s' % filterName] = totMag - meanMag
                     temp_dict['midPointTai'] = dia_trans.midPointTai(mjd)
                     temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, 
-                            int(temp_dict['ccdVisitId'] / 10000))
+                            temp_dict['ccdVisitId']//10000)
                     temp_dict['diaSourceId'] = int(dia_trans.diaSourceId(obsHistID, 1))
-                    #        int(temp_dict['diaSourceId'] / 10000000)))
                     temp_dict['apFlux'] = dia_trans.apFlux(diaFlux)
                     # Append to the list of historical instances
                     diaSource_history.append(temp_dict)
@@ -340,9 +339,6 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
             sender.send(xml)
             #event_count += 1
             #sending_times.append(time.time())
-
-    #for ix in range(0,200):
-    #    print(list_of_alert_dicts[ix].get("diaSource").get("varParamStr"))
 
 def iter_and_send(sender, obs_data, obs_metadata, observations_field, history, radius, opsim_path, full_constraint):
 
