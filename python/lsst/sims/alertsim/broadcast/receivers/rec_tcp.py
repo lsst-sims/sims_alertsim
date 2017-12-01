@@ -42,17 +42,16 @@ def main(port):
 
     conn, addr = s.accept()
     print('Connection address:', addr)
-    f = open("VOEvents.txt", 'w')
-    while 1:
-        data = conn.recv(BUFFER_SIZE)
-        if not data: break
-        header = data[0:4]
-        f.write("-----------------------")
-        f.write(data)
-        print("header:", header)
-        print("received data:", data[4:])
-        conn.send("ack \n".encode())  # echo
-    f.close()
+    with open("VOEvents.txt", 'w') as f:
+        while 1:
+            data = conn.recv(BUFFER_SIZE)
+            if not data: break
+            #header = data[0:4]
+            #f.write("-----------------------")
+            f.write(data)
+            #print("header:", header)
+            #print("received data:", data[4:])
+            conn.send("ack \n".encode())  # echo
     conn.close()
 
 #command line parser for tcp port
