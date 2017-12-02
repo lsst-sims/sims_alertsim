@@ -32,7 +32,7 @@ class ObsHistoryTestCase(unittest.TestCase):
         control_mjd = np.array([obs.mjd.TAI for obs in obs_control])
         self.assertGreater(len(obs_list), 1)
 
-        history = _convert_obs_to_history(obs_list)
+        history = _convert_obs_to_history(obs_list, gen)
 
         for ix, entry in enumerate(history):
 

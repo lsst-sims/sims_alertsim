@@ -36,7 +36,8 @@ def rbi():
     return np.random.randint(0,9223372036854775807)
     
 def array_to_dict(cols, vals):
-    """ Turns a transposed list of tuples into a dictionary.
+    """ Turns a transposed list into a dictionary 
+    or into a list of dictionaries.
     Used for making nested data substructures
 
     @param [in] cols is a list with names of columns
@@ -44,11 +45,23 @@ def array_to_dict(cols, vals):
     @param [in] vals is a transposed list of tuples
 
     @param [out] list_of_dicts is a list of dictionaries
-    """
-
-    list_of_dicts = []
     
-    for val in vals:
-        dicty = dict(zip(cols, val))
-        list_of_dicts.append(dicty)
-    return list_of_dicts
+    @param [out] single_dict is a dictionary
+    """
+   
+    # check if vals is a list or a nested list
+    # and return a single dict or a list
+    # of dicts accordingly
+
+    if (vals.ndim > 1):
+        list_of_dicts = []
+        for val in vals:
+            single_dict = dict(zip(cols, val))
+            list_of_dicts.append(single_dict)
+
+        return list_of_dicts
+
+    else:
+        single_dict = dict(zip(cols, vals))
+
+        return single_dict

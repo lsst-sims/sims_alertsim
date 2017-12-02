@@ -65,7 +65,8 @@ PARSER.add_argument("-om", "--opsim_mjd", type=float_or_tuple,
 PARSER.add_argument("-op", "--opsim_path", default="",
         help="your local opsim db path. If left empty fatboy is queried")
 PARSER.add_argument("-cc", "--catsim_constraint",
-        default="rmag between 10 and 30 and varParamStr not like 'None'",
+        default="rmag <= 25 and varParamStr not like 'None' " \
+        "and varParamStr not like '%inactive%'",
         help="constraint for catsim query")
 #PARSER.add_argument("-ca", "--catsim_catalog",
 #        choices=["variable_stars", "vanilla_stars", "DIA_sources", "DIA_objects"],
@@ -78,7 +79,7 @@ PARSER.add_argument("-pr", "--protocol", help="TcpIp, Multicast, Unicast",
         choices=('TcpIp', 'Multicast', 'Unicast'), default='TcpIp')
 PARSER.add_argument("-ip", "--ipaddress",
         help="ip address of the recepient or multicast channel",
-        default='147.91.240.26')
+        default='147.91.240.29')
 PARSER.add_argument("--no_header",
         help="don't generate hex header for VOEvents",
         action="store_false", default=True)

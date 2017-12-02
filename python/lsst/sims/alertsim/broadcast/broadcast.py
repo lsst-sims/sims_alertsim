@@ -42,10 +42,14 @@ class Broadcast(object):
     def _add_voevent_header(self, message):
         """ add 4 byte hex header at the beginning of the message;
             Returns a bytes object."""
-        header = '%08x' % (len(message))
+        print("message length %d" % (len(message)))
+        print("%04x" % (len(message)))
+        print("%08x" % (len(message)))
+        
+        header = '%04x' % (len(message))
+        
 
-        return (header+message).encode()
-
+        return header + message
 
 class TcpIp(Broadcast):
 
@@ -107,15 +111,13 @@ class TcpIp(Broadcast):
         @param [in] message is an xml VOEvent document
         
         """
+        if self.header:
+            message = self._add_voevent_header(message)
 
-        if self.header is not None:
-            to_send = self._add_voevent_header(message)
-        else:
-            to_send = message.encode()
-
-        self.sock.send(to_send)
+        self.sock.send(message.encode())
+        
         data = self.sock.recv(self.BUFFER_SIZE)
-        print("received data:", data)
+        print("received data:", data.decode())
 
 class Multicast(Broadcast):
 
@@ -161,4 +163,3 @@ class Multicast(Broadcast):
         finally:
             print('closing socket', file=sys.stderr)
             self.close_and_exit()
-
