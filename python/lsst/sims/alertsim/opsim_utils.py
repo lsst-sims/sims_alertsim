@@ -63,9 +63,9 @@ def opsim_query_stack10(opsim_path, objid, radius, opsim_night,
     import lsst.sims.catalogs.db as db
 
     if not opsim_path:
-        """ access to fatboy """
-        raise NotImplementedError("Not yet sure how to do the OpSim queries from fatboy")
-        table = db.CatalogDBObject(table=objid, idColKey='obshistid', database='LSSTCATSIM',
+        """ access to epyc.astro.washinton.edu """
+        raise NotImplementedError("Not yet sure how to do the OpSim queries from epyc")
+        table = db.UWStarCatalogObject(table=objid, idColKey='obshistid', database='LSST',
                 driver='mssql+pymssql', host='localhost', port='51433' )
     else:
         """ local access """
