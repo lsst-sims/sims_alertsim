@@ -14,55 +14,58 @@ class BasicVarStars(InstanceCatalog,
 
     catalog_type = 'variable_stars'
 
-    column_outputs = ['id', 'raJ2000', 'decJ2000',
-            'lsst_u', 'lsst_g', 'lsst_r',
-            'lsst_i', 'lsst_z', 'lsst_y',
-            'delta_lsst_u', 'delta_lsst_g',
-            'delta_lsst_r', 'delta_lsst_i',
-            'delta_lsst_z', 'delta_lsst_y',
-            #'sigma_lsst_u','sigma_lsst_g','sigma_lsst_r',
-            #'sigma_lsst_i','sigma_lsst_z', 'sigma_lsst_y',
+    # attributes divided so that other catalogs can use
+    # only parts they need
+    basic_attributes = ['id', 'raJ2000', 'decJ2000',
             'gal_l', 'gal_b', 'varParamStr']
+    total_mags = ['lsst_u', 'lsst_g', 'lsst_r',
+            'lsst_i', 'lsst_z', 'lsst_y']
+    delta_mags = ['delta_lsst_u', 'delta_lsst_g',
+            'delta_lsst_r', 'delta_lsst_i',
+            'delta_lsst_z', 'delta_lsst_y']
+    sigma_mags = ['sigma_lsst_u', 'sigma_lsst_g',
+            'sigma_lsst_r', 'sigma_lsst_i',
+            'sigma_lsst_z', 'sigma_lsst_y']
+    column_outputs = basic_attributes + total_mags + delta_mags
 
+    # datatypes, ucds, units divided
 
-    datatypes = ['uint64', 'double', 'double',
-            'double', 'double', 'double',
-            'double', 'double', 'double',
-            'double', 'double', 'double',
-            'double', 'double', 'double',
-            'double', 'double', 'double',
+    basic_datatypes = ['uint64', 'double', 'double',
             'double', 'double', 'string']
+    mags_datatypes = ['double', 'double', 'double',
+            'double', 'double', 'double']
+    datatypes = basic_datatypes + mags_datatypes*2
 
-    ucds = ['meta.id', 'pos.eq.ra', 'pos.eq.dec',
-                'phot.mag', 'phot.mag',
-                'phot.mag', 'phot.mag',
-                'phot.mag', 'phot.mag',
-                'phot.mag', 'phot.mag',
-                'phot.mag', 'phot.mag',
-                'phot.mag', 'phot.mag',
-                #'stat.error', 'stat.error',
-                #'stat.error', 'stat.error',
-                #'stat.error', 'stat.error',
-                '', '', 'src.var',]
+    basic_ucds = ['meta.id', 'pos.eq.ra', 'pos.eq.dec',
+                '', '', 'src.var']
+    mags_ucds = ['phot.mag', 'phot.mag', 'phot.mag',
+            'phot.mag', 'phot.mag', 'phot.mag']
+    errors_ucds = ['stat.error', 'stat.error', 'stat.error', 
+            'stat.error', 'stat.error', 'stat.error',]
+    ucds = basic_ucds + mags_ucds*2
 
-    units = ['', 'rad', 'rad', '', '', '',
-             '', '', '', '', '', '',
-            #'', '', '', '', '', '',
-             '', '', '', '', '', '',
-             '', '', '']
+    basic_units = ['', 'rad', 'rad', '', '', '']
+    mags_units = ['', '', '', '', '', '']
+    units = basic_units + mags_units*2
 
     @staticmethod
     def get_column_outputs(bandname):
-        return ['id', 'raJ2000', 'decJ2000','lsst_'+bandname,
-                'delta_lsst_'+bandname, 'sigma_lsst_'+bandname, 'varParamStr']
+        return ['id', 'raJ2000', 'decJ2000',
+                'lsst_'+bandname,
+                'delta_lsst_'+bandname,
+                #'sigma_lsst_'+bandname,
+                'varParamStr']
 
 class DiaSourceVarStars(DiaSourceCommons, BasicVarStars):
 
     catalog_type = 'variable_stars_dia'
-    column_outputs = DiaSourceCommons.column_outputs + BasicVarStars.column_outputs
-    ucds = DiaSourceCommons.ucds + BasicVarStars.ucds
-    datatypes = DiaSourceCommons.datatypes + BasicVarStars.datatypes
-    units = DiaSourceCommons.units + BasicVarStars.units
+    column_outputs = (DiaSourceCommons.column_outputs
+            + BasicVarStars.total_mags + BasicVarStars.delta_mags)
+    #column_outputs = DiaSourceCommons.column_outputs
+    ucds = DiaSourceCommons.ucds + BasicVarStars.mags_ucds*2
+    #ucds = DiaSourceCommons.ucds
+    datatypes = DiaSourceCommons.datatypes + BasicVarStars.mags_datatypes*2
+    units = DiaSourceCommons.units + BasicVarStars.mags_units*2
 
     def get_ssObjectId(self):
         """
