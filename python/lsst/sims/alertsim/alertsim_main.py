@@ -267,8 +267,8 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
 
                     obsHistID = int(np.asscalar(current_metadata.OpsimMetaData['obsHistID']))
 
+                    """ we will remove all the *lsst* keys later
                     # remove mags and deltas from other filters
-
                     list_of_keys = []
                     # copy by value so BANDNAMES remain untouched for the next run
                     otherFilters = BANDNAMES[:]
@@ -281,11 +281,12 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     for key in list_of_keys:
                         # remove key from the dict if the key exists
                         temp_dict.pop(key, None)
+                    """
 
                     # apply transformations to form diaSource attributes
                     temp_dict['filterName'] = filterName
-                    temp_dict['lsst_%s' % filterName] = totMag
-                    temp_dict['delta_lsst_%s' % filterName] = totMag - meanMag
+                    #temp_dict['lsst_%s' % filterName] = totMag
+                    #temp_dict['delta_lsst_%s' % filterName] = totMag - meanMag
                     temp_dict['midPointTai'] = dia_trans.midPointTai(mjd)
                     temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, 
                             temp_dict['ccdVisitId']//10000)
@@ -296,7 +297,13 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     
                     # Convert newly calculated values from numpy to scalar
                     _numpy_to_scalar(temp_dict)
-            
+                    
+            for dic in diaSource_history + [diaSource_dict]:
+                list_of_keys = list(dic.keys())
+                for k in list_of_keys:
+                    if k.startswith('lsst_') or k.startswith('delta_lsst_'):
+                        dic.pop(k)
+
             alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
                     'l1dbId':diaObjectId, 'diaSource':diaSource_dict, 
                     'prv_diaSources':diaSource_history}
