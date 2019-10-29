@@ -192,9 +192,9 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
             _numpy_to_scalar(diaSource_dict)
             
             alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
-                    'l1dbId':diaSource_dict['diaObjectId'], 
+                    #'l1dbId':diaSource_dict['diaObjectId'], 
                     'diaSource':diaSource_dict, 
-                    'prv_diaSources':[]}
+                    'prvDiaSources':[]}
             list_of_alert_dicts.append(alert_dict)
     
     else:
@@ -291,7 +291,7 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, 
                             temp_dict['ccdVisitId']//10000)
                     temp_dict['diaSourceId'] = int(dia_trans.diaSourceId(obsHistID, 1))
-                    temp_dict['apFlux'] = dia_trans.apFlux(diaFlux)
+                    temp_dict['apFlux'] = diaFlux
                     # Append to the list of historical instances
                     diaSource_history.append(temp_dict)
                     
@@ -303,10 +303,14 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                 for k in list_of_keys:
                     if k.startswith('lsst_') or k.startswith('delta_lsst_'):
                         dic.pop(k)
-
+            """ old version had l1dbId 
             alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
                     'l1dbId':diaObjectId, 'diaSource':diaSource_dict, 
                     'prv_diaSources':diaSource_history}
+            """
+            alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
+                    'diaSource':diaSource_dict, 
+                    'prvDiaSources':diaSource_history}
 
             list_of_alert_dicts.append(alert_dict)
 
