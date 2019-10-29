@@ -19,12 +19,17 @@ class DiaSourceCommons(CameraCoords):
     depending of their variability model
     """
 
-    # DIASource columns as of DPDD from May 6th 2016
+    # DIASource columns as of avro alert schema v2.0
 
     
     """
     differences between DPDD and L1 schema
-    N = Ndata
+    - N = Ndata
+
+    differences between v1.0 and v2.0 (for diaSource only)
+    - some fields got default="null" (doesn't affect the alertsim code much)
+    - attributes programId and psFluxErr are added
+    - apFlux and apFluxErr are single values, not an array of values
     """
 
     _seed = None
@@ -32,10 +37,10 @@ class DiaSourceCommons(CameraCoords):
 
     column_outputs = ['diaSourceId', 'ccdVisitId',
           'diaObjectId', 'ssObjectId', 'parentDiaSourceId', 'midPointTai',
-          'filterName', 'ra', 'decl', 'ra_decl_Cov', 'x','y', 'x_y_Cov', 'apFlux', 
-          'apFluxErr', 'snr', 'psFlux', 'psRa','psDecl', 'ps_Cov', 'psLnL', 
-          'psChi2', 'psNdata', 'trailFlux', 'trailRa','trailDecl', 'trailLength', 
-          'trailAngle', 'trail_Cov', 'trailLnL', 'trailChi2', 'trailNdata', 
+          'filterName', 'programId', 'ra', 'decl', 'ra_decl_Cov', 'x','y', 'x_y_Cov', 
+          'apFlux', 'apFluxErr', 'snr', 'psFlux', 'psFluxErr', 'psRa','psDecl', 
+          'ps_Cov', 'psLnL', 'psChi2', 'psNdata', 'trailFlux', 'trailRa','trailDecl', 
+          'trailLength', 'trailAngle', 'trail_Cov', 'trailLnL', 'trailChi2', 'trailNdata', 
           'dipMeanFlux', 'dipFluxDiff', 'dipRa','dipDecl', 'dipLength', 'dipAngle', 
           'dip_Cov', 'dipLnL', 'dipChi2', 'dipNdata', 'totFlux', 'totFluxErr', 
           'diffFlux', 'diffFluxErr', 'fpBkgd', 'fpBkgdErr', 'ixx', 'iyy', 
@@ -46,11 +51,11 @@ class DiaSourceCommons(CameraCoords):
 
     ucds = ['meta.id;meta.main', 'meta.id;instr.param',
                 'meta.id.assoc', 'meta.id.assoc', 'meta.id.parent',
-                'time.epoch', 'instr.filter', 'pos.eq.ra', 'pos.eq.dec',
+                'time.epoch', 'instr.filter', 'meta.ref', 'pos.eq.ra', 'pos.eq.dec',
                 'stat.covariance;pos.eq','instr.pixel', 'instr.pixel', 'stat.covariance',
-                'phot.flux;arith.diff;phot.calib', 'stat.error;phot.flux', 
-                'stat.snr', 'phot.flux;arith.diff', 'pos.eq.ra','pos.eq.dec', 
-                'stat.covariance;pos.eq',
+                'phot.flux;arith.diff;phot.calib', 'stat.error;phot.flux',
+                'stat.snr', 'phot.flux;arith.diff', 'stat.error;phot.flux',
+                'pos.eq.ra','pos.eq.dec', 'stat.covariance;pos.eq',
                 'stat.likelihood;', 'stat.fit.chi2', 'stat.value',
                 'phot.flux;arith.diff;phot.calib', 'pos.?','pos.?',
                 'stat.likelihood;stat.max', 'stat.likelihood;stat.max',
@@ -67,9 +72,9 @@ class DiaSourceCommons(CameraCoords):
 
     # Datatypes as stated in DPDD
 
-    datatypes = ['uint64', 'uint64', 'uint64',
-                'uint64', 'uint64', 'double', 'bit[8]', 'double', 'double', 'float[3]',
-                'float', 'float', 'float[3]', 'float', 'float', 'float', 'float',
+    datatypes = ['uint64', 'uint64', 'uint64', 'uint64', 'uint64', 'double', 
+                'bit[8]', 'uint64', 'double', 'double', 'float[3]', 'float', 
+                'float', 'float[3]', 'float', 'float', 'float', 'float', 'float',
                 'double','double', 'float[6]', 'float', 'float', 'int', 'float',
                 'double','double', 'float', 'float', 'float[15]', 'float', 'float',
                 'int', 'float', 'float', 'double','double', 'float', 'float',
@@ -80,8 +85,8 @@ class DiaSourceCommons(CameraCoords):
 
     # Units as stated in DPDD
 
-    units = ['', '', '', '', '', 'time', '', 'degrees','degrees',
-             'various', 'pixels','pixels', 'various', 'nmgy', 'nmgy', '', 'nmgy',
+    units = ['', '', '', '', '', 'time', '', '', 'degrees','degrees',
+             'various', 'pixels','pixels', 'various', 'nmgy', 'nmgy', '', 'nmgy', 'nmgy'
              'degrees','degrees', 'various', '', '', '', 'nmgy', 'degrees','degrees', 'arcsec',
              'degrees', 'various', '', '', '', 'nmgy', 'nmgy', 'degrees','degrees',
              'arcsec', 'degrees', 'various', '', '', '', 'nmgy', 'nmgy',
@@ -167,6 +172,9 @@ class DiaSourceCommons(CameraCoords):
 
     def get_parentDiaSourceId(self):
         return self.randomInts(-1, 9223372036854775807)
+
+    def get_programId(self):
+        return self.randomInts(-1)
 
     def get_psLnL(self):
         return self.randomFloats(-1)
@@ -396,6 +404,10 @@ class DiaSourceCommons(CameraCoords):
         return self.column_by_name('diaFlux') + \
                0.0001*self.randomFloats(-1)
 
+    def get_psFluxErr(self):
+        return self.column_by_name('diaFluxError') + \
+               0.0001*self.randomFloats(-1)
+
     def get_trailFlux(self):
         """
         Return the true difference image flux plus a small epsilon, since CatSim
@@ -407,15 +419,19 @@ class DiaSourceCommons(CameraCoords):
     def get_apFlux(self):
         """
         apMeanSb01 will be the true flux of the source.
-        """
+        // this was the old one with the array
         return dia_trans.apFlux(self.column_by_name('diaFlux'))
+        """
+        return self.column_by_name('diaFlux')
 
     def get_apFluxErr(self):
         """
         Calculate the true flux error by getting the magntidue error and assuming that
         magnitude_error = 2.5*log10(1 + 1/SNR)
-        """
+        // this was the old one with the array
         return dia_trans.apFluxErr(self.column_by_name('diaFluxError'))
+        """
+        return self.column_by_name('diaFluxError')
     
 
     def get_psRa(self):

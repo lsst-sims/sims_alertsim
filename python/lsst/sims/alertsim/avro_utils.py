@@ -36,10 +36,14 @@ def catsim_to_avro(list_of_alert_dicts, session_dir):
 
     known_schemas = avro.schema.Names()
 
-    diasource_schema = load_avsc_schema("avsc/diasource.avsc", known_schemas)
-    ssobject_schema = load_avsc_schema("avsc/ssobject.avsc", known_schemas)
-    diaobject_schema = load_avsc_schema("avsc/diaobject.avsc", known_schemas)
-    alert_schema = load_avsc_schema("avsc/alert.avsc", known_schemas)
+    #diasource_schema = load_avsc_schema("avsc/diasource.avsc", known_schemas)
+    #ssobject_schema = load_avsc_schema("avsc/ssobject.avsc", known_schemas)
+    #diaobject_schema = load_avsc_schema("avsc/diaobject.avsc", known_schemas)
+    #alert_schema = load_avsc_schema("avsc/alert.avsc", known_schemas)
+    diasource_schema = load_avsc_schema("avsc/2/0/lsst.alert.diaSource.avsc", known_schemas)
+    ssobject_schema = load_avsc_schema("avsc/2/0/lsst.ssObject.avsc", known_schemas)
+    diaobject_schema = load_avsc_schema("avsc/2/0/lsst.diaObject.avsc", known_schemas)
+    alert_schema = load_avsc_schema("avsc/2/0/lsst.alert.avsc", known_schemas)
 
     writing_time = timer()
     writer = DataFileWriter(open("avsc/alert.avro", "wb"), DatumWriter(), alert_schema)
