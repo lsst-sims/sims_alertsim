@@ -74,7 +74,7 @@ def catsim_to_avro(list_of_alert_dicts, session_dir):
             for alert_dict in list_per_chip:
             
                 json.dump(alert_dict, out_file)
-
+                outfile.write('\n')
                 if (ix==0 and avro_validated==False):
             
                     writer.append(alert_dict)
