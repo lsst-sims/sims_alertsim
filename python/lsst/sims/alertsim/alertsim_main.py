@@ -214,7 +214,7 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
         lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings=pointings, constraint=full_constraint, chunk_size=1000)
 
         print("done with lc's")
-        print("observations_field len %d" %len(observations_field))
+        print("%d observations of this field for previous 365 days" %len(observations_field))
 
         catsim_timer = timer()
         counter = 0
@@ -223,7 +223,8 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
         for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
         #for i, line in enumerate(obs_data.iter_catalog(chunk_size=catsim_chunk_size)):
         #for line in obs_data.iter_catalog():
-            if(counter==0): print("Retrieve new chunk of events %s" % (timer()-catsim_timer))
+            
+            if(counter==0): print("Retrieve new chunk of events %s s" % (timer()-catsim_timer))
             
             counter = counter + 1
             if (counter % 100 == 0):
@@ -236,9 +237,10 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
             _numpy_to_scalar(diaSource_dict)
 
             diaObjectId = diaSource_dict['diaObjectId']
-            diaSourceId = diaSource_dict['diaSourceId']
+
             diaSource_dict['diaSourceId'] = int(dia_trans.diaSourceId(int(np.asscalar(obs_metadata.OpsimMetaData['obsHistID'])), 
-                    counter))
+                    diaObjectId))
+
             lc = lc_dict[diaObjectId]
 
             diaSource_history = []
@@ -290,7 +292,8 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     temp_dict['midPointTai'] = dia_trans.midPointTai(mjd)
                     temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, 
                             temp_dict['ccdVisitId']//10000)
-                    temp_dict['diaSourceId'] = int(dia_trans.diaSourceId(obsHistID, 1))
+                    temp_dict['diaSourceId'] = int(dia_trans.diaSourceId(int(np.asscalar(obsHistID)), 
+                        diaObjectId))
                     temp_dict['apFlux'] = diaFlux
                     # Append to the list of historical instances
                     diaSource_history.append(temp_dict)
