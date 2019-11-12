@@ -57,6 +57,8 @@ def opsim_query_stack10(opsim_path, objid, radius, opsim_night,
 
     @param [in] constraint is sql constraint for the opsim table
 
+    @param [in] reverse is a boolean which tells which way to sort opsim data
+
     Returns a list of ObservationMetaData
     """
 
@@ -77,7 +79,7 @@ def opsim_query_stack10(opsim_path, objid, radius, opsim_night,
         obs_history = []
 
         if history:
-            obs_history = _convert_obs_to_history(obs_all, obs_gen)
+            obs_history = _convert_obs_to_history(obs_all, obs_gen, reverse)
         else:
             # we do not need the historical information; construct a dummy history
             mjd_arr = np.array([obs.mjd.TAI for obs in obs_all])
@@ -86,7 +88,7 @@ def opsim_query_stack10(opsim_path, objid, radius, opsim_night,
 
         return obs_history
 
-def _convert_obs_to_history(obs_list, obs_gen):
+def _convert_obs_to_history(obs_list, obs_gen, reverse):
     """
     Take a list of ObservationMetaData and rearrange it into a 2-d list in which each row
     corresponds to the current ObservationMetaData but also contains all of the prior
