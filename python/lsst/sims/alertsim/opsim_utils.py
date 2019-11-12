@@ -45,7 +45,7 @@ def opsim_query_stack8(opsim_path, objid, radius, opsim_night,
     return result
 
 def opsim_query_stack10(opsim_path, objid, radius, opsim_night, 
-        opsim_filter, opsim_mjd, history):
+        opsim_filter, opsim_mjd, history, reverse=False):
 
     """ Query opsim and make a catalog for stack 10
 
@@ -101,7 +101,7 @@ def _convert_obs_to_history(obs_list, obs_gen):
 
     # sort the ObservationMetaData in chronological order
     # note: lambda sort is ~3 times quicker than numpy methods that were used previously
-    obs_list.sort(key=lambda x: x.mjd.TAI)
+    obs_list.sort(key=lambda x: x.mjd.TAI, reverse=reverse)
     
     history_matrix = []
     
