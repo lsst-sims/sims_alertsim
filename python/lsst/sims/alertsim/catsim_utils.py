@@ -58,7 +58,7 @@ def catsim_query_stack10 (objid, constraint, obs_metadata, dia):
     """
 
     from lsst.sims.catalogs.db import CatalogDBObject
-    objid="epycStarBase"
+
     dbobj = CatalogDBObject.from_objid(objid)
     if dia:
         catalog = 'variable_stars_dia'
