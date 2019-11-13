@@ -242,7 +242,8 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     diaObjectId))
 
             lc = lc_dict[diaObjectId]
-
+            print(lc)
+            exit(0)
             diaSource_history = []
             
             for filterName, nestedDict in lc.items():
@@ -292,7 +293,7 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     temp_dict['midPointTai'] = dia_trans.midPointTai(mjd)
                     temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, 
                             temp_dict['ccdVisitId']//10000)
-                    temp_dict['diaSourceId'] = int(dia_trans.diaSourceId(int(np.asscalar(obsHistID)), 
+                    temp_dict['diaSourceId'] = int(dia_trans.diaSourceId(obsHistID, 
                         diaObjectId))
                     temp_dict['apFlux'] = diaFlux
                     # Append to the list of historical instances
