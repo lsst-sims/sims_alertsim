@@ -52,7 +52,7 @@ PARSER = argparse.ArgumentParser(description="",
 
 PARSER.add_argument("-o", "--opsim_table", default="output_opsim3_61",
         help="opsim objid")
-PARSER.add_argument("-c", "--catsim_table", default="allstars",
+PARSER.add_argument("-c", "--catsim_table", default="epycStarBase",
         help="catsim objid")
 PARSER.add_argument("-on", "--opsim_night", type=int_or_tuple, 
         help="night constraint for the opsim query. Enter an integer or " \
@@ -79,6 +79,7 @@ PARSER.add_argument("--no_history",
 PARSER.add_argument("--no_dia",
         help="emit basic attributes only, not full DIASources",
         action="store_false", default=True)
+PARSER.add_argument("-t", "--token", default=None)
 ARGS = PARSER.parse_args()
 
 
@@ -86,4 +87,4 @@ if __name__ == "__main__":
     sys.exit(alertsim.main(ARGS.opsim_table, ARGS.catsim_table, 
         ARGS.opsim_night, ARGS.opsim_filter, ARGS.opsim_mjd, ARGS.opsim_path,
         ARGS.catsim_constraint, ARGS.radius, 
-        ARGS.no_history, ARGS.no_dia ))
+        ARGS.no_history, ARGS.no_dia, ARGS.token ))
