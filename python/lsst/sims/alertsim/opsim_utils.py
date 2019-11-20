@@ -75,6 +75,10 @@ def opsim_query_stack10(opsim_path, objid, radius, opsim_night,
         #return obs_gen.getObservationMetaDataFromConstraint(constraint)
         obs_all = obs_gen.getObservationMetaData(night=opsim_night,
                     telescopeFilter=opsim_filter, expMJD=opsim_mjd, boundLength=radius)
+
+        # sort the ObservationMetaData in chronological (or reversed) order
+        # note: lambda sort is ~3 times quicker than numpy methods that were used previously
+        obs_all.sort(key=lambda x: x.mjd.TAI, reverse=reverse)
         
         obs_history = []
 
@@ -82,9 +86,7 @@ def opsim_query_stack10(opsim_path, objid, radius, opsim_night,
             obs_history = _convert_obs_to_history(obs_all, obs_gen, reverse)
         else:
             # we do not need the historical information; construct a dummy history
-            mjd_arr = np.array([obs.mjd.TAI for obs in obs_all])
-            obs_history = np.array(obs_all)[np.argsort(mjd_arr)]
-            obs_history = [[obs, None] for obs in obs_history]
+            obs_history = [[obs, None] for obs in obs_all]
 
         return obs_history
 
@@ -101,10 +103,6 @@ def _convert_obs_to_history(obs_list, obs_gen, reverse):
     Returns a matrix of ObservationMetaData objects 
     """
 
-    # sort the ObservationMetaData in chronological order
-    # note: lambda sort is ~3 times quicker than numpy methods that were used previously
-    obs_list.sort(key=lambda x: x.mjd.TAI, reverse=reverse)
-    
     history_matrix = []
     
     for obs in obs_list:
