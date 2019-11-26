@@ -1,4 +1,4 @@
-""" Main module """
+""" Main module for mongodb generation """
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -7,39 +7,34 @@ import numpy as np
 from timeit import default_timer as timer
 from builtins import zip
 import os
+import sys
 import time
-import errno
 import functools
-import json
+import gc
 from pymongo import MongoClient
 
-from lsst.sims.alertsim import catsim_utils, opsim_utils, avro_utils
-from lsst.sims.alertsim import broadcast
-from lsst.sims.alertsim.dataModel import DataMetadata, CelestialObject
-from lsst.sims.alertsim.generateVOEvent import VOEventGenerator
+from lsst.sims.alertsim import catsim_utils, opsim_utils
 from lsst.sims.alertsim.catalogs import dia_transformations as dia_trans
 from lsst.sims.catUtils.mixins import ParametrizedLightCurveMixin
 from lsst.sims.photUtils import cache_LSST_seds
 from lsst.sims.catUtils.utils import FastStellarLightCurveGenerator
 
-
 BANDNAMES = ['u', 'g', 'r', 'i', 'z', 'y']
 STACK_VERSION = 10
 CATSIM_CONSTRAINT = "varParamStr not like 'None'"
 
-def main(opsim_table=None, catsim_table='allstars', 
-         opsim_night=None, opsim_filter=None, opsim_mjd = None, 
-         opsim_path=None, catsim_constraint = CATSIM_CONSTRAINT, 
-         radius=1.75, history=True, 
-         dia=True):
+def main(opsim_table=None, catsim_table='epycStarBase',
+         opsim_night=None, opsim_filter=None, opsim_mjd = None,
+         opsim_path=None, catsim_constraint = CATSIM_CONSTRAINT,
+         radius=1.75, history=True,
+         dia=True, token=None):
 
 
     """ Controls all of Alertsim functionalities
         
-    Takes input args from cmd line parser (examples/exampleParser.py) 
-    or other script, queries opsim & catsim, generates and broadcasts 
-    VOEvents via TCP to a specified ip address or serializes 
-    data to json format.
+    Takes input args from cmd line parser (examples/exampleParserMongo.py) 
+    or other script, queries opsim & catsim, generates json events 
+    and stores them into mongodb.
 
     @param [in] opsim_table is objid of opsim table to be queried on fatboy
     
@@ -59,25 +54,40 @@ def main(opsim_table=None, catsim_table='allstars',
 
     @param [in] radius is radius of catsim query
 
-    @param [in] protocol is tcpip or multicast
-
-    @param [in] ipaddr is ip address of the VOEvent stream receiver
-
-    @param [in] port is the tcp port of the VOEvent stream receiver
-
-    @param [in] header is boolean which includes/excludes 4 byte hex header in 
-    each VOEvent message (VOEvent standard asks for a header)
-
     @param [in] history is boolean which determines whether historical 
     occurancies of same DIASource are emitted within each VOEvent
 
     @param [in] dia is boolean which switches between vanilla attributes
     and full DIASource attributes for each VOEvent
 
-    @param [in] serialize_json is boolean. In case of true, events are not 
-    emitted but serialized in JSON format, divided into files based on CCD 
-    number
     """
+
+    mongo_client = MongoClient('localhost', 27017)
+
+    """ THIS IS A SKETCH OF TOKEN FUNCTIONALITY """
+    if token is not None:
+        dbnames = mongo_client.list_database_names()
+        if token not in dbnames:
+            print("A database related with this token doesn't exist.\n"
+                    "Please insert a correct token or start the script\n"
+                    "without a token to create a new database")
+            exit(0)
+        else:
+            print("Working with the existing db %s" % (token))
+            db_name = str(token)
+            pass
+    else:
+        token = int(time.time())
+        print("Creating new token %s. If the program or connection breaks,\n"
+                "you can continue from the point it broke by entering the --token argument" % (token))
+        db_name = str(token)
+    
+    db = mongo_client[db_name]
+    alerts_mongo_collection = db['alerts']
+    metadata_mongo_collection = db['metadata']
+    
+    metadata_dict = {"token":token, "last_obsHistID":None, "objIds":[]}
+    metadata_mongo_collection.insert_one(metadata_dict)
 
     print("fetching opsim results...")
 
@@ -90,16 +100,16 @@ def main(opsim_table=None, catsim_table='allstars',
 
     print("opsim result fetched (in reverse order) and transformed to ObservationMetaData objects")
 
+    """ slice the matrix from the last stored obsHistID """
+    last_obsHistID = metadata_dict["last_obsHistID"]
+    if last_obsHistID is not None:
+        obs_matrix[:] = [x for x in obs_matrix if x[0].OpsimMetaData['obsHistID']<last_obsHistID]
+
     plc = ParametrizedLightCurveMixin()
     plc.load_parametrized_light_curves()
     
     if history:
         cache_LSST_seds()
-    
-    db_name = "mongoAlertsimTest"
-    mongo_client = MongoClient('localhost', 27017)
-    db = mongo_client[db_name]
-    alerts_mongo_collection = db['alerts']
 
     """ a set of id's of diaObjects which were previously serialized """
     already_issued = set()
@@ -109,7 +119,7 @@ def main(opsim_table=None, catsim_table='allstars',
         """ current observation - largest mjd from a sorted list  """
         obs_metadata = obs_per_field[0]
 
-        """ 
+        """
         make an additional CatSim constraint based on fiveSigmaDepth value
         from OpsimMetaData
         """
@@ -124,6 +134,8 @@ def main(opsim_table=None, catsim_table='allstars',
         query_and_dispatch(obs_data, obs_metadata, obs_per_field, history, 
                 radius, opsim_path, full_constraint, 
                 already_issued, alerts_mongo_collection)
+
+    mongo_client.close()
 
 
 def query_and_dispatch(obs_data, obs_metadata, observations_field, 
@@ -149,21 +161,21 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
 
     """ a list of alert dicts for a visit that will eventually be serialized """
     list_of_alert_dicts = []
-    
+    catsim_chunk_size = 3000
 
     if not history:
-        for line in obs_data.iter_catalog():
+        for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
 
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
             
             # convert numpy types to scalar
             # JSON can't serialize numpy
             _numpy_to_scalar(diaSource_dict)
-            
+
             alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
-                    #'l1dbId':diaSource_dict['diaObjectId'], 
                     'diaSource':diaSource_dict, 
                     'prvDiaSources':[]}
+
             list_of_alert_dicts.append(alert_dict)
     
     else:
@@ -186,20 +198,19 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
 
         catsim_timer = timer()
         counter = 0
-        catsim_chunk_size = 3000
+        first_time = True
         
         for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
-        #for i, line in enumerate(obs_data.iter_catalog(chunk_size=catsim_chunk_size)):
-        #for line in obs_data.iter_catalog():
             
-            if(counter==0): print("Retrieve new chunk of events %s s" % (timer()-catsim_timer))
+            if (not first_time and counter==0): 
+                print("Retrieve new chunk of events %s s" % (timer()-catsim_timer))
             
+            first_time = False
+
             counter = counter + 1
             if (counter % 100 == 0):
                 print("%s %s" % (counter, timer()))
             
-                
-
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
 
             diaObjectId = diaSource_dict['diaObjectId']
@@ -212,14 +223,14 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                 # JSON can't serialize numpy
                 _numpy_to_scalar(diaSource_dict)
 
-
-                diaSource_dict['diaSourceId'] = int(dia_trans.diaSourceId(int(np.asscalar(obs_metadata.OpsimMetaData['obsHistID'])), 
-                        diaObjectId))
+                """faking this for now due to int64 problems"""
+                #diaSource_dict['diaSourceId'] = int(dia_trans.diaSourceId(int(np.asscalar(obs_metadata.OpsimMetaData['obsHistID'])), 
+                #        diaObjectId))
 
                 lc = lc_dict[diaObjectId]
 
                 diaSource_history = []
-            
+                
                 for filterName, nestedDict in lc.items():
                     for i, mjd in enumerate(nestedDict['mjd']):
                     
@@ -244,22 +255,6 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
 
                         obsHistID = int(np.asscalar(current_metadata.OpsimMetaData['obsHistID']))
 
-                        """ we will remove all the *lsst* keys later
-                        # remove mags and deltas from other filters
-                        list_of_keys = []
-                        # copy by value so BANDNAMES remain untouched for the next run
-                        otherFilters = BANDNAMES[:]
-                        otherFilters.remove(filterName)
-                    
-                        for name in otherFilters:
-                            list_of_keys.append('lsst_%s' % name)
-                            list_of_keys.append('delta_lsst_%s' % name)
-                    
-                        for key in list_of_keys:
-                            # remove key from the dict if the key exists
-                            temp_dict.pop(key, None)
-                        """
-
                         # apply transformations to form diaSource attributes
                         temp_dict['filterName'] = filterName
                         #temp_dict['lsst_%s' % filterName] = totMag
@@ -267,8 +262,8 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                         temp_dict['midPointTai'] = dia_trans.midPointTai(mjd)
                         temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, 
                                 temp_dict['ccdVisitId']//10000)
-                        temp_dict['diaSourceId'] = int(dia_trans.diaSourceId(obsHistID,
-                            diaObjectId))
+                        #temp_dict['diaSourceId'] = int(dia_trans.diaSourceId(obsHistID,
+                        #    diaObjectId))
                         temp_dict['apFlux'] = diaFlux
                         # Append to the list of historical instances
                         diaSource_history.append(temp_dict)
@@ -281,34 +276,36 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
                     for k in list_of_keys:
                         if k.startswith('lsst_') or k.startswith('delta_lsst_'):
                             dic.pop(k)
-
+                
                 alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
                         'diaSource':diaSource_dict, 
                         'prvDiaSources':diaSource_history}
 
                 list_of_alert_dicts.append(alert_dict)
-
+                
+                
                 if (counter==catsim_chunk_size):
-                    print(counter)
                     print('ready to write %d events to mongodb' % catsim_chunk_size)
 
                     mongo_write_timer = timer()
                     alerts_mongo_collection.insert_many(list_of_alert_dicts)
                     print('events written to mongodb in %s s' % (timer() - mongo_write_timer))
-                    #avro_utils.catsim_to_avro(list_of_alert_dicts=list_of_alert_dicts, 
-                    #    session_dir=session_dir)
 
                     list_of_alert_dicts=[]
                     counter = 0
+                    gc.collect()
+                    del gc.garbage[:]
 
     """ deal with the rest of events """
     print('ready to write %d events to mongodb' % len(list_of_alert_dicts))
-    
     mongo_write_timer = timer()
     alerts_mongo_collection.insert_many(list_of_alert_dicts)
     print('events written to mongodb in %s s' % (timer() - mongo_write_timer))
-    #avro_utils.catsim_to_avro(list_of_alert_dicts=list_of_alert_dicts, 
-    #    session_dir=session_dir)
+    print(sys.getsizeof(already_issued))
+    print(len(gc.garbage[:]))
+    gc.collect()
+    print(len(gc.garbage[:]))
+    del gc.garbage[:]
 
 def _remove_band_attrs(obj, bandname):
     """ Remove attributes not connected to the given bandname

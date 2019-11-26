@@ -57,9 +57,7 @@ def diaSourceId(obsHistID, uniqueId):
     Take uniqueID, multiply by 10^7 and add obsHistID from self.obs_metadata
     (obsHistID should only go up to about 3 million)
     """
-    #uniqueId = uniqueId.astype(np.int64)
-    diaSourceId = (uniqueId.astype(np.int64)*10000000 + obsHistID)
-    return diaSourceId
+    return (uniqueId.astype(np.uint64)*10000000 + obsHistID)
 
 def fluxFromMag(mag):
     """
