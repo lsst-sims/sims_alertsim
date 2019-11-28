@@ -147,12 +147,12 @@ def main(opsim_table=None, catsim_table='epycStarBase',
         BUT THE PROGRAM BROKE IN THE MIDDLE OF THE QUERY
         SOME FLUSH OPTIONS MAYBE? SEE FSYNC
         """
-        last_obsHistID = obs_metadata.OpsimMetaData['obsHistID']
-        fieldIDs_to_skip.add(obs_metadata.OpsimMetaData['fieldID'])
+        last_obsHistID = int(obs_metadata.OpsimMetaData['obsHistID'])
+        fieldIDs_to_skip.add(int(obs_metadata.OpsimMetaData['fieldID']))
         metadata_dict = {"token":token, "last_obsHistID":last_obsHistID, 
                 "fieldIDs":fieldIDs_to_skip}
         metadata_mongo_collection.update_one({"token":token}, 
-                {"$set": {"last_obsHistID":int(last_obsHistID), "fieldIDs":list(fieldIDs_to_skip)} })
+                {"$set": {"last_obsHistID":last_obsHistID, "fieldIDs":list(fieldIDs_to_skip)} })
 
     mongo_client.close()
 
