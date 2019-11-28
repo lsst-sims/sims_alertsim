@@ -86,7 +86,7 @@ def main(opsim_table=None, catsim_table='epycStarBase',
     alerts_mongo_collection = db['alerts']
     metadata_mongo_collection = db['metadata']
     
-    metadata_dict = {"token":token, "last_obsHistID":None, "objIds":[]}
+    metadata_dict = {"token":token, "last_obsHistID":None, "fieldIDs":[]}
     metadata_mongo_collection.insert_one(metadata_dict)
 
     print("fetching opsim results...")
@@ -111,14 +111,19 @@ def main(opsim_table=None, catsim_table='epycStarBase',
     if history:
         cache_LSST_seds()
 
-    """ a set of id's of diaObjects which were previously serialized """
-    already_issued = set()
+    """ a set of fieldID's for which catsim and lc data were already
+    serialized. This is done in advance to avoid multiple lc calls for 
+    same diaObjects (objects from the same field) """
+    fieldIDs_to_skip = set()
 
     for obs_per_field in obs_matrix:
 
         """ current observation - largest mjd from a sorted list  """
         obs_metadata = obs_per_field[0]
-
+        #from pprint import pprint
+        #pprint(vars(obs_metadata))
+        for o in obs_per_field:
+            print(o.OpsimMetaData['fieldID'])
         """
         make an additional CatSim constraint based on fiveSigmaDepth value
         from OpsimMetaData
@@ -130,21 +135,31 @@ def main(opsim_table=None, catsim_table='epycStarBase',
                 objid=catsim_table, constraint=full_constraint,
                 obs_metadata=obs_metadata, dia=dia)
 
-        """ query catsim, pack voevents and send/serialize """
-        query_and_dispatch(obs_data, obs_metadata, obs_per_field, history, 
-                radius, opsim_path, full_constraint, 
-                already_issued, alerts_mongo_collection)
+        """ query catsim and serialize events to mongodb """
+        query_and_serialize(obs_data, obs_metadata, obs_per_field, history, 
+                radius, opsim_path, full_constraint, alerts_mongo_collection)
+
+        """ update last IDs and fields to skip 
+        THIS SHOULD BE IMPROVED: PART OF THE DATA MAYBE GOT SERIALIZED
+        BUT THE PROGRAM BROKE IN THE MIDDLE OF THE QUERY
+        SOME FLUSH OPTIONS MAYBE? SEE FSYNC
+        """
+        last_obsHistID = obs_metadata.OpsimMetaData['obsHistID']
+        fieldIDs_to_skip.add(obs_metadata.OpsimMetaData['fieldID'])
+        metadata_dict = {"token":token, "last_obsHistID":last_obsHistID, 
+                "fieldIDs":fieldIDs_to_skip}
+        metadata_mongo_collection.update_one({"token":token}, 
+                {"$set": {"last_obsHistID":last_obsHistID, "fieldIDs":fieldIDs_to_skip} })
 
     mongo_client.close()
 
 
-def query_and_dispatch(obs_data, obs_metadata, observations_field, 
+def query_and_serialize(obs_data, obs_metadata, observations_field, 
                        history, radius, opsim_path, 
-                       full_constraint, already_issued, alerts_mongo_collection):
+                       full_constraint, alerts_mongo_collection):
 
-    """ Iterate over catalog and either:
-        a) serialize data as JSON, divided into files by CCD number
-        b) send data as VOEvents to a remote machine
+    """ Iterate over catalog, transform data to dicts according to 
+        the avro schema, add history (if turned on) and serialize to mongodb
 
     @param [in] obs_data is an instantiation of InstanceCatalog
 
@@ -215,93 +230,91 @@ def query_and_dispatch(obs_data, obs_metadata, observations_field,
 
             diaObjectId = diaSource_dict['diaObjectId']
             
-            if diaObjectId not in already_issued:
+            # convert numpy types to scalar
+            # JSON can't serialize numpy
+            _numpy_to_scalar(diaSource_dict)
 
-                already_issued.add(diaObjectId)
+            """faking this for now due to int64 problems"""
+            #diaSource_dict['diaSourceId'] = int(dia_trans.diaSourceId(int(np.asscalar(obs_metadata.OpsimMetaData['obsHistID'])), 
+            #        diaObjectId))
 
-                # convert numpy types to scalar
-                # JSON can't serialize numpy
-                _numpy_to_scalar(diaSource_dict)
-
-                """faking this for now due to int64 problems"""
-                #diaSource_dict['diaSourceId'] = int(dia_trans.diaSourceId(int(np.asscalar(obs_metadata.OpsimMetaData['obsHistID'])), 
-                #        diaObjectId))
-
-                lc = lc_dict[diaObjectId]
-
-                diaSource_history = []
+            lc = lc_dict[diaObjectId]
+            #new_events= [i for i in lc if i
+            #
+            #print(lc)
+            #exit(0)
+            diaSource_history = []
+            
+            for filterName, nestedDict in lc.items():
+                for i, mjd in enumerate(nestedDict['mjd']):
                 
-                for filterName, nestedDict in lc.items():
-                    for i, mjd in enumerate(nestedDict['mjd']):
-                    
-                        # find a proper ObservationMetaData object by mjd.
-                        # this should be ok if opsim/lc data is consistent, 
-                        # however it would be healthier if some smart exception
-                        # is added
-                        current_metadata = next((x for x in observations_field if x.mjd.TAI == mjd), None)
+                    # find a proper ObservationMetaData object by mjd.
+                    # this should be ok if opsim/lc data is consistent, 
+                    # however it would be healthier if some smart exception
+                    # is added
+                    current_metadata = next((x for x in observations_field if x.mjd.TAI == mjd), None)
 
-                        # copy diaSource values and adjust filter, mjd, mag, error
-                        temp_dict = deepcopy(diaSource_dict)
+                    # copy diaSource values and adjust filter, mjd, mag, error
+                    temp_dict = deepcopy(diaSource_dict)
 
-                        totMag = nestedDict['mag'][i]
-                        meanMag = temp_dict['lsst_%s' % filterName]-temp_dict['delta_lsst_%s' % filterName]
-                    
-                        totFlux = dia_trans.fluxFromMag(totMag)
-                        meanFlux = dia_trans.fluxFromMag(meanMag)
-                        diaFlux = totFlux - meanFlux
+                    totMag = nestedDict['mag'][i]
+                    meanMag = temp_dict['lsst_%s' % filterName]-temp_dict['delta_lsst_%s' % filterName]
+                
+                    totFlux = dia_trans.fluxFromMag(totMag)
+                    meanFlux = dia_trans.fluxFromMag(meanMag)
+                    diaFlux = totFlux - meanFlux
 
-                        # error is not handled yet!!
-                        error = nestedDict['error'][i]
+                    # error is not handled yet!!
+                    error = nestedDict['error'][i]
 
-                        obsHistID = int(np.asscalar(current_metadata.OpsimMetaData['obsHistID']))
+                    obsHistID = int(np.asscalar(current_metadata.OpsimMetaData['obsHistID']))
 
-                        # apply transformations to form diaSource attributes
-                        temp_dict['filterName'] = filterName
-                        #temp_dict['lsst_%s' % filterName] = totMag
-                        #temp_dict['delta_lsst_%s' % filterName] = totMag - meanMag
-                        temp_dict['midPointTai'] = dia_trans.midPointTai(mjd)
-                        temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, 
+                    # apply transformations to form diaSource attributes
+                    temp_dict['filterName'] = filterName
+                    #temp_dict['lsst_%s' % filterName] = totMag
+                    #temp_dict['delta_lsst_%s' % filterName] = totMag - meanMag
+                    temp_dict['midPointTai'] = dia_trans.midPointTai(mjd)
+                    temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, 
                                 temp_dict['ccdVisitId']//10000)
-                        #temp_dict['diaSourceId'] = int(dia_trans.diaSourceId(obsHistID,
-                        #    diaObjectId))
-                        temp_dict['apFlux'] = diaFlux
-                        # Append to the list of historical instances
-                        diaSource_history.append(temp_dict)
-                    
-                        # Convert newly calculated values from numpy to scalar
-                        _numpy_to_scalar(temp_dict)
-                    
-                for dic in diaSource_history + [diaSource_dict]:
-                    list_of_keys = list(dic.keys())
-                    for k in list_of_keys:
-                        if k.startswith('lsst_') or k.startswith('delta_lsst_'):
-                            dic.pop(k)
+                    #temp_dict['diaSourceId'] = int(dia_trans.diaSourceId(obsHistID,
+                    #    diaObjectId))
+                    temp_dict['apFlux'] = diaFlux
+                    # Append to the list of historical instances
+                    diaSource_history.append(temp_dict)
                 
-                alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
-                        'diaSource':diaSource_dict, 
-                        'prvDiaSources':diaSource_history}
-
-                list_of_alert_dicts.append(alert_dict)
+                    # Convert newly calculated values from numpy to scalar
+                    _numpy_to_scalar(temp_dict)
                 
-                
-                if (counter==catsim_chunk_size):
-                    print('ready to write %d events to mongodb' % catsim_chunk_size)
+            for dic in diaSource_history + [diaSource_dict]:
+                list_of_keys = list(dic.keys())
+                for k in list_of_keys:
+                    if k.startswith('lsst_') or k.startswith('delta_lsst_'):
+                        dic.pop(k)
+            
+            alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
+                    'diaSource':diaSource_dict, 
+                    'prvDiaSources':diaSource_history}
 
-                    mongo_write_timer = timer()
-                    alerts_mongo_collection.insert_many(list_of_alert_dicts)
-                    print('events written to mongodb in %s s' % (timer() - mongo_write_timer))
+            list_of_alert_dicts.append(alert_dict)
+            
+            
+            if (counter==catsim_chunk_size):
+                print('ready to write %d events to mongodb' % catsim_chunk_size)
 
-                    list_of_alert_dicts=[]
-                    counter = 0
-                    gc.collect()
-                    del gc.garbage[:]
+                mongo_write_timer = timer()
+                alerts_mongo_collection.insert_many(list_of_alert_dicts)
+                print('events written to mongodb in %s s' % (timer() - mongo_write_timer))
+
+                list_of_alert_dicts=[]
+                counter = 0
+                gc.collect()
+                del gc.garbage[:]
 
     """ deal with the rest of events """
     print('ready to write %d events to mongodb' % len(list_of_alert_dicts))
     mongo_write_timer = timer()
     alerts_mongo_collection.insert_many(list_of_alert_dicts)
     print('events written to mongodb in %s s' % (timer() - mongo_write_timer))
-    print(sys.getsizeof(already_issued))
     print(len(gc.garbage[:]))
     gc.collect()
     print(len(gc.garbage[:]))
