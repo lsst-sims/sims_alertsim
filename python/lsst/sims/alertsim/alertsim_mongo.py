@@ -130,20 +130,27 @@ def main(opsim_table=None, catsim_table='epycStarBase',
         #from pprint import pprint
         #pprint(vars(obs_metadata))
         print("(alertsim) current obsHistID: %d" % (obs_metadata.OpsimMetaData['obsHistID']))
-        """
-        make an additional CatSim constraint based on fiveSigmaDepth value
-        from OpsimMetaData
-        """
-        full_constraint = catsim_constraint + _get_additional_constraint(obs_metadata)
-        print('(alertsim) full constraint: %s' % (full_constraint))
-        
-        obs_data = catsim_utils.catsim_query(stack_version=STACK_VERSION,
-                objid=catsim_table, constraint=full_constraint,
-                obs_metadata=obs_metadata, dia=dia)
 
-        """ query catsim and serialize events to mongodb """
-        query_and_serialize(obs_data, obs_metadata, obs_per_field, history, 
-                radius, opsim_path, full_constraint, alerts_mongo_collection)
+        """ We process the whole data for the field for the night
+        once we runt into it (for lc performance sake), so skip when
+        you see it next time """
+        if obs_metadata.OpsimMetaData['fieldID'] in fieldIDs_to_skip:
+            print("(alertsim) This field was already processed for the entire night.\n"
+                    "Skipping this one and continuing to the next observation")
+        
+        else:
+            """ make an additional CatSim constraint based on fiveSigmaDepth value
+            from OpsimMetaData """
+            full_constraint = catsim_constraint + _get_additional_constraint(obs_metadata)
+            print('(alertsim) full constraint: %s' % (full_constraint))
+        
+            obs_data = catsim_utils.catsim_query(stack_version=STACK_VERSION, 
+                    objid=catsim_table, constraint=full_constraint, 
+                    obs_metadata=obs_metadata, dia=dia)
+
+            """ query catsim and serialize events to mongodb """
+            query_and_serialize(obs_data, obs_metadata, obs_per_field, history, 
+                    radius, opsim_path, full_constraint, alerts_mongo_collection)
 
         """ update last IDs and fields to skip 
         THIS SHOULD BE IMPROVED: PART OF THE DATA MAYBE GOT SERIALIZED
