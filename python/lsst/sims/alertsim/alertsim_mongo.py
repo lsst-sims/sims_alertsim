@@ -108,7 +108,7 @@ def main(opsim_table=None, catsim_table='epycStarBase',
     last_obsHistID = metadata_dict["last_obsHistID"]
     if last_obsHistID is not None:
         obs_matrix[:] = [x for x in obs_matrix if x[0].OpsimMetaData['obsHistID']<last_obsHistID]
-
+    
     plc = ParametrizedLightCurveMixin()
     plc.load_parametrized_light_curves()
     
@@ -126,8 +126,7 @@ def main(opsim_table=None, catsim_table='epycStarBase',
         obs_metadata = obs_per_field[0]
         #from pprint import pprint
         #pprint(vars(obs_metadata))
-        for o in obs_per_field:
-            print(o.OpsimMetaData['fieldID'])
+        print(obs_metadata.OpsimMetaData['obsHistID'])
         """
         make an additional CatSim constraint based on fiveSigmaDepth value
         from OpsimMetaData
@@ -153,7 +152,7 @@ def main(opsim_table=None, catsim_table='epycStarBase',
         metadata_dict = {"token":token, "last_obsHistID":last_obsHistID, 
                 "fieldIDs":fieldIDs_to_skip}
         metadata_mongo_collection.update_one({"token":token}, 
-                {"$set": {"last_obsHistID":last_obsHistID, "fieldIDs":fieldIDs_to_skip} })
+                {"$set": {"last_obsHistID":int(last_obsHistID), "fieldIDs":list(fieldIDs_to_skip)} })
 
     mongo_client.close()
 
