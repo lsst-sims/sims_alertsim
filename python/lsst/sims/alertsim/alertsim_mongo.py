@@ -86,8 +86,12 @@ def main(opsim_table=None, catsim_table='epycStarBase',
     alerts_mongo_collection = db['alerts']
     metadata_mongo_collection = db['metadata']
     
-    metadata_dict = {"token":token, "last_obsHistID":None, "fieldIDs":[]}
-    metadata_mongo_collection.insert_one(metadata_dict)
+    metadata_dict = metadata_mongo_collection.find_one()
+    if metadata_dict is None:
+        metadata_dict = {"token":token, "last_obsHistID":None, "fieldIDs":[]}
+        metadata_mongo_collection.insert_one(metadata_dict)
+    
+    print(metadata_dict)
 
     print("fetching opsim results...")
 
