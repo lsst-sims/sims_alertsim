@@ -326,9 +326,7 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
     mongo_write_timer = timer()
     alerts_mongo_collection.insert_many(list_of_alert_dicts)
     print('(alertsim) Events written to mongodb in %s s' % (timer() - mongo_write_timer))
-    print(len(gc.garbage[:]))
     gc.collect()
-    print(len(gc.garbage[:]))
     del gc.garbage[:]
 
 def _remove_band_attrs(obj, bandname):
