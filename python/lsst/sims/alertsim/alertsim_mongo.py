@@ -64,22 +64,25 @@ def main(opsim_table=None, catsim_table='epycStarBase',
 
     mongo_client = MongoClient('localhost', 27017)
 
-    """ THIS IS A SKETCH OF TOKEN FUNCTIONALITY """
+    """ Token is used to continue serialization from the point it broke. 
+    As alertsim is time and memory intensive, with an online tunnel, 
+    it can break easily. This assures seamless continuation"""
+
     if token is not None:
         dbnames = mongo_client.list_database_names()
         if token not in dbnames:
-            print("A database related with this token doesn't exist.\n"
-                    "Please insert a correct token or start the script\n"
-                    "without a token to create a new database")
+            print("(alertsim) A database related with this token doesn't exist.\n"
+                    "(alertsim) Please insert a correct token or start the script\n"
+                    "(alertsim) without a token to create a new database")
             exit(0)
         else:
-            print("Working with the existing db %s" % (token))
+            print("(alertsim) Working with the existing db %s" % (token))
             db_name = str(token)
             pass
     else:
         token = int(time.time())
-        print("Creating new token %s. If the program or connection breaks,\n"
-                "you can continue from the point it broke by entering the --token argument" % (token))
+        print("(alertsim) Creating new token %s. If the program or connection breaks,\n"
+                "(alertsim) you can continue from the point it broke by entering the --token argument" % (token))
         db_name = str(token)
     
     db = mongo_client[db_name]
@@ -91,9 +94,9 @@ def main(opsim_table=None, catsim_table='epycStarBase',
         metadata_dict = {"token":token, "last_obsHistID":None, "fieldIDs":[]}
         metadata_mongo_collection.insert_one(metadata_dict)
     
-    print(metadata_dict)
+    print("(alertsim) Last obsHistID for which data was serialized was %d" % (metadata_dict['last_obsHistID']))
 
-    print("fetching opsim results...")
+    print("(alertsim) Fetching opsim results...")
 
 
     """ matrix of all observations per field up to current mjd REVERSED """
@@ -102,7 +105,7 @@ def main(opsim_table=None, catsim_table='epycStarBase',
             opsim_night=opsim_night, opsim_filter=opsim_filter, 
             opsim_mjd=opsim_mjd, history=history, reverse=True)
 
-    print("opsim result fetched (in reverse order) and transformed to ObservationMetaData objects")
+    print("(alertsim) opsim result fetched (in reverse order) and transformed to ObservationMetaData objects")
 
     """ slice the matrix from the last stored obsHistID """
     last_obsHistID = metadata_dict["last_obsHistID"]
@@ -126,13 +129,13 @@ def main(opsim_table=None, catsim_table='epycStarBase',
         obs_metadata = obs_per_field[0]
         #from pprint import pprint
         #pprint(vars(obs_metadata))
-        print(obs_metadata.OpsimMetaData['obsHistID'])
+        print("(alertsim) current obsHistID: %d" % (obs_metadata.OpsimMetaData['obsHistID']))
         """
         make an additional CatSim constraint based on fiveSigmaDepth value
         from OpsimMetaData
         """
         full_constraint = catsim_constraint + _get_additional_constraint(obs_metadata)
-        print('### full constraint: %s' % (full_constraint))
+        print('(alertsim) full constraint: %s' % (full_constraint))
         
         obs_data = catsim_utils.catsim_query(stack_version=STACK_VERSION,
                 objid=catsim_table, constraint=full_constraint,
@@ -146,6 +149,7 @@ def main(opsim_table=None, catsim_table='epycStarBase',
         THIS SHOULD BE IMPROVED: PART OF THE DATA MAYBE GOT SERIALIZED
         BUT THE PROGRAM BROKE IN THE MIDDLE OF THE QUERY
         SOME FLUSH OPTIONS MAYBE? SEE FSYNC
+        THIS IS NOT THE ONLY POINT AS THERE ARE PERFORMANCE AND MEMORY ISSUES
         """
         last_obsHistID = int(obs_metadata.OpsimMetaData['obsHistID'])
         fieldIDs_to_skip.add(int(obs_metadata.OpsimMetaData['fieldID']))
@@ -199,20 +203,20 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
     else:
         lc_gen = FastStellarLightCurveGenerator(obs_data.db_obj, opsim_path)
         
-        print("#### radius = %f" % (radius))
+        print("(alertsim) radius = %f" % (radius))
         ra1=obs_metadata.pointingRA - radius/np.cos(np.radians(obs_metadata.pointingDec))
         ra2=obs_metadata.pointingRA + radius/np.cos(np.radians(obs_metadata.pointingDec))
         dec1=obs_metadata.pointingDec - radius
         dec2=obs_metadata.pointingDec + radius
 
-        print("ra %f - %f, decl %f - %f" % (ra1, ra2, dec1, dec2))
+        print("(alertsim) ra %f - %f, decl %f - %f" % (ra1, ra2, dec1, dec2))
         pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), expMJD=(obs_metadata.mjd.TAI-365, obs_metadata.mjd.TAI), boundLength=radius)
         
-        print("number of pointings %d: " % sum(len(x) for x in pointings))
+        print("(alertsim) Number of pointings %d: " % sum(len(x) for x in pointings))
         lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings=pointings, constraint=full_constraint, chunk_size=1000)
 
-        print("done with lc's")
-        print("%d observations of this field for previous 365 days" %len(observations_field))
+        print("(alertsim) Done with lc's")
+        print("(alertsim) %d observations of this field for previous 365 days" %len(observations_field))
 
         catsim_timer = timer()
         counter = 0
@@ -221,13 +225,13 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
         for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
             
             if (not first_time and counter==0): 
-                print("Retrieve new chunk of events %s s" % (timer()-catsim_timer))
+                print("(alertsim) Retrieve new chunk of events %s s" % (timer()-catsim_timer))
             
             first_time = False
 
             counter = counter + 1
             if (counter % 100 == 0):
-                print("%s %s" % (counter, timer()))
+                print("(alertsim) %s %s" % (counter, timer()))
             
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
 
@@ -242,10 +246,7 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
             #        diaObjectId))
 
             lc = lc_dict[diaObjectId]
-            #new_events= [i for i in lc if i
-            #
-            #print(lc)
-            #exit(0)
+
             diaSource_history = []
             
             for filterName, nestedDict in lc.items():
@@ -302,11 +303,11 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
             
             
             if (counter==catsim_chunk_size):
-                print('ready to write %d events to mongodb' % catsim_chunk_size)
+                print('(alertsim) Ready to write %d events to mongodb' % catsim_chunk_size)
 
                 mongo_write_timer = timer()
                 alerts_mongo_collection.insert_many(list_of_alert_dicts)
-                print('events written to mongodb in %s s' % (timer() - mongo_write_timer))
+                print('(alertsim) Events written to mongodb in %s s' % (timer() - mongo_write_timer))
 
                 list_of_alert_dicts=[]
                 counter = 0
@@ -314,10 +315,10 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                 del gc.garbage[:]
 
     """ deal with the rest of events """
-    print('ready to write %d events to mongodb' % len(list_of_alert_dicts))
+    print('(alertsim) Ready to write %d events to mongodb' % len(list_of_alert_dicts))
     mongo_write_timer = timer()
     alerts_mongo_collection.insert_many(list_of_alert_dicts)
-    print('events written to mongodb in %s s' % (timer() - mongo_write_timer))
+    print('(alertsim) Events written to mongodb in %s s' % (timer() - mongo_write_timer))
     print(len(gc.garbage[:]))
     gc.collect()
     print(len(gc.garbage[:]))
