@@ -61,6 +61,9 @@ def main(opsim_table=None, catsim_table='epycStarBase',
     @param [in] dia is boolean which switches between vanilla attributes
     and full DIASource attributes for each VOEvent
 
+    @param [in] token is a unique identifier of an alertsim run. Can be
+    used to continue previous, broken run. It is also the name of the Mongo
+    database for that run.
     """
 
     mongo_client = MongoClient('localhost', 27017)
@@ -71,10 +74,10 @@ def main(opsim_table=None, catsim_table='epycStarBase',
 
     if token is not None:
         dbnames = mongo_client.list_database_names()
-        if token not in dbnames:
-            print("(alertsim) A database related with this token doesn't exist. \
-                    Please insert a correct token or start the script without \
-                    a token to create a new database.")
+        if str(token) not in dbnames:
+            print("(alertsim) A database related with this token doesn't exist. "
+                    "Please insert a correct token or start the script without "
+                    "a token to create a new database.")
             exit(0)
         else:
             print("(alertsim) Continuing an existing alertsim run.")
@@ -83,9 +86,9 @@ def main(opsim_table=None, catsim_table='epycStarBase',
             pass
     else:
         token = int(time.time())
-        print("(alertsim) Creating new token %s. If the program or \
-                connection breaks, you can continue from the point \
-                it broke by entering the --token argument." % (token))
+        print("(alertsim) Creating new token %s. If the program or "
+                "connection breaks, you can continue from the point "
+                "it broke by entering the --token argument." % (token))
         db_name = str(token)
     
     db = mongo_client[db_name]
@@ -146,7 +149,7 @@ def main(opsim_table=None, catsim_table='epycStarBase',
         once we runt into it (for lc performance sake), so skip when
         you see it next time """
         if obs_metadata.OpsimMetaData['fieldID'] in fieldIDs_to_skip:
-            print("(alertsim) This field was already processed for the entire night.\n"
+            print("(alertsim) This field was already processed for the entire night. "
                     "Skipping this one and continuing to the next observation")
         
         else:
@@ -170,11 +173,15 @@ def main(opsim_table=None, catsim_table='epycStarBase',
         THIS IS NOT THE ONLY POINT AS THERE ARE PERFORMANCE AND MEMORY ISSUES
         """
         last_obsHistID = int(obs_metadata.OpsimMetaData['obsHistID'])
-        if not history:
-            fieldIDs_to_skip.add(int(obs_metadata.OpsimMetaData['fieldID']))
+
+        if history: fieldIDs_to_skip.add(int(obs_metadata.OpsimMetaData['fieldID']))
+        
         metadata_dict = {"token":token, "last_obsHistID":last_obsHistID, 
                 "fieldIDs":fieldIDs_to_skip}
-        metadata_mongo_collection.update_one({"token":token}, 
+        
+        print("(alertsim) updating mongo metadata")
+        print(metadata_dict)
+        metadata_mongo_collection.update_one({"token":token},
                 {"$set": {"last_obsHistID":last_obsHistID, "fieldIDs":list(fieldIDs_to_skip)} })
 
     mongo_client.close()
@@ -252,9 +259,8 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
             counter = counter + 1
             if (counter % 100 == 0):
                 print("(alertsim) %s %s s" % (counter, timer() - catsim_timer))
+                catsim_timer = timer()
             
-            catsim_timer = timer()
-
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
 
             diaObjectId = diaSource_dict['diaObjectId']

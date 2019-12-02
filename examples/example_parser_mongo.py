@@ -79,7 +79,7 @@ PARSER.add_argument("--no_history",
 PARSER.add_argument("--no_dia",
         help="emit basic attributes only, not full DIASources",
         action="store_false", default=True)
-PARSER.add_argument("-t", "--token", default=None)
+PARSER.add_argument("-t", "--token", type=int, default=None)
 ARGS = PARSER.parse_args()
 
 
