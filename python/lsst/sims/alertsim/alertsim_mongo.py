@@ -15,7 +15,7 @@ from pymongo import MongoClient
 
 from lsst.sims.alertsim import catsim_utils, opsim_utils
 from lsst.sims.alertsim.catalogs import dia_transformations as dia_trans
-from lsst.sims.alertsim.spinner import Spinner
+from lsst.sims.alertsim.other import Spinner
 from lsst.sims.catUtils.mixins import ParametrizedLightCurveMixin
 from lsst.sims.photUtils import cache_LSST_seds
 from lsst.sims.catUtils.utils import FastStellarLightCurveGenerator
@@ -129,6 +129,11 @@ def main(opsim_table=None, catsim_table='epycStarBase',
     same diaObjects (objects from the same field) """
     fieldIDs_to_skip = set()
 
+    """ MJD for the beginning of the night. """
+    night_mjd = obs_matrix[-1][0].mjd.TAI
+
+    print("(alertsim) MJD at the beginning of this night %s" % (night_mjd))
+    
     for obs_per_field in obs_matrix:
 
         """ current observation - largest mjd from a sorted list  """
@@ -156,7 +161,7 @@ def main(opsim_table=None, catsim_table='epycStarBase',
 
             """ query catsim and serialize events to mongodb """
             query_and_serialize(obs_data, obs_metadata, obs_per_field, history, 
-                    radius, opsim_path, full_constraint, alerts_mongo_collection)
+                    radius, opsim_path, full_constraint, alerts_mongo_collection, night_mjd)
 
         """ update last IDs and fields to skip 
         THIS SHOULD BE IMPROVED: PART OF THE DATA MAYBE GOT SERIALIZED
@@ -177,7 +182,7 @@ def main(opsim_table=None, catsim_table='epycStarBase',
 
 def query_and_serialize(obs_data, obs_metadata, observations_field, 
                        history, radius, opsim_path, 
-                       full_constraint, alerts_mongo_collection):
+                       full_constraint, alerts_mongo_collection, night_mjd):
 
     """ Iterate over catalog, transform data to dicts according to 
         the avro schema, add history (if turned on) and serialize to mongodb
@@ -227,7 +232,7 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
         pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), 
                 expMJD=(obs_metadata.mjd.TAI-365, obs_metadata.mjd.TAI), boundLength=radius)
         
-        print("(alertsim) Number of pointings %d: " % sum(len(x) for x in pointings))
+        #print("(alertsim) Number of pointings %d: " % sum(len(x) for x in pointings))
         lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings=pointings, constraint=full_constraint, chunk_size=1000)
 
         print("(alertsim) Done with lc's")
@@ -312,13 +317,29 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                     if k.startswith('lsst_') or k.startswith('delta_lsst_'):
                         dic.pop(k)
             
+            diaSource_history.sort(key=lambda x : x['midPointTai'], reverse = True)
+
             alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
                     'diaSource':diaSource_dict, 
                     'prvDiaSources':diaSource_history}
 
             list_of_alert_dicts.append(alert_dict)
-            
-            
+
+            for diaSrc in alert_dict['prvDiaSources']:
+                print(diaSrc['midPointTai'])
+
+            while alert_dict['prvDiaSources'][0]['midPointTai'] > night_mjd:
+                new_diaSource = alert_dict['prvDiaSources'][0]
+                new_history = alert_dict['prvDiaSources']
+                new_history.pop(0)
+                alert_dict = {'alertId':new_diaSource['diaSourceId'], 
+                        'diaSource':new_diaSource,
+                        'prvDiaSources':new_history}
+                
+                list_of_alert_dicts.append(alert_dict)
+
+            exit(0)
+
             if (counter==catsim_chunk_size):
                 print('(alertsim) Ready to write %d events to mongodb' % catsim_chunk_size)
 
