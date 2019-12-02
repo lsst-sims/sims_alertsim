@@ -15,6 +15,7 @@ from pymongo import MongoClient
 
 from lsst.sims.alertsim import catsim_utils, opsim_utils
 from lsst.sims.alertsim.catalogs import dia_transformations as dia_trans
+from lsst.sims.alertsim.spinner import Spinner
 from lsst.sims.catUtils.mixins import ParametrizedLightCurveMixin
 from lsst.sims.photUtils import cache_LSST_seds
 from lsst.sims.catUtils.utils import FastStellarLightCurveGenerator
@@ -98,19 +99,18 @@ def main(opsim_table=None, catsim_table='epycStarBase',
                 "fieldIDs":[]}
         metadata_mongo_collection.insert_one(metadata_dict)
     else:
-        print("(alertsim) Last obsHistID for which data was serialized \
-                was %s" % (metadata_dict['last_obsHistID']))
+        print("(alertsim) Last obsHistID for which data was serialized "
+                "was %s" % (metadata_dict['last_obsHistID']))
 
-    print("(alertsim) Fetching opsim results...")
-
-    """ matrix of all observations per field up to current mjd REVERSED """
-    obs_matrix = opsim_utils.opsim_query(stack_version=STACK_VERSION, 
-            opsim_path=opsim_path, objid=opsim_table, radius=radius, 
-            opsim_night=opsim_night, opsim_filter=opsim_filter, 
-            opsim_mjd=opsim_mjd, history=history, reverse=True)
-
-    print("(alertsim) opsim result fetched (in reverse order) and \
-            transformed to ObservationMetaData objects")
+    with Spinner(message="(alertsim) Fetching opsim results "):
+        """ matrix of all observations per field up to current mjd REVERSED """
+        obs_matrix = opsim_utils.opsim_query(stack_version=STACK_VERSION, 
+                opsim_path=opsim_path, objid=opsim_table, radius=radius, 
+                opsim_night=opsim_night, opsim_filter=opsim_filter, 
+                opsim_mjd=opsim_mjd, history=history, reverse=True)
+    
+    print("(alertsim) opsim result fetched (in reverse order) and "
+            "transformed to ObservationMetaData objects")
 
     """ slice the matrix from the last stored obsHistID """
     last_obsHistID = metadata_dict["last_obsHistID"]
@@ -246,8 +246,10 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
 
             counter = counter + 1
             if (counter % 100 == 0):
-                print("(alertsim) %s %s" % (counter, timer()))
+                print("(alertsim) %s %s" % (counter, timer() - catsim_timer()))
             
+            catsim_timer = timer()
+
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
 
             diaObjectId = diaSource_dict['diaObjectId']
