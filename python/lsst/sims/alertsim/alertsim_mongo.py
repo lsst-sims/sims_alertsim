@@ -325,9 +325,6 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
 
             list_of_alert_dicts.append(alert_dict)
 
-            for diaSrc in alert_dict['prvDiaSources']:
-                print(diaSrc['midPointTai'])
-
             while alert_dict['prvDiaSources'][0]['midPointTai'] > night_mjd:
                 new_diaSource = alert_dict['prvDiaSources'][0]
                 new_history = alert_dict['prvDiaSources']
@@ -338,10 +335,8 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                 
                 list_of_alert_dicts.append(alert_dict)
 
-            exit(0)
-
             if (counter==catsim_chunk_size):
-                print('(alertsim) Ready to write %d events to mongodb' % catsim_chunk_size)
+                print('(alertsim) Ready to write %d events to mongodb' % len(list_of_alert_dicts))
 
                 mongo_write_timer = timer()
                 alerts_mongo_collection.insert_many(list_of_alert_dicts)
