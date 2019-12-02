@@ -251,7 +251,7 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
 
             counter = counter + 1
             if (counter % 100 == 0):
-                print("(alertsim) %s %s" % (counter, timer() - catsim_timer()))
+                print("(alertsim) %s %s s" % (counter, timer() - catsim_timer))
             
             catsim_timer = timer()
 
