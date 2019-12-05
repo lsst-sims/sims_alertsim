@@ -112,8 +112,7 @@ def main(opsim_table=None, catsim_table='epycStarBase',
                 opsim_night=opsim_night, opsim_filter=opsim_filter, 
                 opsim_mjd=opsim_mjd, history=history, reverse=True)
     
-    print("(alertsim) opsim result fetched (in reverse order) and "
-            "transformed to ObservationMetaData objects")
+    print("(alertsim) Opsim matrix fetched (in reverse order)")
 
     """ slice the matrix from the last stored obsHistID """
     last_obsHistID = metadata_dict["last_obsHistID"]
@@ -230,20 +229,36 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
         lc_gen = FastStellarLightCurveGenerator(obs_data.db_obj, opsim_path)
         
         #print("(alertsim) radius = %f" % (radius))
-        ra1=obs_metadata.pointingRA - radius/np.cos(np.radians(obs_metadata.pointingDec))
-        ra2=obs_metadata.pointingRA + radius/np.cos(np.radians(obs_metadata.pointingDec))
+        ra1=obs_metadata.pointingRA - \
+                radius/np.cos(np.radians(obs_metadata.pointingDec))
+        ra2=obs_metadata.pointingRA + \
+                radius/np.cos(np.radians(obs_metadata.pointingDec))
         dec1=obs_metadata.pointingDec - radius
         dec2=obs_metadata.pointingDec + radius
 
+        year = 365
+        observations_year = len(observations_field)
+
+        if observations_year > 200:
+            print("(alertsim) %d observations for previous year exceeds " \
+                    "limit of 200. This is probably a deep drilling field. " \
+                    "Number of days in history will be reduced to meet a " \
+                    "criteria of up to 200 historical diaSources per year." \
+                    % (observations_year))
+            year = (200*365)//observations_year
+
         #print("(alertsim) ra %f - %f, decl %f - %f" % (ra1, ra2, dec1, dec2))
         pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), 
-                expMJD=(obs_metadata.mjd.TAI-365, obs_metadata.mjd.TAI), boundLength=radius)
-        
-        #print("(alertsim) Number of pointings %d: " % sum(len(x) for x in pointings))
-        lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings=pointings, constraint=full_constraint, chunk_size=1000)
+                expMJD=(obs_metadata.mjd.TAI-year, obs_metadata.mjd.TAI), 
+                boundLength=radius)
+
+        print("(alertsim) %d observations of this field for previous %d days" \
+                % (sum(len(x) for x in pointings), year))
+
+        lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings=pointings, 
+                constraint=full_constraint, chunk_size=1000)
 
         print("(alertsim) Done with lc's")
-        print("(alertsim) %d observations of this field for previous 365 days" %len(observations_field))
 
         catsim_timer = timer()
         counter = 0
@@ -252,7 +267,8 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
         for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
             
             if (not first_time and counter==0): 
-                print("(alertsim) Retrieve new chunk of events %s s" % (timer()-catsim_timer))
+                print("(alertsim) Retrieve new chunk of events %s s" % \
+                        (timer()-catsim_timer))
             
             first_time = False
 
@@ -284,13 +300,15 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                     # this should be ok if opsim/lc data is consistent, 
                     # however it would be healthier if some smart exception
                     # is added
-                    current_metadata = next((x for x in observations_field if x.mjd.TAI == mjd), None)
+                    current_metadata = next((x for x in observations_field \
+                            if x.mjd.TAI == mjd), None)
 
                     # copy diaSource values and adjust filter, mjd, mag, error
                     temp_dict = deepcopy(diaSource_dict)
 
                     totMag = nestedDict['mag'][i]
-                    meanMag = temp_dict['lsst_%s' % filterName]-temp_dict['delta_lsst_%s' % filterName]
+                    meanMag = temp_dict['lsst_%s' % filterName] - \
+                            temp_dict['delta_lsst_%s' % filterName]
                 
                     totFlux = dia_trans.fluxFromMag(totMag)
                     meanFlux = dia_trans.fluxFromMag(meanMag)
@@ -323,7 +341,8 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                     if k.startswith('lsst_') or k.startswith('delta_lsst_'):
                         dic.pop(k)
             
-            diaSource_history.sort(key=lambda x : x['midPointTai'], reverse = True)
+            diaSource_history.sort(key=lambda x : x['midPointTai'], 
+                    reverse = True)
 
             alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
                     'diaSource':diaSource_dict, 
@@ -342,11 +361,13 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                 list_of_alert_dicts.append(alert_dict)
 
             if (counter==catsim_chunk_size):
-                print('(alertsim) Ready to write %d events to mongodb' % len(list_of_alert_dicts))
+                print('(alertsim) Ready to write %d events to mongodb' % \
+                        len(list_of_alert_dicts))
 
                 mongo_write_timer = timer()
                 alerts_mongo_collection.insert_many(list_of_alert_dicts)
-                print('(alertsim) Events written to mongodb in %s s' % (timer() - mongo_write_timer))
+                print('(alertsim) Events written to mongodb in %s s' % \
+                        (timer() - mongo_write_timer))
 
                 list_of_alert_dicts=[]
                 counter = 0
@@ -354,10 +375,12 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                 del gc.garbage[:]
 
     """ deal with the rest of events """
-    print('(alertsim) Ready to write %d events to mongodb' % len(list_of_alert_dicts))
+    print('(alertsim) Ready to write %d events to mongodb' % \
+            len(list_of_alert_dicts))
     mongo_write_timer = timer()
     alerts_mongo_collection.insert_many(list_of_alert_dicts)
-    print('(alertsim) Events written to mongodb in %s s' % (timer() - mongo_write_timer))
+    print('(alertsim) Events written to mongodb in %s s' % (timer() - \
+            mongo_write_timer))
     gc.collect()
     del gc.garbage[:]
 
