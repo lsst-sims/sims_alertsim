@@ -210,6 +210,11 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
     list_of_alert_dicts = []
     catsim_chunk_size = 3000
 
+    cutout_file = open("avsc/sample_cutouts/stamp-676.fits.gz", "rb")
+    cutout_data = cutout_file.read()
+    cutout_difference = cutout_template = {"fileName":"stamp-676", 
+            "stampData":cutout_data}
+
     if not history:
         for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
 
@@ -219,9 +224,10 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
             # JSON can't serialize numpy
             _numpy_to_scalar(diaSource_dict)
 
-            alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
-                    'diaSource':diaSource_dict, 
-                    'prvDiaSources':[]}
+            alert_dict = {'alertId':diaSource_dict['diaSourceId'],
+                    'diaSource':diaSource_dict, 'prvDiaSources':[],
+                    'cutoutTemplate':cutout_template,
+                    'cutoutDifference':cutout_difference}
 
             list_of_alert_dicts.append(alert_dict)
     
@@ -238,7 +244,8 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
 
         year = 365
         observations_year = len(observations_field)
-
+        if observations_year > 200: catsim_chunk_size = 150
+        """
         if observations_year > 200:
             print("(alertsim) %d observations for previous year exceeds " \
                     "limit of 200. This is probably a deep drilling field. " \
@@ -246,11 +253,13 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                     "criteria of up to 200 historical diaSources per year." \
                     % (observations_year))
             year = (200*365)//observations_year
+        """
 
         #print("(alertsim) ra %f - %f, decl %f - %f" % (ra1, ra2, dec1, dec2))
         pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), 
                 expMJD=(obs_metadata.mjd.TAI-year, obs_metadata.mjd.TAI), 
                 boundLength=radius)
+        
 
         print("(alertsim) %d observations of this field for previous %d days" \
                 % (sum(len(x) for x in pointings), year))
@@ -343,22 +352,21 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
             
             diaSource_history.sort(key=lambda x : x['midPointTai'], 
                     reverse = True)
+            #for x in diaSource_history:
+            #    print(x['midPointTai'], end=" ")
 
-            alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
-                    'diaSource':diaSource_dict, 
-                    'prvDiaSources':diaSource_history}
+            while diaSource_dict['midPointTai'] > night_mjd:
 
-            list_of_alert_dicts.append(alert_dict)
+                alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
+                        'diaSource':diaSource_dict,
+                        'prvDiaSources':diaSource_history,
+                        'cutoutTemplate':cutout_template,
+                        'cutoutDifference':cutout_difference}
 
-            while alert_dict['prvDiaSources'][0]['midPointTai'] > night_mjd:
-                new_diaSource = alert_dict['prvDiaSources'][0]
-                new_history = alert_dict['prvDiaSources']
-                new_history.pop(0)
-                alert_dict = {'alertId':new_diaSource['diaSourceId'], 
-                        'diaSource':new_diaSource,
-                        'prvDiaSources':new_history}
-                
                 list_of_alert_dicts.append(alert_dict)
+
+                diaSource_dict = alert_dict['prvDiaSources'][0]
+                diaSource_history.pop(0)
 
             if (counter==catsim_chunk_size):
                 print('(alertsim) Ready to write %d events to mongodb' % \
@@ -374,6 +382,9 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                 gc.collect()
                 del gc.garbage[:]
 
+        
+    cutout_file.close()
+
     """ deal with the rest of events """
     print('(alertsim) Ready to write %d events to mongodb' % \
             len(list_of_alert_dicts))
@@ -381,8 +392,10 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
     alerts_mongo_collection.insert_many(list_of_alert_dicts)
     print('(alertsim) Events written to mongodb in %s s' % (timer() - \
             mongo_write_timer))
+    
     gc.collect()
     del gc.garbage[:]
+    exit(0)
 
 def _remove_band_attrs(obj, bandname):
     """ Remove attributes not connected to the given bandname
