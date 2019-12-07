@@ -17,6 +17,31 @@ def _raise_no_avro(method_name):
     msg = "To use %s you must install avro-python3 from https://avro.apache.org. You might use pip install avro-python3" % method_name
     raise RuntimeError(msg)
 
+def _load_basics(method_name):
+
+    global _avro_installed
+    if not _avro_installed:
+        _raise_no_avro(method_name)
+
+    known_schemas = avro.schema.Names()
+
+    diasource_schema = load_avsc_schema("avsc/2/0/lsst.alert.diaSource.avsc", known_schemas)
+    diaforced_schema = load_avsc_schema("avsc/2/0/lsst.alert.diaForcedSource.avsc", known_schemas)
+    dianondetection_schema = load_avsc_schema("avsc/2/0/lsst.alert.diaNondetectionLimit.avsc", known_schemas)
+    cutout_schema = load_avsc_schema("avsc/2/0/lsst.alert.cutout.avsc", known_schemas)
+    ssobject_schema = load_avsc_schema("avsc/2/0/lsst.ssObject.avsc", known_schemas)
+    diaobject_schema = load_avsc_schema("avsc/2/0/lsst.diaObject.avsc", known_schemas)
+    alert_schema = load_avsc_schema("avsc/2/0/lsst.alert.avsc", known_schemas)
+
+    return alert_schema
+
+def validate_alert(alert_dict):
+    alert_schema = _load_basics("validate_alert")
+    writer = DataFileWriter(open("avsc/alert.avro", "wb"), DatumWriter(), alert_schema)
+    writer.append(alert_dict)
+    print("(alertsim) Avro schema validated for this chunk")
+    avro_validated = True
+
 
 def catsim_to_avro(list_of_alert_dicts, session_dir):
 
@@ -29,24 +54,7 @@ def catsim_to_avro(list_of_alert_dicts, session_dir):
 
     @param [in] schemaURI is relative location of avsc schema 
     """
-
-    global _avro_installed
-    if not _avro_installed:
-        _raise_no_avro("catsim_to_avro")
-
-    known_schemas = avro.schema.Names()
-
-    #diasource_schema = load_avsc_schema("avsc/diasource.avsc", known_schemas)
-    #ssobject_schema = load_avsc_schema("avsc/ssobject.avsc", known_schemas)
-    #diaobject_schema = load_avsc_schema("avsc/diaobject.avsc", known_schemas)
-    #alert_schema = load_avsc_schema("avsc/alert.avsc", known_schemas)
-    diasource_schema = load_avsc_schema("avsc/2/0/lsst.alert.diaSource.avsc", known_schemas)
-    diaforced_schema = load_avsc_schema("avsc/2/0/lsst.alert.diaForcedSource.avsc", known_schemas)
-    dianondetection_schema = load_avsc_schema("avsc/2/0/lsst.alert.diaNondetectionLimit.avsc", known_schemas)
-    cutout_schema = load_avsc_schema("avsc/2/0/lsst.alert.cutout.avsc", known_schemas)
-    ssobject_schema = load_avsc_schema("avsc/2/0/lsst.ssObject.avsc", known_schemas)
-    diaobject_schema = load_avsc_schema("avsc/2/0/lsst.diaObject.avsc", known_schemas)
-    alert_schema = load_avsc_schema("avsc/2/0/lsst.alert.avsc", known_schemas)
+    alert_schema = _load_basics("catsim_to_avro")
 
     writing_time = timer()
     writer = DataFileWriter(open("avsc/alert.avro", "wb"), DatumWriter(), alert_schema)

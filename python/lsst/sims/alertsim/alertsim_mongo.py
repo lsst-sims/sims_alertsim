@@ -13,7 +13,7 @@ import functools
 import gc
 from pymongo import MongoClient
 
-from lsst.sims.alertsim import catsim_utils, opsim_utils
+from lsst.sims.alertsim import catsim_utils, opsim_utils, avro_utils
 from lsst.sims.alertsim.catalogs import dia_transformations as dia_trans
 from lsst.sims.alertsim.other import Spinner
 from lsst.sims.catUtils.mixins import ParametrizedLightCurveMixin
@@ -120,16 +120,16 @@ def main(opsim_table=None, catsim_table='epycStarBase',
         obs_matrix[:] = [x for x in obs_matrix if \
                 x[0].OpsimMetaData['obsHistID']<last_obsHistID]
     
+    """ a set of fieldID's for which catsim and lc data were already
+    serialized. This is done in advance to avoid multiple lc calls for 
+    same diaObjects (objects from the same field) """
+    fieldIDs_to_skip = set(metadata_dict["fieldIDs"])
+
     plc = ParametrizedLightCurveMixin()
     plc.load_parametrized_light_curves()
     
     if history:
         cache_LSST_seds()
-
-    """ a set of fieldID's for which catsim and lc data were already
-    serialized. This is done in advance to avoid multiple lc calls for 
-    same diaObjects (objects from the same field) """
-    fieldIDs_to_skip = set()
 
     """ MJD for the beginning of the night. """
     night_mjd = obs_matrix[-1][0].mjd.TAI
@@ -138,20 +138,28 @@ def main(opsim_table=None, catsim_table='epycStarBase',
     
     for obs_per_field in obs_matrix:
 
+        print("(alertsim) ---- new observation ----")
+
         """ current observation - largest mjd from a sorted list  """
         obs_metadata = obs_per_field[0]
         #from pprint import pprint
         #pprint(vars(obs_metadata))
-        print("(alertsim) current obsHistID: %d" % (obs_metadata.OpsimMetaData['obsHistID']))
+        current_obsHistID = obs_metadata.OpsimMetaData['obsHistID']
+        current_fieldID = obs_metadata.OpsimMetaData['fieldID']
+
 
         """ We process the whole data for the field for the night
         once we runt into it (for lc performance sake), so skip when
         you see it next time """
-        if obs_metadata.OpsimMetaData['fieldID'] in fieldIDs_to_skip:
-            print("(alertsim) This field was already processed for the entire night. "
-                    "Skipping this one and continuing to the next observation")
+        if current_fieldID in fieldIDs_to_skip:
+            print("(alertsim) Field %d was already processed for the entire night. "
+                    "Skipping observation %d and continuing to the next one." \
+                    % (current_obsHistID, current_fieldID))
         
         else:
+            print("(alertsim) Observation %d, field %d" % (current_obsHistID, 
+                current_fieldID))
+            
             """ make an additional CatSim constraint based on fiveSigmaDepth value
             from OpsimMetaData """
             full_constraint = catsim_constraint + _get_additional_constraint(obs_metadata)
@@ -275,11 +283,9 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
         
         for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
             
-            if (not first_time and counter==0): 
+            if (not first_time and counter==0):
                 print("(alertsim) Retrieve new chunk of events %s s" % \
                         (timer()-catsim_timer))
-            
-            first_time = False
 
             counter = counter + 1
             if (counter % 100 == 0):
@@ -287,9 +293,8 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                 catsim_timer = timer()
             
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
-
             diaObjectId = diaSource_dict['diaObjectId']
-            
+
             # convert numpy types to scalar
             # JSON can't serialize numpy
             _numpy_to_scalar(diaSource_dict)
@@ -363,6 +368,9 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                         'cutoutTemplate':cutout_template,
                         'cutoutDifference':cutout_difference}
 
+                if first_time: avro_utils.validate_alert(alert_dict)
+                first_time = False
+                exit(0)
                 list_of_alert_dicts.append(alert_dict)
 
                 diaSource_dict = alert_dict['prvDiaSources'][0]
@@ -395,7 +403,6 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
     
     gc.collect()
     del gc.garbage[:]
-    exit(0)
 
 def _remove_band_attrs(obj, bandname):
     """ Remove attributes not connected to the given bandname
