@@ -370,7 +370,7 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
 
                 if first_time: avro_utils.validate_alert(alert_dict)
                 first_time = False
-                exit(0)
+
                 list_of_alert_dicts.append(alert_dict)
 
                 diaSource_dict = alert_dict['prvDiaSources'][0]
