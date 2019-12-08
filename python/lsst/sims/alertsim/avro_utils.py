@@ -40,7 +40,9 @@ def validate_alert(alert_dict):
     writer = DataFileWriter(open("avsc/alert.avro", "wb"), DatumWriter(), alert_schema)
     writer.append(alert_dict)
     print("(alertsim) Avro schema validated for this chunk")
-    avro_validated = True
+    writer.close()
+    
+    return True
 
 
 def catsim_to_avro(list_of_alert_dicts, session_dir):
