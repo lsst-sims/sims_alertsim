@@ -147,6 +147,9 @@ def main(opsim_table=None, catsim_table='epycStarBase',
         current_obsHistID = obs_metadata.OpsimMetaData['obsHistID']
         current_fieldID = obs_metadata.OpsimMetaData['fieldID']
 
+        #import psutil
+        #for proc in psutil.process_iter():
+        #    print(proc.open_files())
 
         """ We process the whole data for the field for the night
         once we runt into it (for lc performance sake), so skip when
@@ -381,7 +384,9 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                         len(list_of_alert_dicts))
 
                 mongo_write_timer = timer()
-                alerts_mongo_collection.insert_many(list_of_alert_dicts)
+
+                if list_of_alert_dicts:
+                    alerts_mongo_collection.insert_many(list_of_alert_dicts)
                 print('(alertsim) Events written to mongodb in %s s' % \
                         (timer() - mongo_write_timer))
 
@@ -390,14 +395,15 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                 gc.collect()
                 del gc.garbage[:]
 
-        
     cutout_file.close()
 
     """ deal with the rest of events """
     print('(alertsim) Ready to write %d events to mongodb' % \
             len(list_of_alert_dicts))
     mongo_write_timer = timer()
-    alerts_mongo_collection.insert_many(list_of_alert_dicts)
+    
+    if list_of_alert_dicts:
+        alerts_mongo_collection.insert_many(list_of_alert_dicts)
     print('(alertsim) Events written to mongodb in %s s' % (timer() - \
             mongo_write_timer))
     
