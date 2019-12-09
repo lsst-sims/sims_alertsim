@@ -380,35 +380,39 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                 diaSource_history.pop(0)
 
             if (counter==catsim_chunk_size):
-                print('(alertsim) Ready to write %d events to mongodb' % \
-                        len(list_of_alert_dicts))
-
-                mongo_write_timer = timer()
-
-                if list_of_alert_dicts:
-                    alerts_mongo_collection.insert_many(list_of_alert_dicts)
-                print('(alertsim) Events written to mongodb in %s s' % \
-                        (timer() - mongo_write_timer))
-
+                _write_to_mongo(list_of_alert_dicts)
+                
                 list_of_alert_dicts=[]
                 counter = 0
+
                 gc.collect()
                 del gc.garbage[:]
 
     cutout_file.close()
 
     """ deal with the rest of events """
-    print('(alertsim) Ready to write %d events to mongodb' % \
-            len(list_of_alert_dicts))
-    mongo_write_timer = timer()
-    
-    if list_of_alert_dicts:
-        alerts_mongo_collection.insert_many(list_of_alert_dicts)
-    print('(alertsim) Events written to mongodb in %s s' % (timer() - \
-            mongo_write_timer))
-    
+    _write_to_mongo(list_of_alert_dicts)
+
     gc.collect()
     del gc.garbage[:]
+
+
+def _write_to_mongo(list_of_alert_dicts)
+    """ Serialize events to mongodb
+
+    @param [in] list_of_alert_dicts is a list of alerts formatted
+    according to the valid avro schema
+    
+    """
+
+    if list_of_alert_dicts:
+        print('(alertsim) Ready to write %d events to mongodb' % \
+                len(list_of_alert_dicts))
+        mongo_write_timer = timer()
+        alerts_mongo_collection.insert_many(list_of_alert_dicts)
+        print('(alertsim) Events written to mongodb in %s s' % (timer() - \
+                mongo_write_timer))
+
 
 def _remove_band_attrs(obj, bandname):
     """ Remove attributes not connected to the given bandname
@@ -418,7 +422,6 @@ def _remove_band_attrs(obj, bandname):
     @param [in] bandname is the bandname for the visit
     
     """
-
 
     # this may not be the safest way and needs to be revised
     for key in list(obj.__dict__.keys()):
