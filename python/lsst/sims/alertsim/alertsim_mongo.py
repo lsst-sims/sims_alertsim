@@ -397,7 +397,7 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
     del gc.garbage[:]
 
 
-def _write_to_mongo(list_of_alert_dicts)
+def _write_to_mongo(list_of_alert_dicts):
     """ Serialize events to mongodb
 
     @param [in] list_of_alert_dicts is a list of alerts formatted
