@@ -2,16 +2,20 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
-from copy import deepcopy
-import numpy as np
-from timeit import default_timer as timer
-from builtins import zip
 import os
 import sys
 import time
 import functools
 import gc
-from pymongo import MongoClient
+import numpy as np
+from timeit import default_timer as timer
+from copy import deepcopy
+from builtins import zip
+try:
+    from pymongo import MongoClient
+    _mongo_installed = True
+except:
+    _mongo_installed = False
 
 from lsst.sims.alertsim import catsim_utils, opsim_utils, avro_utils
 from lsst.sims.alertsim.catalogs import dia_transformations as dia_trans
@@ -65,6 +69,9 @@ def main(opsim_table=None, catsim_table='epycStarBase',
     used to continue previous, broken run. It is also the name of the Mongo
     database for that run.
     """
+    global _mongo_installed
+    if not _mongo_installed:
+        _raise_no_mongo("main")
 
     mongo_client = MongoClient('localhost', 27017)
 
@@ -465,3 +472,9 @@ def _numpy_to_scalar(d):
             d[k] = np.asscalar(d[k])
         else:
             pass
+
+def _raise_no_mongo(method_name):
+    msg = "To use %s you must install pymongo from "
+    "https://api.mongodb.com/python/current/. You might "
+    "use pip install pymongo" % method_name
+    raise RuntimeError(msg)
