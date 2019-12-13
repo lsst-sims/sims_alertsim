@@ -101,7 +101,7 @@ def main(opsim_table=None, catsim_table='epycStarBase',
     db = mongo_client[db_name]
     alerts_mongo_collection = db['alerts']
     metadata_mongo_collection = db['metadata']
-    
+
     metadata_dict = metadata_mongo_collection.find_one()
     
     if metadata_dict is None:
@@ -140,6 +140,7 @@ def main(opsim_table=None, catsim_table='epycStarBase',
 
     """ MJD for the beginning of the night. """
     night_mjd = obs_matrix[-1][0].mjd.TAI
+    alerts_total_count = 0
 
     print("(alertsim) MJD at the beginning of this night %s" % (night_mjd))
     
@@ -225,6 +226,8 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
     """
 
     """ a list of alert dicts for a visit that will eventually be serialized """
+    global alerts_total_count
+    
     list_of_alert_dicts = []
     catsim_chunk_size = 3000
 
@@ -236,13 +239,14 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
     if not history:
         for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
 
+            alerts_total_count += 1
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
             
             # convert numpy types to scalar
             # JSON can't serialize numpy
             _numpy_to_scalar(diaSource_dict)
 
-            alert_dict = {'alertId':diaSource_dict['diaSourceId'],
+            alert_dict = {'alertId':alerts_total_count,
                     'diaSource':diaSource_dict, 'prvDiaSources':[],
                     'cutoutTemplate':cutout_template,
                     'cutoutDifference':cutout_difference}
@@ -294,6 +298,8 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
         
         for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
             
+            alerts_total_count += 1
+
             if (not first_time and counter==0):
                 print("(alertsim) Retrieve new chunk of events %s s" % \
                         (timer()-catsim_timer))
@@ -375,7 +381,9 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
 
             while diaSource_dict['midPointTai'] >= night_mjd:
 
-                alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
+                alerts_total_count += 1
+
+                alert_dict = {'alertId':alerts_total_count, 
                         'diaSource':diaSource_dict,
                         'prvDiaSources':diaSource_history,
                         'cutoutTemplate':cutout_template,
@@ -385,6 +393,7 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                 first_time = False
 
                 list_of_alert_dicts.append(alert_dict)
+                
                 diaSource_dict = diaSource_history[0]
                 diaSource_history.pop(0)
 
