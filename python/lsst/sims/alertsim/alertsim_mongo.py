@@ -198,7 +198,7 @@ def main(opsim_table=None, catsim_table='epycStarBase',
 
 
 def query_and_serialize(obs_data, obs_metadata, observations_field, 
-                       history, radius, opsim_path, 
+                       history, radius, opsim_path,
                        full_constraint, alerts_mongo_collection, night_mjd):
 
     """ Iterate over catalog, transform data to dicts according to 
@@ -267,10 +267,11 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
         """
 
         #print("(alertsim) ra %f - %f, decl %f - %f" % (ra1, ra2, dec1, dec2))
+        """ expMJD range is inclusive, so we are deducting ~20sec in order not
+        to duplicate current visit """
         pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2), 
-                expMJD=(obs_metadata.mjd.TAI-year, obs_metadata.mjd.TAI), 
+                expMJD=(obs_metadata.mjd.TAI-year, obs_metadata.mjd.TAI-0.0002),
                 boundLength=radius)
-        
 
         print("(alertsim) %d observations of this field for previous %d days" \
                 % (sum(len(x) for x in pointings), year))
@@ -312,7 +313,7 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
             
             for filterName, nestedDict in lc.items():
                 for i, mjd in enumerate(nestedDict['mjd']):
-                
+             
                     # find a proper ObservationMetaData object by mjd.
                     # this should be ok if opsim/lc data is consistent, 
                     # however it would be healthier if some smart exception
@@ -341,8 +342,9 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                     #temp_dict['lsst_%s' % filterName] = totMag
                     #temp_dict['delta_lsst_%s' % filterName] = totMag - meanMag
                     temp_dict['midPointTai'] = dia_trans.midPointTai(mjd)
+                    print(temp_dict['midPointTai'])
                     temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, 
-                                temp_dict['ccdVisitId']//10000)
+                                temp_dict['ccdVisitId'] % 10000)
                     #temp_dict['diaSourceId'] = int(dia_trans.diaSourceId(obsHistID,
                     #    diaObjectId))
                     temp_dict['apFlux'] = diaFlux
@@ -360,10 +362,11 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
             
             diaSource_history.sort(key=lambda x : x['midPointTai'], 
                     reverse = True)
+            #print(diaSource_dict['midPointTai'])
             #for x in diaSource_history:
             #    print(x['midPointTai'], end=" ")
 
-            while diaSource_dict['midPointTai'] > night_mjd:
+            while diaSource_dict['midPointTai'] >= night_mjd:
 
                 alert_dict = {'alertId':diaSource_dict['diaSourceId'], 
                         'diaSource':diaSource_dict,
@@ -375,8 +378,7 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                 first_time = False
 
                 list_of_alert_dicts.append(alert_dict)
-
-                diaSource_dict = alert_dict['prvDiaSources'][0]
+                diaSource_dict = diaSource_history[0]
                 diaSource_history.pop(0)
 
             if (counter==catsim_chunk_size):
