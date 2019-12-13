@@ -1,4 +1,3 @@
-""" Main module for mongodb generation """
 from __future__ import print_function
 from __future__ import absolute_import
 
@@ -7,6 +6,7 @@ import sys
 import time
 import functools
 import gc
+import json
 import numpy as np
 from timeit import default_timer as timer
 from copy import deepcopy
@@ -19,6 +19,7 @@ except:
 
 from lsst.sims.alertsim import catsim_utils, opsim_utils, avro_utils
 from lsst.sims.alertsim.catalogs import dia_transformations as dia_trans
+from lsst.sims.alertsim.catalogs import diaObject_dict
 from lsst.sims.alertsim.other import Spinner
 from lsst.sims.catUtils.mixins import ParametrizedLightCurveMixin
 from lsst.sims.photUtils import cache_LSST_seds
@@ -27,6 +28,7 @@ from lsst.sims.catUtils.utils import FastStellarLightCurveGenerator
 BANDNAMES = ['u', 'g', 'r', 'i', 'z', 'y']
 STACK_VERSION = 10
 CATSIM_CONSTRAINT = "varParamStr not like 'None'"
+alerts_total_count = 0
 
 def main(opsim_table=None, catsim_table='epycStarBase',
          opsim_night=None, opsim_filter=None, opsim_mjd = None,
@@ -140,7 +142,6 @@ def main(opsim_table=None, catsim_table='epycStarBase',
 
     """ MJD for the beginning of the night. """
     night_mjd = obs_matrix[-1][0].mjd.TAI
-    alerts_total_count = 0
 
     print("(alertsim) MJD at the beginning of this night %s" % (night_mjd))
     
@@ -215,7 +216,7 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
     @param [in] obs_data is an instantiation of InstanceCatalog
 
     @param [in] obs_metadata is the metadata for the given night, 
-    or observation_field[0], kept for clarity
+    or observations_field[0], kept for clarity
 
     @param [in] observations_field is a list of all observations 
     for the given field
@@ -236,20 +237,33 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
     cutout_difference = cutout_template = {"fileName":"stamp-676", 
             "stampData":cutout_data}
 
-    if not history:
+    if (not history) or (len(observations_field)<=1):
+        
+        first_time = True
         for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
 
             alerts_total_count += 1
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
             
+            for k in list(diaSource_dict.keys()):
+                if k.startswith('lsst_') or k.startswith('delta_lsst_'):
+                    diaSource_dict.pop(k)
+
             # convert numpy types to scalar
             # JSON can't serialize numpy
             _numpy_to_scalar(diaSource_dict)
 
+            diaObj_dict = diaObject_dict.getDiaObject_dict(diaSource_dict['diaObjectId'], 
+                    diaSource_dict['ra'], diaSource_dict['decl'])
+
             alert_dict = {'alertId':alerts_total_count,
                     'diaSource':diaSource_dict, 'prvDiaSources':[],
+                    'diaObject':diaObj_dict,
                     'cutoutTemplate':cutout_template,
                     'cutoutDifference':cutout_difference}
+
+            if first_time: avro_utils.validate_alert(alert_dict)
+            first_time = False
 
             list_of_alert_dicts.append(alert_dict)
     
@@ -298,8 +312,6 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
         
         for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
             
-            alerts_total_count += 1
-
             if (not first_time and counter==0):
                 print("(alertsim) Retrieve new chunk of events %s s" % \
                         (timer()-catsim_timer))
@@ -355,7 +367,6 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                     #temp_dict['lsst_%s' % filterName] = totMag
                     #temp_dict['delta_lsst_%s' % filterName] = totMag - meanMag
                     temp_dict['midPointTai'] = dia_trans.midPointTai(mjd)
-                    print(temp_dict['midPointTai'])
                     temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, 
                                 temp_dict['ccdVisitId'] % 10000)
                     #temp_dict['diaSourceId'] = int(dia_trans.diaSourceId(obsHistID,
@@ -382,10 +393,14 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
             while diaSource_dict['midPointTai'] >= night_mjd:
 
                 alerts_total_count += 1
+                
+                diaObj_dict = diaObject_dict.getDiaObject_dict(diaSource_dict['diaObjectId'], 
+                        diaSource_dict['ra'], diaSource_dict['decl'])
 
                 alert_dict = {'alertId':alerts_total_count, 
                         'diaSource':diaSource_dict,
                         'prvDiaSources':diaSource_history,
+                        'diaObject':diaObj_dict,
                         'cutoutTemplate':cutout_template,
                         'cutoutDifference':cutout_difference}
 
@@ -487,3 +502,4 @@ def _raise_no_mongo(method_name):
     "https://api.mongodb.com/python/current/. You might "
     "use pip install pymongo" % method_name
     raise RuntimeError(msg)
+
