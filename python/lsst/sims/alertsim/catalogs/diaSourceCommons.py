@@ -292,6 +292,10 @@ class DiaSourceCommons(CameraCoords):
         !!! resulting in a minus value of diaSourceId. For now, this method 
         !!! will return uniqueId only, which will be transformed to scalar 
         !!! later and multiplied by 10^7 for the purpose of adding obsHistId
+
+        For now, diaSourceId will be calculated 'on the fly', relative
+        to the historical instances. The oldest historical record will get 
+        count one and so on. This number will be 'concatenated' with diaObjectId
         """
         #return dia_trans.diaSourceId(self.column_by_name('uniqueId'), 
         #        self.obs_metadata.OpsimMetaData['obsHistID'])

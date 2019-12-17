@@ -145,10 +145,9 @@ def apFluxErr(diaFluxError):
     
     return array_to_dict(cols, vals)
 
-#def addEpsilon(some_value):
-#    """
-#    Add a small random epsilon to a value. Used for varieties of fluxes and errors 
-#    which cannot be calculated at this moment
-#    """
-#    return some_value + 0.0001*random.random()
-
+def addEpsilon(some_value):
+    """
+    Add a small random epsilon to a value. Used for varieties of fluxes and errors 
+    which cannot be calculated at this moment
+    """
+    return some_value + 0.0001*random.random()

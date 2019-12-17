@@ -369,21 +369,30 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                     temp_dict['midPointTai'] = dia_trans.midPointTai(mjd)
                     temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID, 
                                 temp_dict['ccdVisitId'] % 10000)
-                    #temp_dict['diaSourceId'] = int(dia_trans.diaSourceId(obsHistID,
-                    #    diaObjectId))
                     temp_dict['apFlux'] = diaFlux
+                    temp_dict['psFlux'] = dia_trans.addEpsilon(diaFlux)
                     # Append to the list of historical instances
                     diaSource_history.append(temp_dict)
                 
                     # Convert newly calculated values from numpy to scalar
                     _numpy_to_scalar(temp_dict)
                 
+            diaSource_history.sort(key=lambda x : x['midPointTai'], 
+                    reverse = False)
+            history_index = 0
+            
+            """ Get rid of lsst_* and delta_lsst_* catsim attributes
+            as they are not part of the alert schema (but we needed them
+            to calculate flux. Also create diaSourceId's """
             for dic in diaSource_history + [diaSource_dict]:
                 list_of_keys = list(dic.keys())
                 for k in list_of_keys:
                     if k.startswith('lsst_') or k.startswith('delta_lsst_'):
                         dic.pop(k)
-            
+                history_index += 1
+                dic['diaSourceId'] = diaObjectId * pow(10, 
+                        len(str(history_index))) + history_index
+                
             diaSource_history.sort(key=lambda x : x['midPointTai'], 
                     reverse = True)
             #print(diaSource_dict['midPointTai'])
