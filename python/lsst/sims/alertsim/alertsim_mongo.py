@@ -322,17 +322,19 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                 catsim_timer = timer()
             
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
-            diaObjectId = diaSource_dict['diaObjectId']
+            
+            if diaSource_dict['diaObjectId']:
+                objectId = diaSource_dict['diaObjectId']
+                #diaSource_dict.pop('ssObjectId')
+            else:
+                objectId = diaSource_dict['ssObjectId']
+                diaSource_dict.pop('diaObjectId')
 
             # convert numpy types to scalar
             # JSON can't serialize numpy
             _numpy_to_scalar(diaSource_dict)
 
-            """faking this for now due to int64 problems"""
-            #diaSource_dict['diaSourceId'] = int(dia_trans.diaSourceId(int(np.asscalar(obs_metadata.OpsimMetaData['obsHistID'])), 
-            #        diaObjectId))
-
-            lc = lc_dict[diaObjectId]
+            lc = lc_dict[objectId]
 
             diaSource_history = []
             
@@ -390,8 +392,8 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                     if k.startswith('lsst_') or k.startswith('delta_lsst_'):
                         dic.pop(k)
                 history_index += 1
-                dic['diaSourceId'] = diaObjectId * pow(10, 
-                        len(str(history_index))) + history_index
+                dic['diaSourceId'] = int(objectId * pow(10, 
+                        len(str(history_index))) + history_index)
                 
             diaSource_history.sort(key=lambda x : x['midPointTai'], 
                     reverse = True)
@@ -406,7 +408,7 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                 diaObj_dict = diaObject_dict.getDiaObject_dict(diaSource_dict['diaObjectId'], 
                         diaSource_dict['ra'], diaSource_dict['decl'])
 
-                alert_dict = {'alertId':alerts_total_count, 
+                alert_dict = {'alertId':alerts_total_count,
                         'diaSource':diaSource_dict,
                         'prvDiaSources':diaSource_history,
                         'diaObject':diaObj_dict,
@@ -437,6 +439,7 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
 
     gc.collect()
     del gc.garbage[:]
+    exit(0)
 
 
 def _write_to_mongo(collection, list_of_alert_dicts):
