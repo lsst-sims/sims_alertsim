@@ -1,13 +1,14 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+from copy import deepcopy
+from builtins import zip
+from timeit import default_timer as timer
+import sys
 import time
 import functools
 import gc
 import numpy as np
-from timeit import default_timer as timer
-from copy import deepcopy
-from builtins import zip
 try:
     from pymongo import MongoClient
     _mongo_installed = True
@@ -82,9 +83,9 @@ def main(opsim_table=None, catsim_table='epycStarBase',
         dbnames = mongo_client.list_database_names()
         if str(token) not in dbnames:
             print("(alertsim) A database related with this token doesn't exist. "
-                    "Please insert a correct token or start the script without "
-                    "a token to create a new database.")
-            exit(0)
+                  "Please insert a correct token or start the script without "
+                  "a token to create a new database.")
+            sys.exit(0)
         else:
             print("(alertsim) Continuing an existing alertsim run.")
             print("(alertsim) Working with the database %s." % (token))
@@ -93,8 +94,8 @@ def main(opsim_table=None, catsim_table='epycStarBase',
     else:
         token = int(time.time())
         print("(alertsim) Creating new token %s. If the program or "
-                "connection breaks, you can continue from the point "
-                "it broke by entering the --token argument." % (token))
+              "connection breaks, you can continue from the point "
+              "it broke by entering the --token argument." % (token))
         db_name = str(token)
 
     db = mongo_client[db_name]
@@ -105,18 +106,23 @@ def main(opsim_table=None, catsim_table='epycStarBase',
 
     if metadata_dict is None:
         metadata_dict = {"token":token, "last_obsHistID":None,
-                "fieldIDs":[]}
+                         "fieldIDs":[]}
         metadata_mongo_collection.insert_one(metadata_dict)
     else:
         print("(alertsim) Last obsHistID for which data was serialized "
-                "was %s" % (metadata_dict['last_obsHistID']))
+              "was %s" % (metadata_dict['last_obsHistID']))
 
     with Spinner(message="(alertsim) Fetching opsim results "):
         """ matrix of all observations per field up to current mjd REVERSED """
         obs_matrix = opsim_utils.opsim_query(stack_version=STACK_VERSION,
-                opsim_path=opsim_path, objid=opsim_table, radius=radius,
-                opsim_night=opsim_night, opsim_filter=opsim_filter,
-                opsim_mjd=opsim_mjd, history=history, reverse=True)
+                                             opsim_path=opsim_path,
+                                             objid=opsim_table,
+                                             radius=radius,
+                                             opsim_night=opsim_night,
+                                             opsim_filter=opsim_filter,
+                                             opsim_mjd=opsim_mjd,
+                                             history=history,
+                                             reverse=True)
 
     print("(alertsim) Opsim matrix fetched (in reverse order)")
 
@@ -124,7 +130,7 @@ def main(opsim_table=None, catsim_table='epycStarBase',
     last_obsHistID = metadata_dict["last_obsHistID"]
     if last_obsHistID is not None:
         obs_matrix[:] = [x for x in obs_matrix if \
-                x[0].OpsimMetaData['obsHistID']<last_obsHistID]
+                x[0].OpsimMetaData['obsHistID'] < last_obsHistID]
 
     """ a set of fieldID's for which catsim and lc data were already
     serialized. This is done in advance to avoid multiple lc calls for
@@ -162,25 +168,29 @@ def main(opsim_table=None, catsim_table='epycStarBase',
         you see it next time """
         if current_fieldID in fieldIDs_to_skip:
             print("(alertsim) Field %d was already processed for the entire night. "
-                    "Skipping observation %d and continuing to the next one." \
-                    % (current_obsHistID, current_fieldID))
+                  "Skipping observation %d and continuing to the next one." \
+                  % (current_obsHistID, current_fieldID))
 
         else:
             print("(alertsim) Observation %d, field %d" % (current_obsHistID,
-                current_fieldID))
+                                                           current_fieldID))
 
             """ make an additional CatSim constraint based on fiveSigmaDepth value
             from OpsimMetaData """
-            full_constraint = catsim_constraint + _get_additional_constraint(obs_metadata)
+            full_constraint = catsim_constraint + \
+                              _get_additional_constraint(obs_metadata)
             print('(alertsim) full constraint: %s' % (full_constraint))
 
             obs_data = catsim_utils.catsim_query(stack_version=STACK_VERSION,
-                    objid=catsim_table, constraint=full_constraint,
-                    obs_metadata=obs_metadata, dia=dia)
+                                                 objid=catsim_table,
+                                                 constraint=full_constraint,
+                                                 obs_metadata=obs_metadata,
+                                                 dia=dia)
 
             """ query catsim and serialize events to mongodb """
             query_and_serialize(obs_data, obs_metadata, obs_per_field, history,
-                    radius, opsim_path, full_constraint, alerts_mongo_collection, night_mjd)
+                                radius, opsim_path, full_constraint,
+                                alerts_mongo_collection, night_mjd)
 
         """ update last IDs and fields to skip
         THIS SHOULD BE IMPROVED: PART OF THE DATA MAYBE GOT SERIALIZED
@@ -193,19 +203,20 @@ def main(opsim_table=None, catsim_table='epycStarBase',
         if history: fieldIDs_to_skip.add(int(obs_metadata.OpsimMetaData['fieldID']))
 
         metadata_dict = {"token":token, "last_obsHistID":last_obsHistID,
-                "fieldIDs":fieldIDs_to_skip}
+                         "fieldIDs":fieldIDs_to_skip}
 
         print("(alertsim) updating mongo metadata")
         print(metadata_dict)
         metadata_mongo_collection.update_one({"token":token},
-                {"$set": {"last_obsHistID":last_obsHistID, "fieldIDs":list(fieldIDs_to_skip)} })
+                                             {"$set": {"last_obsHistID":last_obsHistID,
+                                                       "fieldIDs":list(fieldIDs_to_skip)}})
 
     mongo_client.close()
 
 
 def query_and_serialize(obs_data, obs_metadata, observations_field,
-                       history, radius, opsim_path,
-                       full_constraint, alerts_mongo_collection, night_mjd):
+                        history, radius, opsim_path, full_constraint,
+                        alerts_mongo_collection, night_mjd):
 
     """ Iterate over catalog, transform data to dicts according to
         the avro schema, add history (if turned on) and serialize to mongodb
@@ -220,7 +231,19 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
 
     @param [in] history is boolean which determines whether historical
     occurancies of same DIASource are emitted within each VOEvent
-    
+
+    @param [in] radius is catsim radius
+
+    @param [in] opsim_path is path of local opsim DB. If left empty,
+    fatboy is queried
+
+    @param [in] full_constraint is CatSim constraint concatenated with
+    an additional constraint based on fiveSigmaDepth value from OpsimMetaData
+
+    @param [in] alerts_mongo_collection is a physical MongoDB collection
+    of alerts
+
+    @param [in] night_mjd is a MJD for the beginning of this night
     """
 
     """ a list of alert dicts for a visit that will eventually be serialized """
@@ -232,9 +255,9 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
     cutout_file = open("avsc/sample_cutouts/stamp-676.fits.gz", "rb")
     cutout_data = cutout_file.read()
     cutout_difference = cutout_template = {"fileName":"stamp-676",
-            "stampData":cutout_data}
+                                           "stampData":cutout_data}
 
-    if (not history) or (len(observations_field)<=1):
+    if (not history) or (len(observations_field) <= 1):
 
         first_time = True
         for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
@@ -242,22 +265,24 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
             alerts_total_count += 1
             diaSource_dict = dict(zip(obs_data.iter_column_names(), line))
 
-            for k in list(diaSource_dict.keys()):
-                if k.startswith('lsst_') or k.startswith('delta_lsst_'):
-                    diaSource_dict.pop(k)
+            for key in list(diaSource_dict.keys()):
+                if key.startswith('lsst_') or key.startswith('delta_lsst_'):
+                    diaSource_dict.pop(key)
 
             # convert numpy types to scalar
             # JSON can't serialize numpy
             _numpy_to_scalar(diaSource_dict)
 
             diaObj_dict = diaObject_dict.getDiaObject_dict(diaSource_dict['diaObjectId'],
-                    diaSource_dict['ra'], diaSource_dict['decl'])
+                                                           diaSource_dict['ra'],
+                                                           diaSource_dict['decl'])
 
             alert_dict = {'alertId':alerts_total_count,
-                    'diaSource':diaSource_dict, 'prvDiaSources':[],
-                    'diaObject':diaObj_dict,
-                    'cutoutTemplate':cutout_template,
-                    'cutoutDifference':cutout_difference}
+                          'diaSource':diaSource_dict,
+                          'prvDiaSources':[],
+                          'diaObject':diaObj_dict,
+                          'cutoutTemplate':cutout_template,
+                          'cutoutDifference':cutout_difference}
 
             if first_time: avro_utils.validate_alert(alert_dict)
             first_time = False
@@ -268,12 +293,12 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
         lc_gen = FastStellarLightCurveGenerator(obs_data.db_obj, opsim_path)
 
         #print("(alertsim) radius = %f" % (radius))
-        ra1=obs_metadata.pointingRA - \
-                radius/np.cos(np.radians(obs_metadata.pointingDec))
-        ra2=obs_metadata.pointingRA + \
-                radius/np.cos(np.radians(obs_metadata.pointingDec))
-        dec1=obs_metadata.pointingDec - radius
-        dec2=obs_metadata.pointingDec + radius
+        ra1 = obs_metadata.pointingRA - \
+              radius/np.cos(np.radians(obs_metadata.pointingDec))
+        ra2 = obs_metadata.pointingRA + \
+              radius/np.cos(np.radians(obs_metadata.pointingDec))
+        dec1 = obs_metadata.pointingDec - radius
+        dec2 = obs_metadata.pointingDec + radius
 
         year = 365
         observations_year = len(observations_field)
@@ -292,14 +317,16 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
         """ expMJD range is inclusive, so we are deducting ~20sec in order not
         to duplicate current visit """
         pointings = lc_gen.get_pointings((ra1, ra2), (dec1, dec2),
-                expMJD=(obs_metadata.mjd.TAI-year, obs_metadata.mjd.TAI-0.0002),
-                boundLength=radius)
+                                         expMJD=(obs_metadata.mjd.TAI-year,
+                                                 obs_metadata.mjd.TAI-0.0002),
+                                         boundLength=radius)
 
         print("(alertsim) %d observations of this field for previous %d days" \
                 % (sum(len(x) for x in pointings), year))
 
         lc_dict, truth_dict = lc_gen.light_curves_from_pointings(pointings=pointings,
-                constraint=full_constraint, chunk_size=1000)
+                                                                 constraint=full_constraint,
+                                                                 chunk_size=1000)
 
         print("(alertsim) Done with lc's")
 
@@ -309,12 +336,12 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
 
         for line in obs_data.iter_catalog(chunk_size=catsim_chunk_size):
 
-            if (not first_time and counter==0):
+            if (not first_time and counter == 0):
                 print("(alertsim) Retrieve new chunk of events %s s" % \
                         (timer()-catsim_timer))
 
             counter = counter + 1
-            if (counter % 100 == 0):
+            if counter % 100 == 0:
                 print("(alertsim) %s %s s" % (counter, timer() - catsim_timer))
                 catsim_timer = timer()
 
@@ -343,21 +370,21 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                     # however it would be healthier if some smart exception
                     # is added
                     current_metadata = next((x for x in observations_field \
-                            if x.mjd.TAI == mjd), None)
+                                             if x.mjd.TAI == mjd), None)
 
                     # copy diaSource values and adjust filter, mjd, mag, error
                     temp_dict = deepcopy(diaSource_dict)
 
                     totMag = nestedDict['mag'][i]
                     meanMag = temp_dict['lsst_%s' % filterName] - \
-                            temp_dict['delta_lsst_%s' % filterName]
+                              temp_dict['delta_lsst_%s' % filterName]
 
                     totFlux = dia_trans.fluxFromMag(totMag)
                     meanFlux = dia_trans.fluxFromMag(meanMag)
                     diaFlux = totFlux - meanFlux
 
                     # error is not handled yet!!
-                    error = nestedDict['error'][i]
+                    #error = nestedDict['error'][i]
 
                     obsHistID = int(np.asscalar(current_metadata.OpsimMetaData['obsHistID']))
 
@@ -367,7 +394,7 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                     #temp_dict['delta_lsst_%s' % filterName] = totMag - meanMag
                     temp_dict['midPointTai'] = dia_trans.midPointTai(mjd)
                     temp_dict['ccdVisitId'] = dia_trans.ccdVisitId(obsHistID,
-                                temp_dict['ccdVisitId'] % 10000)
+                                                                   temp_dict['ccdVisitId'] % 10000)
                     temp_dict['apFlux'] = diaFlux
                     temp_dict['psFlux'] = dia_trans.addEpsilon(diaFlux)
                     # Append to the list of historical instances
@@ -376,8 +403,8 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                     # Convert newly calculated values from numpy to scalar
                     _numpy_to_scalar(temp_dict)
 
-            diaSource_history.sort(key=lambda x : x['midPointTai'],
-                    reverse = False)
+            diaSource_history.sort(key=lambda x: x['midPointTai'],
+                                   reverse=False)
             history_index = 0
 
             """ Get rid of lsst_* and delta_lsst_* catsim attributes
@@ -389,11 +416,10 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                     if k.startswith('lsst_') or k.startswith('delta_lsst_'):
                         dic.pop(k)
                 history_index += 1
-                dic['diaSourceId'] = int(objectId * pow(10,
-                        len(str(history_index))) + history_index)
+                dic['diaSourceId'] = int(objectId * pow(10, len(str(history_index))) + history_index)
 
-            diaSource_history.sort(key=lambda x : x['midPointTai'],
-                    reverse = True)
+            diaSource_history.sort(key=lambda x: x['midPointTai'],
+                                   reverse=True)
             #print(diaSource_dict['midPointTai'])
             #for x in diaSource_history:
             #    print(x['midPointTai'], end=" ")
@@ -403,14 +429,15 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                 alerts_total_count += 1
 
                 diaObj_dict = diaObject_dict.getDiaObject_dict(diaSource_dict['diaObjectId'],
-                        diaSource_dict['ra'], diaSource_dict['decl'])
+                                                               diaSource_dict['ra'],
+                                                               diaSource_dict['decl'])
 
                 alert_dict = {'alertId':alerts_total_count,
-                        'diaSource':diaSource_dict,
-                        'prvDiaSources':diaSource_history,
-                        'diaObject':diaObj_dict,
-                        'cutoutTemplate':cutout_template,
-                        'cutoutDifference':cutout_difference}
+                              'diaSource':diaSource_dict,
+                              'prvDiaSources':diaSource_history,
+                              'diaObject':diaObj_dict,
+                              'cutoutTemplate':cutout_template,
+                              'cutoutDifference':cutout_difference}
 
                 if first_time: avro_utils.validate_alert(alert_dict)
                 first_time = False
@@ -420,10 +447,10 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
                 diaSource_dict = diaSource_history[0]
                 diaSource_history.pop(0)
 
-            if (counter==catsim_chunk_size):
+            if counter == catsim_chunk_size:
                 _write_to_mongo(alerts_mongo_collection, list_of_alert_dicts)
 
-                list_of_alert_dicts=[]
+                list_of_alert_dicts = []
                 counter = 0
 
                 gc.collect()
@@ -436,11 +463,11 @@ def query_and_serialize(obs_data, obs_metadata, observations_field,
 
     gc.collect()
     del gc.garbage[:]
-    exit(0)
-
 
 def _write_to_mongo(collection, list_of_alert_dicts):
     """ Serialize events to mongodb
+
+    @param [in] collection is a physical MongoDB collection
 
     @param [in] list_of_alert_dicts is a list of alerts formatted
     according to the valid avro schema
@@ -462,52 +489,43 @@ def _remove_band_attrs(obj, bandname):
     @param [in] obj is the object with astronomical data and metadata
 
     @param [in] bandname is the bandname for the visit
-    
+
     """
 
     # this may not be the safest way and needs to be revised
     for key in list(obj.__dict__.keys()):
-        if ('lsst' in key) and not (key.endswith(bandname)):
+        if ('lsst' in key) and not key.endswith(bandname):
             obj.__dict__.pop(key)
-
-"""
-def _rename_band_attr(obj, bandname):
-        for key in obj.__dict__:
-            if 'lsst' in key:
-                new_key = key[:-1] + bandname
-                obj.__dict__[new_key] = obj.__dict__.pop(old_name)
-"""
 
 def _rsetattr(obj, attr, val):
     """ fix setattr lack of dot notation support """
     pre, _, post = attr.rpartition('.')
-    return setattr(functools.reduce(getattr,
-        [obj]+pre.split('.')) if pre else obj, post, val)
+    return setattr(functools.reduce(getattr, [obj]+pre.split('.')) if pre else obj, post, val)
 
 def _get_additional_constraint(obs_metadata):
     """ make Catsim constraint out of Opsim metadata parameters """
-    fiveSigmaDepth = obs_metadata.OpsimMetaData['fiveSigmaDepth']
+    five_sigma_depth = obs_metadata.OpsimMetaData['fiveSigmaDepth']
     opsim_filter = obs_metadata.OpsimMetaData['filter']
-    new_constraint = " and %smag <= %f" % (opsim_filter, fiveSigmaDepth)
+    new_constraint = " and %smag <= %f" % (opsim_filter, five_sigma_depth)
     return new_constraint
 
-def _numpy_to_scalar(d):
+def _numpy_to_scalar(dic):
 
     """ Recursively change all numpy types to scalar
 
     @param[in] d is a dictionary containing single alert
 
     """
-    for k, v in d.items():
-        if isinstance(d[k], dict):
-            _numpy_to_scalar(d[k])
-        elif isinstance(d[k], np.generic):
-            d[k] = np.asscalar(d[k])
+    for key, value in dic.items():
+        if isinstance(dic[key], dict):
+            _numpy_to_scalar(dic[key])
+        elif isinstance(dic[key], np.generic):
+            dic[key] = np.asscalar(dic[key])
         else:
             pass
 
 def _raise_no_mongo(method_name):
-    msg = "To use %s you must install pymongo from "
-    "https://api.mongodb.com/python/current/. You might "
-    "use pip install pymongo" % method_name
+    msg = ("To use %s you must install pymongo from "
+           "https://api.mongodb.com/python/current/. You might "
+           "use pip install pymongo" % method_name)
     raise RuntimeError(msg)

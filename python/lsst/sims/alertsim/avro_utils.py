@@ -1,8 +1,8 @@
 from __future__ import print_function
 try:
     import avro.schema
-    from avro.datafile import DataFileReader, DataFileWriter
-    from avro.io import DatumReader, DatumWriter
+    from avro.datafile import DataFileWriter
+    from avro.io import DatumWriter
     _avro_installed = True
 except:
     _avro_installed = False
@@ -10,11 +10,12 @@ except:
 import os
 from timeit import default_timer as timer
 import json
-import numpy as np
 from collections import defaultdict
 
 def _raise_no_avro(method_name):
-    msg = "To use %s you must install avro-python3 from https://avro.apache.org. You might use pip install avro-python3" % method_name
+    msg = ("To use %s you must install avro-python3 from "
+           "https://avro.apache.org. You might use "
+           "pip install avro-python3" % method_name)
     raise RuntimeError(msg)
 
 def _load_basics(method_name):
@@ -25,13 +26,20 @@ def _load_basics(method_name):
 
     known_schemas = avro.schema.Names()
 
-    diasource_schema = load_avsc_schema("avsc/2/0/lsst.alert.diaSource.avsc", known_schemas)
-    diaforced_schema = load_avsc_schema("avsc/2/0/lsst.alert.diaForcedSource.avsc", known_schemas)
-    dianondetection_schema = load_avsc_schema("avsc/2/0/lsst.alert.diaNondetectionLimit.avsc", known_schemas)
-    cutout_schema = load_avsc_schema("avsc/2/0/lsst.alert.cutout.avsc", known_schemas)
-    ssobject_schema = load_avsc_schema("avsc/2/0/lsst.ssObject.avsc", known_schemas)
-    diaobject_schema = load_avsc_schema("avsc/2/0/lsst.diaObject.avsc", known_schemas)
-    alert_schema = load_avsc_schema("avsc/2/0/lsst.alert.avsc", known_schemas)
+    diasource_schema = load_avsc_schema("avsc/2/0/lsst.alert.diaSource.avsc",
+                                        known_schemas)
+    diaforced_schema = load_avsc_schema("avsc/2/0/lsst.alert.diaForcedSource.avsc",
+                                        known_schemas)
+    dianondetection_schema = load_avsc_schema("avsc/2/0/lsst.alert.diaNondetectionLimit.avsc",
+                                              known_schemas)
+    cutout_schema = load_avsc_schema("avsc/2/0/lsst.alert.cutout.avsc",
+                                     known_schemas)
+    ssobject_schema = load_avsc_schema("avsc/2/0/lsst.ssObject.avsc",
+                                       known_schemas)
+    diaobject_schema = load_avsc_schema("avsc/2/0/lsst.diaObject.avsc",
+                                        known_schemas)
+    alert_schema = load_avsc_schema("avsc/2/0/lsst.alert.avsc",
+                                    known_schemas)
 
     return alert_schema
 
@@ -41,7 +49,7 @@ def validate_alert(alert_dict):
     writer.append(alert_dict)
     print("(alertsim) Avro schema validated for this chunk")
     writer.close()
-    
+
     return True
 
 
@@ -50,11 +58,13 @@ def catsim_to_avro(list_of_alert_dicts, session_dir):
     """
     Serializes alerts to json and validates against avro schema
 
-    @param [in] list_of_alert_dicts is a chunk of alerts, with or without history, in a form of dicts
-    
-    @param [in] session_dir is a unique local directory for this session where json is serialized
+    @param [in] list_of_alert_dicts is a chunk of alerts,
+    with or without history, in a form of dicts
 
-    @param [in] schemaURI is relative location of avsc schema 
+    @param [in] session_dir is a unique local directory for this session
+    where json is serialized
+
+    @param [in] schemaURI is relative location of avsc schema
     """
     alert_schema = _load_basics("catsim_to_avro")
 
@@ -66,7 +76,7 @@ def catsim_to_avro(list_of_alert_dicts, session_dir):
     alert_dicts_divided = defaultdict(list)
     for d in list_of_alert_dicts:
         alert_dicts_divided[(d['diaSource']['ccdVisitId'])].append(d)
-    
+
     print("##### starting serialization")
 
     for ix, list_per_chip in enumerate(alert_dicts_divided.values()):
@@ -80,18 +90,19 @@ def catsim_to_avro(list_of_alert_dicts, session_dir):
         with open(os.path.join("json_output/", session_dir, chipNum), 'a') as out_file:
 
             avro_validated = False
-            
+
             for alert_dict in list_per_chip:
-            
+
                 json.dump(alert_dict, out_file)
                 out_file.write('\n')
-                if (ix==0 and avro_validated==False):
-            
+                if (ix == 0 and avro_validated == False):
+
                     writer.append(alert_dict)
                     print("Avro schema validated for this chunk")
                     avro_validated = True
 
-        print("serialization for %d events on this chip took %s" % (len(list_per_chip), timer()-serialization_timer))
+        print("serialization for %d events on this chip took %s" \
+                % (len(list_per_chip), timer()-serialization_timer))
 
     writer.close()
 
@@ -100,7 +111,7 @@ def catsim_to_avro(list_of_alert_dicts, session_dir):
     """
     #reading_time = timer()
     reader = DataFileReader(open("avsc/alert.avro", "rb"), DatumReader())
-    
+
     for line in reader:
         print line
 
@@ -109,8 +120,8 @@ def catsim_to_avro(list_of_alert_dicts, session_dir):
     reader.close()
     """
 
-def load_avsc_schema(schema_path, names = None):
-    
+def load_avsc_schema(schema_path, names=None):
+
     """ Load avsc file
 
     @param [in] schema_path is file path to the schema file
@@ -126,29 +137,13 @@ def load_avsc_schema(schema_path, names = None):
 
 
     schema_json = json.loads(open(schema_path).read())
-    
+
     #schema = avro.schema.make_avsc_object(schema_json, names)
     schema = avro.schema._SchemaFromJSONObject(schema_json, names)
 
     return schema
-    
 
-def _numpy_to_scalar(d):
-
-    """ Recursively change all numpy types to scalar
-
-    @param[in] d is a dictionary containing single alert
-
-    """
-    for k, v in d.items():
-        if isinstance(d[k], dict):
-            _numpy_to_scalar(d[k])
-        elif isinstance(d[k], np.generic):
-            d[k] = np.asscalar(d[k])
-        else:
-            pass
-
-def _print_types(d, types = []):
+def _print_types(d, types=[]):
     for k, v in d.items():
         if isinstance(d[k], dict):
             _print_types(d[k], types)
