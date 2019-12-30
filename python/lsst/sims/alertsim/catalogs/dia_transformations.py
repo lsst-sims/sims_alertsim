@@ -1,6 +1,7 @@
 """ dia_transformations """
 
 import numpy as np
+import math
 import re
 import random
 
@@ -8,9 +9,9 @@ from lsst.sims.photUtils import Sed  # for converting magnitudes into fluxes
 from lsst.sims.alertsim.catalogs.random_utils import array_to_dict
 
 """
-A module which groups methods for transformation of catsim values 
+A module which groups methods for transformation of catsim values
 to diaSource attributes as stated in DPDD.
-These methods needed to be separated from catalog classes 
+These methods needed to be separated from catalog classes
 because ad-hoc usage is required.
 """
 
@@ -98,21 +99,21 @@ def apFlux(diaFlux):
     """
     true_flux = diaFlux
     vals = np.array([true_flux,
-                     true_flux*(1.0+0.0001*random.random()),
-                     true_flux*(1.0+0.0001*random.random()),
-                     true_flux*(1.0+0.0001*random.random()),
-                     true_flux*(1.0+0.0001*random.random()),
-                     true_flux*(1.0+0.0001*random.random()),
-                     true_flux*(1.0+0.0001*random.random()),
-                     true_flux*(1.0+0.0001*random.random()),
-                     true_flux*(1.0+0.0001*random.random()),
-                     true_flux*(1.0+0.0001*random.random())]).T
+                     addEpsilon(true_flux),
+                     addEpsilon(true_flux),
+                     addEpsilon(true_flux),
+                     addEpsilon(true_flux),
+                     addEpsilon(true_flux),
+                     addEpsilon(true_flux),
+                     addEpsilon(true_flux),
+                     addEpsilon(true_flux),
+                     addEpsilon(true_flux)]).T
 
-    cols = ['apMeanSb01', 'apMeanSb02', 'apMeanSb03', 
-             'apMeanSb04', 'apMeanSb05', 'apMeanSb06', 
-             'apMeanSb07', 'apMeanSb08', 'apMeanSb09', 
+    cols = ['apMeanSb01', 'apMeanSb02', 'apMeanSb03',
+             'apMeanSb04', 'apMeanSb05', 'apMeanSb06',
+             'apMeanSb07', 'apMeanSb08', 'apMeanSb09',
              'apMeanSb10']
-    
+
     return array_to_dict(cols, vals)
 
 def apFluxErr(diaFluxError):
@@ -128,26 +129,26 @@ def apFluxErr(diaFluxError):
     true_fluxError = diaFluxError
 
     vals = np.array([true_fluxError,
-                     true_fluxError*(1.0+0.0001*random.random()),
-                     true_fluxError*(1.0+0.0001*random.random()),
-                     true_fluxError*(1.0+0.0001*random.random()),
-                     true_fluxError*(1.0+0.0001*random.random()),
-                     true_fluxError*(1.0+0.0001*random.random()),
-                     true_fluxError*(1.0+0.0001*random.random()),
-                     true_fluxError*(1.0+0.0001*random.random()),
-                     true_fluxError*(1.0+0.0001*random.random()),
-                     true_fluxError*(1.0+0.0001*random.random())]).T
+                     addEpsilon(true_fluxError),
+                     addEpsilon(true_fluxError),
+                     addEpsilon(true_fluxError),
+                     addEpsilon(true_fluxError),
+                     addEpsilon(true_fluxError),
+                     addEpsilon(true_fluxError),
+                     addEpsilon(true_fluxError),
+                     addEpsilon(true_fluxError),
+                     addEpsilon(true_fluxError)]).T
 
-    cols = ['apMeanSb01Err', 'apMeanSb02Err', 'apMeanSb03Err', 
-             'apMeanSb04Err', 'apMeanSb05Err', 'apMeanSb06Err', 
-             'apMeanSb07Err', 'apMeanSb08Err', 'apMeanSb09Err', 
+    cols = ['apMeanSb01Err', 'apMeanSb02Err', 'apMeanSb03Err',
+             'apMeanSb04Err', 'apMeanSb05Err', 'apMeanSb06Err',
+             'apMeanSb07Err', 'apMeanSb08Err', 'apMeanSb09Err',
              'apMeanSb10Err']
-    
+
     return array_to_dict(cols, vals)
 
 def addEpsilon(some_value):
     """
-    Add a small random epsilon to a value. Used for varieties of fluxes and errors 
-    which cannot be calculated at this moment
+    Add a small random epsilon to a value, relative to the exponent
+    Used for varieties of fluxes and errors.
     """
-    return some_value + 0.0001*random.random()
+    return some_value + 0.0001*random.random()*pow(10, math.floor(math.log10(abs(some_value))))

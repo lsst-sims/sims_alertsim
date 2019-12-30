@@ -1,6 +1,7 @@
 """ DiaSourceCommons """
 from __future__ import absolute_import
 import numpy as np
+import math
 from lsst.sims.alertsim.catalogs import dia_transformations as dia_trans
 from lsst.sims.alertsim.catalogs.random_utils import array_to_dict
 from lsst.sims.catalogs.decorators import cached, compound
@@ -105,8 +106,6 @@ class DiaSourceCommons(CameraCoords):
     # the software representation of the LSST camera
     camera = lsst_camera()
 
-    # getters for DIASource attributes which are generated from catsim
-
     @property
     def rng(self):
         """
@@ -169,6 +168,21 @@ class DiaSourceCommons(CameraCoords):
         if n_obj == 0:
             return np.array([])
         return self.rng.randint(0,i_max,n_obj)
+
+    def _addEpsilonToNdarray(self, some_ndarray):
+        """
+        Get smallest exponent from ndarray and multiply array.
+        It would be too expensive and probably unneccessary
+        to calculate exponent for each value.
+        """
+        if some_ndarray.size > 0:
+            mini = np.abs(some_ndarray).min()
+            return some_ndarray + \
+                   0.0001*self.randomFloats(-1)*pow(10, math.floor(math.log10(abs(mini))))
+        else:
+            return some_ndarray
+
+    # getters for DIASource attributes which are generated from catsim
 
     def get_parentDiaSourceId(self):
         return self.randomInts(-1, 9223372036854775807)
@@ -329,7 +343,7 @@ class DiaSourceCommons(CameraCoords):
 
     def get_y(self):
         return self.column_by_name('yPix')
-      
+
     def get_x_y_Cov(self):
         vals = self.randomFloatArr(3, -1)
         cols = ['xSigma', 'ySigma', 'x_y_Cov']
@@ -389,7 +403,7 @@ class DiaSourceCommons(CameraCoords):
         tot_mag_error = self.column_by_name('sigma_totMag')
         mean_flux = self.column_by_name('meanFlux')
         tot_flux = self.column_by_name('totFlux')
-        return dia_trans.fluxError(mean_mag_error, tot_mag_error, 
+        return dia_trans.fluxError(mean_mag_error, tot_mag_error,
                 mean_flux, tot_flux)
 
     @cached
@@ -397,7 +411,7 @@ class DiaSourceCommons(CameraCoords):
         """
         Get the SNR
         """
-        return dia_trans.snr(self.column_by_name('diaFlux'), 
+        return dia_trans.snr(self.column_by_name('diaFlux'),
                 self.column_by_name('diaFluxError'))
 
     def get_psFlux(self):
@@ -405,20 +419,17 @@ class DiaSourceCommons(CameraCoords):
         Return the true difference image flux plus a small epsilon, since CatSim
         does not have methods to calculate different varieties of flux
         """
-        return self.column_by_name('diaFlux') + \
-               0.0001*self.randomFloats(-1)
+        return self._addEpsilonToNdarray(self.column_by_name('diaFlux'))
 
     def get_psFluxErr(self):
-        return self.column_by_name('diaFluxError') + \
-               0.0001*self.randomFloats(-1)
+        return self._addEpsilonToNdarray(self.column_by_name('diaFluxError'))
 
     def get_trailFlux(self):
         """
         Return the true difference image flux plus a small epsilon, since CatSim
         does not have methods to calculate different varieties of flux
         """
-        return self.column_by_name('diaFlux') + \
-               0.0001*self.randomFloats(-1)
+        return self._addEpsilonToNdarray(self.column_by_name('diaFlux'))
 
     def get_apFlux(self):
         """
@@ -436,7 +447,7 @@ class DiaSourceCommons(CameraCoords):
         return dia_trans.apFluxErr(self.column_by_name('diaFluxError'))
         """
         return self.column_by_name('diaFluxError')
-    
+
 
     def get_psRa(self):
         """
@@ -450,7 +461,7 @@ class DiaSourceCommons(CameraCoords):
         Just return decICRS with a small epsilon added, since CatSim does not have methods to calculate psf DEC
         """
         return self.column_by_name('decICRS') + 1.0e-6*self.randomFloats(-1)
-      
+
     def get_ps_Cov(self):
         vals = self.randomFloatArr(6, -1)
         cols = ['psFluxSigma', 'psRaSigma', 'psDeclSigma', 
@@ -495,19 +506,19 @@ class DiaSourceCommons(CameraCoords):
 
     def get_dip_Cov(self):
         vals = self.randomFloatArr(21, -1)
-        cols = ['dipMeanFluxSigma', 'dipFluxDiffSigma', 'dipRaSigma', 
-                'dipDeclSigma', 'dipLengthSigma', 'dipAngleSigma', 
-                'dipMeanFlux_dipFluxDiff_Cov', 'dipMeanFlux_dipRa_Cov', 
-                'dipMeanFlux_dipDecl_Cov', 'dipMeanFlux_dipLength_Cov', 
-                'dipMeanFlux_dipAngle_Cov', 'dipFluxDiff_dipRa_Cov', 
-                'dipFluxDiff_dipDecl_Cov', 'dipFluxDiff_dipLength_Cov', 
-                'dipFluxDiff_dipAngle_Cov', 'dipRa_dipDecl_Cov', 
-                'dipRa_dipLength_Cov', 'dipRa_dipAngle_Cov', 'dipDecl_dipLength_Cov', 
+        cols = ['dipMeanFluxSigma', 'dipFluxDiffSigma', 'dipRaSigma',
+                'dipDeclSigma', 'dipLengthSigma', 'dipAngleSigma',
+                'dipMeanFlux_dipFluxDiff_Cov', 'dipMeanFlux_dipRa_Cov',
+                'dipMeanFlux_dipDecl_Cov', 'dipMeanFlux_dipLength_Cov',
+                'dipMeanFlux_dipAngle_Cov', 'dipFluxDiff_dipRa_Cov',
+                'dipFluxDiff_dipDecl_Cov', 'dipFluxDiff_dipLength_Cov',
+                'dipFluxDiff_dipAngle_Cov', 'dipRa_dipDecl_Cov',
+                'dipRa_dipLength_Cov', 'dipRa_dipAngle_Cov', 'dipDecl_dipLength_Cov',
                 'dipDecl_dipAngle_Cov', 'dipLength_dipAngle_Cov']
         return array_to_dict(cols, vals)
 
     def get_i_cov(self):
         vals = self.randomFloatArr(6, -1)
-        cols = ["ixxSigma", "iyySigma", "ixySigma", 
+        cols = ["ixxSigma", "iyySigma", "ixySigma",
                 "ixx_iyy_Cov", "ixx_ixy_Cov", "iyy_ixy_Cov"]
         return array_to_dict(cols, vals)
